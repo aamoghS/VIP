@@ -18,6 +18,7 @@ export default function ToolboxPage() {
   const { addXp, unlockItem } = useProgress();
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+  const [attempts, setAttempts] = useState(0);
   
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [evaluated, setEvaluated] = useState(false);
@@ -29,6 +30,7 @@ export default function ToolboxPage() {
     setEvaluated(false);
     setSelectedAnswer(null);
     setIsCorrect(false);
+    setAttempts(0);
     try {
       const res = await fetch("/api/questions");
       const data = await res.json();
@@ -46,6 +48,7 @@ export default function ToolboxPage() {
   const handleEvaluate = async (answer: string) => {
     if (!question) return;
     setSelectedAnswer(answer);
+    setEvaluated(true);
     
     try {
       const res = await fetch("/api/evaluate", {
@@ -55,11 +58,10 @@ export default function ToolboxPage() {
       });
       const data = await res.json();
       
-      setEvaluated(true);
       setIsCorrect(data.isCorrect);
-      setEvalMessage(data.message);
 
       if (data.isCorrect) {
+        setEvalMessage(data.message);
         addXp(100);
         // Randomly unlock an item sometimes for fun, or fixed based on topic
         if (question.topic === "variables") unlockItem({ id: "wrench", name: "Variables Wrench", icon: "🔧" });
@@ -67,9 +69,25 @@ export default function ToolboxPage() {
         if (question.topic === "loops") unlockItem({ id: "loop", name: "Infinity Loop", icon: "♾️" });
         if (question.topic === "math") unlockItem({ id: "ruler", name: "Golden Ruler", icon: "📐" });
         if (question.topic === "science") unlockItem({ id: "flask", name: "Science Flask", icon: "🧪" });
+      } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        
+        if (newAttempts >= 2) {
+          setEvalMessage(`Incorrect. The correct answer was: ${data.correctAnswer}`);
+        } else {
+          setEvalMessage("Incorrect! Try again. Clearing drop zone in 2 seconds...");
+          setTimeout(() => {
+            setEvaluated(false);
+            setSelectedAnswer(null);
+            setIsCorrect(false);
+          }, 2500);
+        }
       }
     } catch (err) {
       console.error(err);
+      setEvaluated(false);
+      setSelectedAnswer(null);
     }
   };
 
@@ -223,9 +241,11 @@ export default function ToolboxPage() {
                   </div>
                 </div>
                 
-                <button className="btn-primary" onClick={fetchQuestion} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.8rem 1.5rem" }}>
-                  Next Question <ArrowRight size={18} />
-                </button>
+                {(isCorrect || attempts >= 2) && (
+                  <button className="btn-primary" onClick={fetchQuestion} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.8rem 1.5rem" }}>
+                    Next Question <ArrowRight size={18} />
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

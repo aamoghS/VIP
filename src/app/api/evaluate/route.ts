@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       questionId,
       isCorrect,
+      correctAnswer: isCorrect ? undefined : correctAnswer,
       message: isCorrect ? 'Correct!' : 'Incorrect, try again.'
     });
 
