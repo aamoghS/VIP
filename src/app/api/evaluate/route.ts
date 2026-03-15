@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// This acts as our 'backend' validator without exposing the answers directly on the client if we didn't want to.
-// We are hardcoding the logic here as per the "no real node js backend / db" requirement.
-
 const answerKey: Record<number, string> = {
   1: 'String',
   2: 'Yes',

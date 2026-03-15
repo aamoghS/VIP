@@ -21,7 +21,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="grid-3" style={{ marginTop: "4rem" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
         
         <Link href="/toolbox" style={{ textDecoration: "none" }}>
           <motion.div 
@@ -36,7 +36,7 @@ export default function Home() {
               <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>The Toolbox</h2>
               <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Practice your skills with bite-sized, drag-and-drop coding challenges.</p>
             </div>
-            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--primary)", fontWeight: "bold" }}>
+            <div className="mt-auto flex items-center gap-2 text-[var(--primary)] font-bold">
               Enter Toolbox <ArrowRight size={18} />
             </div>
           </motion.div>
@@ -55,7 +55,7 @@ export default function Home() {
               <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>The Sprint</h2>
               <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Team up and solve the City Reservoir crisis together.</p>
             </div>
-            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--secondary)", fontWeight: "bold" }}>
+            <div className="mt-auto flex items-center gap-2 text-[var(--secondary)] font-bold">
               Join Mission <ArrowRight size={18} />
             </div>
           </motion.div>
@@ -74,7 +74,7 @@ export default function Home() {
               <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>The Room</h2>
               <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Your personal trophy space. Show off what you've earned.</p>
             </div>
-            <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--accent)", fontWeight: "bold" }}>
+            <div className="mt-auto flex items-center gap-2 text-[var(--accent)] font-bold">
               View Room <ArrowRight size={18} />
             </div>
           </motion.div>

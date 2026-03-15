@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// Simulation of an in-memory datastore for team states
+
 type TeamState = {
   sprint1Completed: boolean;
   sprint2Completed: boolean;
