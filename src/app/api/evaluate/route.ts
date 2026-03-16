@@ -1,15 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const answerKey: Record<number, string> = {
-  1: 'String',
-  2: 'Yes',
-  3: 'for',
-  4: 'Right Angle',
-  5: 'Square',
-  6: 'True',
-  7: 'Crystal',
-  8: 'Yes'
-};
+import { questionBank } from '@/data/questions';
 
 export async function POST(request: Request) {
   try {
@@ -20,11 +10,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing questionId or studentAnswer' }, { status: 400 });
     }
 
-    const correctAnswer = answerKey[questionId];
+    const questionRecord = questionBank.find(q => q.id === questionId);
 
-    if (!correctAnswer) {
+    if (!questionRecord) {
       return NextResponse.json({ error: 'Question ID not found in answer key' }, { status: 404 });
     }
+
+    const correctAnswer = questionRecord.currentAnswer;
 
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
 
