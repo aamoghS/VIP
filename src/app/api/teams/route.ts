@@ -108,8 +108,8 @@ export async function POST(request: Request) {
     }
 
     if (!activeSessions[sessionId]) {
-       const randomMission = missions[Math.floor(Math.random() * missions.length)];
-       activeSessions[sessionId] = { missionId: randomMission.id, GroupA: defaultSprint(), GroupB: defaultSprint() };
+      const randomMission = missions[Math.floor(Math.random() * missions.length)];
+      activeSessions[sessionId] = { missionId: randomMission.id, GroupA: defaultSprint(), GroupB: defaultSprint() };
     }
 
     const session = activeSessions[sessionId];

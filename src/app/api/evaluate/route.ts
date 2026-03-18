@@ -17,13 +17,13 @@ export async function POST(request: Request) {
     }
 
     const correctAnswer = questionRecord.currentAnswer;
-
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
 
     return NextResponse.json({
       questionId,
       isCorrect,
       correctAnswer: isCorrect ? undefined : correctAnswer,
+      reasoning: questionRecord.reasoning,
       message: isCorrect ? 'Correct!' : 'Incorrect, try again.'
     });
 
