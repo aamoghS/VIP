@@ -53,7 +53,7 @@ export default function Navigation() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
           <div style={{ width: '100%', height: '4px', background: 'var(--glass-border)', borderRadius: '2px', overflow: 'hidden' }}>
-            <div style={{ width: '35%', height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))', borderRadius: '2px' }} />
+            <div style={{ width: '35%', height: '100%', background: 'linear-gradient(90deg, var(--accent-indigo), var(--accent-blue))', borderRadius: '2px' }} />
           </div>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>35%</span>
         </div>
