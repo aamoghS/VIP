@@ -69,11 +69,11 @@ export default function RoomPage() {
                 width: '50px',
                 height: '50px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--accent-purple), var(--accent-blue))',
+                background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px var(--accent-purple-glow)'
+                boxShadow: '0 0 20px var(--accent-indigo-glow)'
               }}>
                 <Crown size={24} color="white" />
               </div>
@@ -96,7 +96,7 @@ export default function RoomPage() {
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
                   transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))' }}
+                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-indigo), var(--accent-blue))' }}
                 />
               </div>
             </div>
@@ -116,8 +116,8 @@ export default function RoomPage() {
 
       {/* Stats Row */}
       <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
-        <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
-          <Trophy size={16} color="var(--accent-purple)" />
+        <div className="badge-premium" style={{ background: 'var(--accent-indigo-dim)' }}>
+          <Trophy size={16} color="var(--accent-indigo)" />
           <span>{unlockedCount} / {totalTrophies} Achievements</span>
         </div>
         <div className="badge-premium" style={{ background: 'var(--accent-blue-dim)' }}>
@@ -217,7 +217,7 @@ export default function RoomPage() {
       {/* Recent Activity / Progress */}
       <motion.div variants={itemVariants}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <Sparkles size={24} color="var(--accent-purple)" />
+          <Sparkles size={24} color="var(--accent-indigo)" />
           <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Progress Overview</h2>
         </div>
 
@@ -272,7 +272,7 @@ export default function RoomPage() {
                     gap: '0.75rem',
                     padding: '0.5rem',
                     borderRadius: 'var(--radius-sm)',
-                    background: milestone.achieved ? 'var(--accent-purple-dim)' : 'rgba(0,0,0,0.2)',
+                    background: milestone.achieved ? 'var(--accent-indigo-dim)' : 'rgba(0,0,0,0.2)',
                     opacity: milestone.achieved ? 1 : 0.5
                   }}
                 >

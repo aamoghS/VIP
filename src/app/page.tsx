@@ -49,7 +49,7 @@ export default function Home() {
             <div className="xp-display">
               <div className="flex-center" style={{ gap: '1rem' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>Level</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent-indigo)', marginBottom: '0.25rem' }}>Level</div>
                   <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>{level}</div>
                 </div>
                 <div style={{ width: '1px', height: '40px', background: 'var(--glass-border)' }} />
@@ -68,7 +68,7 @@ export default function Home() {
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
-                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))' }}
+                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-indigo), var(--accent-blue))' }}
                   />
                 </div>
               </div>
@@ -78,8 +78,8 @@ export default function Home() {
 
         {/* Stats Row */}
         <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '3rem' }}>
-          <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
-            <Star size={16} color="var(--accent-purple)" />
+          <div className="badge-premium" style={{ background: 'var(--accent-indigo-dim)' }}>
+            <Star size={16} color="var(--accent-indigo)" />
             <span>{unlockedItems.length} Achievements</span>
           </div>
           <div className="badge-premium" style={{ background: 'var(--accent-blue-dim)' }}>
@@ -98,13 +98,13 @@ export default function Home() {
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
               <motion.div
                 className="hero-card"
-                data-variant="purple"
+                data-variant="indigo"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '320px' }}
               >
                 <div className="hero-card-icon">
-                  <Wrench size={32} color="var(--accent-purple)" />
+                  <Wrench size={32} color="var(--accent-indigo)" />
                 </div>
                 <h3>The Toolbox</h3>
                 <p>Practice your skills with bite-sized, interactive coding challenges. Master variables, logic, and loops.</p>

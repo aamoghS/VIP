@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import {
@@ -43,7 +44,19 @@ type MissionData = {
   reward: { id: string; name: string; icon: string };
 };
 
+type TeamApiResponse = {
+  state: SessionState;
+  mission: MissionData;
+};
+
+async function fetchSessionState(sessionId: string): Promise<TeamApiResponse> {
+  const res = await fetch(`/api/teams?sessionId=${sessionId}`);
+  if (!res.ok) throw new Error("Failed to fetch session");
+  return res.json();
+}
+
 export default function SprintPage() {
+  const queryClient = useQueryClient();
   const { addXp, unlockItem } = useProgress();
 
   const [sessionCodeInput, setSessionCodeInput] = useState("");
@@ -51,38 +64,36 @@ export default function SprintPage() {
   const [roomMode, setRoomMode] = useState<"choose" | "join">("choose");
   const [team, setTeam] = useState<"GroupA" | "GroupB" | null>(null);
 
-  const [sessionState, setSessionState] = useState<SessionState | null>(null);
-  const [mission, setMission] = useState<MissionData | null>(null);
-
   const [var1, setVar1] = useState("");
   const [var2, setVar2] = useState("");
   const [temp, setTemp] = useState("");
 
   const [rewardClaimed, setRewardClaimed] = useState(false);
 
-  // Polling for live sync
-  useEffect(() => {
-    if (!sessionCode) return;
+  const { data: sessionData, isLoading: isLoadingSession } = useQuery({
+    queryKey: ["session", sessionCode],
+    queryFn: () => fetchSessionState(sessionCode!),
+    enabled: !!sessionCode,
+    refetchInterval: 2000,
+  });
 
-    const fetchState = async () => {
-      try {
-        const res = await fetch(`/api/teams?sessionId=${sessionCode}`);
-        const data = await res.json();
-        if (data.state) {
-          setSessionState(data.state);
-        }
-        if (data.mission) {
-          setMission(data.mission);
-        }
-      } catch (e) {
-        console.error("Failed to fetch session state", e);
-      }
-    };
+  const sessionState = sessionData?.state || null;
+  const mission = sessionData?.mission || null;
 
-    fetchState();
-    const interval = setInterval(fetchState, 2000);
-    return () => clearInterval(interval);
-  }, [sessionCode]);
+  const submitSprintMutation = useMutation({
+    mutationFn: async ({ sessionId, teamId, action, payload }: { sessionId: string; teamId: string; action: string; payload: unknown }) => {
+      const res = await fetch("/api/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, teamId, action, payload })
+      });
+      if (!res.ok) throw new Error("Failed to submit");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["session", sessionCode] });
+    },
+  });
 
   const handleCreateRoom = () => {
     const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -95,23 +106,20 @@ export default function SprintPage() {
     }
   };
 
-  const handleSprint1Submit = async () => {
+  const handleSprint1Submit = () => {
     if (!mission) return;
     if (var1 === mission.groupA.vars[0].target && var2 === mission.groupA.vars[1].target) {
       addXp(200);
-      try {
-        await fetch("/api/teams", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sessionCode, teamId: "GroupA", action: "completeSprint1", payload: { var1, var2 } })
-        });
-      } catch (e) {
-        console.error(e);
-      }
+      submitSprintMutation.mutate({
+        sessionId: sessionCode!,
+        teamId: "GroupA",
+        action: "completeSprint1",
+        payload: { var1, var2 }
+      });
     }
   };
 
-  const handleSprint2Submit = async () => {
+  const handleSprint2Submit = () => {
     if (!mission) return;
     let isCorrect = false;
     const val = parseInt(temp);
@@ -124,15 +132,12 @@ export default function SprintPage() {
 
     if (isCorrect) {
       addXp(300);
-      try {
-        await fetch("/api/teams", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sessionCode, teamId: "GroupB", action: "completeSprint2", payload: null })
-        });
-      } catch (e) {
-        console.error(e);
-      }
+      submitSprintMutation.mutate({
+        sessionId: sessionCode!,
+        teamId: "GroupB",
+        action: "completeSprint2",
+        payload: null
+      });
     }
   };
 
@@ -181,7 +186,7 @@ export default function SprintPage() {
             {roomMode === "choose" ? (
               <>
                 <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                  <Shield size={40} color="var(--accent-purple)" />
+                  <Shield size={40} color="var(--accent-indigo)" />
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '0.75rem' }}>Lobby Access</h2>
                 </div>
 
@@ -277,7 +282,7 @@ export default function SprintPage() {
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         >
-          <Loader2 size={48} color="var(--accent-purple)" />
+          <Loader2 size={48} color="var(--accent-indigo)" />
         </motion.div>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Loading mission data...</p>
       </div>
@@ -319,7 +324,7 @@ export default function SprintPage() {
               cursor: 'pointer',
               textAlign: 'center',
               padding: '2.5rem',
-              borderLeft: '4px solid var(--accent-purple)'
+              borderLeft: '4px solid var(--accent-indigo)'
             }}
             onClick={() => setTeam("GroupA")}
           >
@@ -328,18 +333,18 @@ export default function SprintPage() {
                 width: '80px',
                 height: '80px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--accent-purple-dim), rgba(168, 85, 247, 0.05))',
+                background: 'linear-gradient(135deg, var(--accent-indigo-dim), rgba(168, 85, 247, 0.05))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 1.5rem',
-                boxShadow: '0 0 30px var(--accent-purple-glow)'
+                boxShadow: '0 0 30px var(--accent-indigo-glow)'
               }}
               whileHover={{ scale: 1.1 }}
             >
-              <Users size={36} color="var(--accent-purple)" />
+              <Users size={36} color="var(--accent-indigo)" />
             </motion.div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--accent-purple)', marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--accent-indigo)', marginBottom: '0.5rem' }}>
               Group A
             </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{mission.groupA.role}</p>
@@ -347,10 +352,10 @@ export default function SprintPage() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              color: 'var(--accent-purple)',
+              color: 'var(--accent-indigo)',
               fontWeight: 600,
               padding: '0.75rem 1.5rem',
-              background: 'var(--accent-purple-dim)',
+              background: 'var(--accent-indigo-dim)',
               borderRadius: 'var(--radius-xl)'
             }}>
               Join Team <ArrowRight size={18} />
@@ -424,7 +429,7 @@ export default function SprintPage() {
             <Radio size={14} />
             <span className="session-code" style={{ fontSize: '1.25rem' }}>{sessionCode}</span>
           </div>
-          <div className={`badge-premium ${team === "GroupA" ? "badge-purple" : "badge-blue"}`}>
+          <div className={`badge-premium ${team === "GroupA" ? "badge-indigo" : "badge-blue"}`}>
             <Users size={14} />
             <span style={{ fontWeight: 600 }}>Team {team === "GroupA" ? "A" : "B"}</span>
           </div>
@@ -439,7 +444,7 @@ export default function SprintPage() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           style={{
-            borderLeft: sprintStage === 1 ? '4px solid var(--accent-purple)' : '1px solid var(--glass-border)',
+            borderLeft: sprintStage === 1 ? '4px solid var(--accent-indigo)' : '1px solid var(--glass-border)',
             opacity: team === "GroupA" || sprintStage > 1 ? 1 : 0.5
           }}
         >
@@ -449,7 +454,7 @@ export default function SprintPage() {
                 width: '32px',
                 height: '32px',
                 borderRadius: '50%',
-                background: sprintStage > 1 ? 'var(--accent-emerald)' : (sprintStage === 1 ? 'var(--accent-purple)' : 'var(--bg-elevated)'),
+                background: sprintStage > 1 ? 'var(--accent-emerald)' : (sprintStage === 1 ? 'var(--accent-indigo)' : 'var(--bg-elevated)'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -459,7 +464,7 @@ export default function SprintPage() {
               <h2 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', fontWeight: 600 }}>Sprint 1: Data Collection</h2>
             </div>
             {sprintStage === 1 && team === "GroupA" && (
-              <div className="badge-premium badge-purple" style={{ fontSize: '0.75rem' }}>Active</div>
+              <div className="badge-premium badge-indigo" style={{ fontSize: '0.75rem' }}>Active</div>
             )}
           </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
@@ -468,7 +473,7 @@ export default function SprintPage() {
 
           <div className="code-block">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <span style={{ color: 'var(--accent-purple)', fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[0].type}</span>
+              <span style={{ color: 'var(--accent-indigo)', fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[0].type}</span>
               <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[0].name}</span>
               <span style={{ color: 'var(--text-muted)' }}>=</span>
               <input
@@ -483,7 +488,7 @@ export default function SprintPage() {
               <span style={{ color: 'var(--text-muted)' }}>;</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ color: 'var(--accent-purple)', fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[1].type}</span>
+              <span style={{ color: 'var(--accent-indigo)', fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[1].type}</span>
               <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>{mission.groupA.vars[1].name}</span>
               <span style={{ color: 'var(--text-muted)' }}>=</span>
               <input
@@ -517,7 +522,7 @@ export default function SprintPage() {
               alignItems: 'center',
               gap: '0.75rem',
               color: 'var(--text-muted)',
-              background: 'var(--accent-purple-dim)',
+              background: 'var(--accent-indigo-dim)',
               padding: '1rem 1.5rem',
               borderRadius: 'var(--radius-md)',
               marginTop: '1.5rem'

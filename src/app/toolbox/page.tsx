@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
@@ -14,6 +15,19 @@ type Question = {
   options: string[];
 };
 
+type EvaluationResult = {
+  isCorrect: boolean;
+  message: string;
+  reasoning?: string;
+  correctAnswer?: string;
+};
+
+async function fetchQuestion(): Promise<Question> {
+  const res = await fetch("/api/questions");
+  if (!res.ok) throw new Error("Failed to fetch question");
+  return res.json();
+}
+
 const topicColors: Record<string, { main: string; glow: string; bg: string }> = {
   variables: { main: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', bg: 'rgba(168, 85, 247, 0.15)' },
   logic: { main: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', bg: 'rgba(59, 130, 246, 0.15)' },
@@ -25,9 +39,8 @@ const topicColors: Record<string, { main: string; glow: string; bg: string }> = 
 };
 
 export default function ToolboxPage() {
+  const queryClient = useQueryClient();
   const { addXp, unlockItem } = useProgress();
-  const [question, setQuestion] = useState<Question | null>(null);
-  const [loading, setLoading] = useState(true);
   const [attempts, setAttempts] = useState(0);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -37,43 +50,25 @@ export default function ToolboxPage() {
   const [reasoningText, setReasoningText] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
+  const { data: question, isLoading, refetch } = useQuery({
+    queryKey: ["question"],
+    queryFn: fetchQuestion,
+    staleTime: Infinity,
+  });
+
   const colors = question ? (topicColors[question.topic] || topicColors.variables) : topicColors.variables;
 
-  const fetchQuestion = async () => {
-    setLoading(true);
-    setEvaluated(false);
-    setSelectedAnswer(null);
-    setIsCorrect(false);
-    setAttempts(0);
-    setReasoningText("");
-    setShowConfetti(false);
-    try {
-      const res = await fetch("/api/questions");
-      const data = await res.json();
-      setQuestion(data);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchQuestion();
-  }, []);
-
-  const handleEvaluate = async (answer: string) => {
-    if (!question) return;
-    setSelectedAnswer(answer);
-    setEvaluated(true);
-
-    try {
+  const evaluateMutation = useMutation({
+    mutationFn: async ({ questionId, answer }: { questionId: number; answer: string }): Promise<EvaluationResult> => {
       const res = await fetch("/api/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: question.id, studentAnswer: answer })
+        body: JSON.stringify({ questionId, studentAnswer: answer })
       });
-      const data = await res.json();
-
+      if (!res.ok) throw new Error("Failed to evaluate");
+      return res.json();
+    },
+    onSuccess: (data) => {
       setIsCorrect(data.isCorrect);
 
       if (data.isCorrect) {
@@ -90,7 +85,7 @@ export default function ToolboxPage() {
           science: { id: "flask", name: "Science Flask", icon: "🧪" },
         };
 
-        const item = itemMap[question.topic];
+        const item = itemMap[question?.topic || ""];
         if (item) unlockItem(item);
       } else {
         const newAttempts = attempts + 1;
@@ -109,11 +104,24 @@ export default function ToolboxPage() {
           }, 2500);
         }
       }
-    } catch (err) {
-      console.error(err);
-      setEvaluated(false);
-      setSelectedAnswer(null);
-    }
+    },
+  });
+
+  const handleNextQuestion = () => {
+    setEvaluated(false);
+    setSelectedAnswer(null);
+    setIsCorrect(false);
+    setAttempts(0);
+    setReasoningText("");
+    setShowConfetti(false);
+    refetch();
+  };
+
+  const handleEvaluate = (answer: string) => {
+    if (!question) return;
+    setSelectedAnswer(answer);
+    setEvaluated(true);
+    evaluateMutation.mutate({ questionId: question.id, answer });
   };
 
   // DND Components
@@ -185,14 +193,14 @@ export default function ToolboxPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', gap: '1.5rem' }}>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         >
-          <Loader2 size={48} color="var(--accent-purple)" />
+          <Loader2 size={48} color="var(--accent-indigo)" />
         </motion.div>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Loading your next challenge...</p>
       </div>
@@ -413,7 +421,7 @@ export default function ToolboxPage() {
                       <motion.span
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        style={{ color: 'var(--accent-purple)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        style={{ color: 'var(--accent-indigo)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                       >
                         <Sparkles size={16} /> +100 XP added to your profile!
                       </motion.span>
@@ -423,7 +431,7 @@ export default function ToolboxPage() {
                   {(isCorrect || attempts >= 2) && (
                     <motion.button
                       className="btn-primary"
-                      onClick={fetchQuestion}
+                      onClick={handleNextQuestion}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       whileHover={{ scale: 1.05 }}
