@@ -64,8 +64,8 @@ export default function RoomPage() {
         <div style={{ display: 'flex', gap: '1rem' }}>
           {/* Level Card */}
           <motion.div
-            style={{ 
-              padding: '1.25rem 1.5rem', 
+            style={{
+              padding: '1.25rem 1.5rem',
               minWidth: '180px',
               background: 'rgba(255,255,255,0.02)',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -75,14 +75,14 @@ export default function RoomPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--accent-purple), var(--accent-blue))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: '0 0 20px var(--accent-purple-glow)'
               }}>
                 <Crown size={20} color="var(--accent-blue)" />
               </div>
@@ -105,7 +105,7 @@ export default function RoomPage() {
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
                   transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ height: '100%', background: 'var(--accent-blue)' }}
+                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))' }}
                 />
               </div>
             </div>
@@ -113,8 +113,8 @@ export default function RoomPage() {
 
           {/* XP Card */}
           <motion.div
-            style={{ 
-              padding: '1.25rem 1.5rem', 
+            style={{
+              padding: '1.25rem 1.5rem',
               minWidth: '140px',
               background: 'rgba(255,255,255,0.02)',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -130,10 +130,10 @@ export default function RoomPage() {
       </motion.div>
 
       {/* Stats Row */}
-      <motion.div variants={itemVariants} style={{ display: 'flex', gap: '0.75rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
-          <Trophy size={14} color="var(--text-secondary)" />
-          <span style={{ color: 'var(--text-secondary)' }}>{unlockedCount} / {totalTrophies} ACHIEVEMENTS</span>
+      <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
+        <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
+          <Trophy size={16} color="var(--accent-purple)" />
+          <span>{unlockedCount} / {totalTrophies} Achievements</span>
         </div>
         <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
           <Star size={14} color="var(--text-secondary)" />
@@ -203,11 +203,11 @@ export default function RoomPage() {
                 </div>
                 {isUnlocked && (
                   <div style={{
-                      position: 'absolute',
-                      top: '0.75rem',
-                      right: '0.75rem',
-                      color: trophy.color
-                    }}
+                    position: 'absolute',
+                    top: '0.75rem',
+                    right: '0.75rem',
+                    color: trophy.color
+                  }}
                   >
                     <CheckCircle size={14} color={trophy.color} />
                   </div>
@@ -221,8 +221,8 @@ export default function RoomPage() {
       {/* Recent Activity / Progress */}
       <motion.div variants={itemVariants}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <Sparkles size={18} color="var(--text-primary)" />
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Overview</h2>
+          <Sparkles size={24} color="var(--accent-purple)" />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Progress Overview</h2>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
@@ -273,12 +273,11 @@ export default function RoomPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '1rem',
-                    padding: '0.75rem 1rem',
-                    border: '1px solid',
-                    borderColor: milestone.achieved ? 'rgba(255,255,255,0.05)' : 'transparent',
-                    background: milestone.achieved ? 'rgba(255,255,255,0.02)' : 'transparent',
-                    opacity: milestone.achieved ? 1 : 0.4
+                    gap: '0.75rem',
+                    padding: '0.5rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: milestone.achieved ? 'var(--accent-purple-dim)' : 'rgba(0,0,0,0.2)',
+                    opacity: milestone.achieved ? 1 : 0.5
                   }}
                 >
                   <span style={{ fontSize: '1rem' }}>{milestone.icon}</span>

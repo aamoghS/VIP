@@ -48,63 +48,41 @@ export default function Home() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            {/* Level Card */}
-            <div style={{ 
-                padding: '1.25rem 1.75rem', 
-                minWidth: '160px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex', flexDirection: 'column',
-              }}
-            >
-              <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '0.25rem', fontFamily: "'JetBrains Mono', monospace" }}>
-                Current Level
-              </div>
-              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-blue)', fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>
-                {level}
-              </div>
-            </div>
-
-            {/* XP Card */}
-            <div style={{ 
-                padding: '1.25rem 1.75rem', 
-                minWidth: '200px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 'var(--radius-md)'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
-                   TOTAL XP
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            {/* Level Badge */}
+            <div className="xp-display">
+              <div className="flex-center" style={{ gap: '1rem' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent-purple)', marginBottom: '0.25rem' }}>Level</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>{level}</div>
                 </div>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace" }}>
                   {xp}
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.35rem', fontFamily: "'JetBrains Mono', monospace" }}>
-                <span>XP to next:</span>
-                <span>{nextLevelXp - xp}</span>
-              </div>
-              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ height: '100%', background: 'var(--accent-blue)' }}
-                />
+              <div style={{ marginTop: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+                  <span>Current</span>
+                  <span>Next: {nextLevelXp}</span>
+                </div>
+                <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.3)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
 
         {/* Stats Row */}
-        <motion.div variants={itemVariants} style={{ display: 'flex', gap: '0.75rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-          <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
-            <Star size={14} color="var(--text-secondary)" />
-            <span style={{ color: 'var(--text-secondary)' }}>{unlockedItems.length} ACHIEVEMENTS</span>
+        <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '3rem' }}>
+          <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
+            <Star size={16} color="var(--accent-purple)" />
+            <span>{unlockedItems.length} Achievements</span>
           </div>
           <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
             <Code2 size={14} color="var(--text-secondary)" />
@@ -121,21 +99,14 @@ export default function Home() {
           <motion.div variants={itemVariants}>
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
               <motion.div
-                whileHover={{ y: -4, borderColor: 'var(--accent-indigo)' }}
-                style={{ 
-                  height: '100%', display: 'flex', flexDirection: 'column',
-                  padding: '2rem', background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',
-                  transition: 'all 0.2s ease', cursor: 'pointer'
-                }}
+                className="hero-card"
+                data-variant="purple"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '320px' }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '0.75rem', borderRadius: '8px' }}>
-                    <Wrench size={24} color="var(--accent-indigo)" />
-                  </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>
-                    The Toolbox
-                  </h3>
+                <div className="hero-card-icon">
+                  <Wrench size={32} color="var(--accent-purple)" />
                 </div>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, flex: 1, marginBottom: '2rem' }}>
                   Practice your skills with bite-sized, interactive coding challenges. Master concepts like variables, logic, and loops.
@@ -151,7 +122,7 @@ export default function Home() {
             <Link href="/sprint" style={{ textDecoration: 'none' }}>
               <motion.div
                 whileHover={{ y: -4, borderColor: 'var(--accent-blue)' }}
-                style={{ 
+                style={{
                   height: '100%', display: 'flex', flexDirection: 'column',
                   padding: '2rem', background: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',
@@ -180,7 +151,7 @@ export default function Home() {
             <Link href="/room" style={{ textDecoration: 'none' }}>
               <motion.div
                 whileHover={{ y: -4, borderColor: 'var(--accent-amber)' }}
-                style={{ 
+                style={{
                   height: '100%', display: 'flex', flexDirection: 'column',
                   padding: '2rem', background: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',

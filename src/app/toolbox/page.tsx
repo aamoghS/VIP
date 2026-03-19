@@ -224,10 +224,10 @@ export default function ToolboxPage() {
           </p>
         </div>
         <div className="status-chip live" style={{
-            background: colors.bg,
-            borderColor: colors.main,
-            color: colors.main,
-          }}
+          background: colors.bg,
+          borderColor: colors.main,
+          color: colors.main,
+        }}
         >
           <Sparkles size={14} style={{ marginRight: '0.25rem' }} />
           <span>{question.topic}</span>
@@ -291,7 +291,7 @@ export default function ToolboxPage() {
           <div className="terminal-dots"><span /><span /><span /></div>
           <span>challenge.sh — {question.id}</span>
         </div>
-        
+
         <div style={{ padding: '2rem 2.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
             <Zap size={18} color={colors.main} />
@@ -361,8 +361,8 @@ export default function ToolboxPage() {
                       : 'rgba(255,255,255,0.02)',
                     border: '1px solid',
                     borderColor: evaluated && selectedAnswer === opt
-                        ? isCorrect ? '#10b981' : '#ef4444'
-                        : 'rgba(255,255,255,0.08)',
+                      ? isCorrect ? '#10b981' : '#ef4444'
+                      : 'rgba(255,255,255,0.08)',
                     borderRadius: 'var(--radius-sm)',
                     color: '#fff',
                     fontSize: '1rem',
@@ -375,10 +375,10 @@ export default function ToolboxPage() {
                     gap: '1rem'
                   }}
                 >
-                  <div style={{ 
+                  <div style={{
                     color: selectedAnswer === opt ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--text-muted)',
                     fontSize: '0.85rem',
-                    fontWeight: 700 
+                    fontWeight: 700
                   }}>
                     [{String.fromCharCode(65 + index)}]
                   </div>
@@ -388,53 +388,71 @@ export default function ToolboxPage() {
             </div>
           )}
 
-        {/* Result Feedback */}
-        <AnimatePresence>
-          {evaluated && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div style={{
-                marginTop: '1.5rem',
-                padding: '1.25rem 1.5rem',
-                background: isCorrect ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                borderLeft: `4px solid ${isCorrect ? '#10b981' : '#ef4444'}`,
-                display: 'flex', alignItems: 'flex-start', gap: '1rem'
-              }}>
-                <div style={{ flex: 1 }}>
-                  <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: '1rem', fontFamily: "'JetBrains Mono', monospace", marginBottom: '0.25rem' }}>
-                     &gt; {isCorrect ? "COMPILATION_SUCCESS" : "ERR_INVALID_LOGIC"}
-                  </strong>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: isCorrect ? '0.75rem' : '0' }}>
-                    {evalMessage} {reasoningText}
-                  </p>
-                  {isCorrect && (
-                    <div style={{ color: 'var(--accent-emerald)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Sparkles size={14} /> +100 XP REWARDED
+          {/* Result Feedback */}
+          <AnimatePresence>
+            {evaluated && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div style={{
+                  padding: '1.5rem',
+                  background: isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: `1px solid ${isCorrect ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      {isCorrect ? (
+                        <CheckCircle size={36} color="#10b981" />
+                      ) : (
+                        <XCircle size={36} color="#ef4444" />
+                      )}
+                    </motion.div>
+                    <div style={{ flex: 1 }}>
+                      <strong style={{ display: 'block', color: '#fff', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
+                        {evalMessage}
+                      </strong>
+                      {reasoningText && (
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: isCorrect ? '0.5rem' : '0' }}>
+                          {reasoningText}
+                        </p>
+                      )}
+                      {isCorrect && (
+                        <motion.span
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          style={{ color: 'var(--accent-purple)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                          <Sparkles size={16} /> +100 XP added to your profile!
+                        </motion.span>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {(isCorrect || attempts >= 2) && (
-                  <button
-                    onClick={handleNextQuestion}
-                    style={{ 
-                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'var(--text-primary)', padding: '0.5rem 1rem', borderRadius: '4px',
-                      cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem', alignSelf: 'center'
-                    }}
-                  >
-                    NEXT_TASK <ArrowRight size={14} />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    {(isCorrect || attempts >= 2) && (
+                      <motion.button
+                        className="btn-primary"
+                        onClick={fetchQuestion}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}
+                      >
+                        Next <ArrowRight size={18} />
+                      </motion.button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>
