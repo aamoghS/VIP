@@ -139,13 +139,25 @@ export default function SprintPage() {
   const mission = roomData ? missions.find((m) => m.id === roomData.missionId) : null;
 
   const handleCreateRoom = async () => {
+    // Must be signed in to create a room
+    let currentUser = user;
+    if (!currentUser) {
+      await signInWithGoogle();
+      // After sign-in, user state updates async via onAuthStateChanged.
+      // We need to grab it from auth directly.
+      const { getAuth } = await import("firebase/auth");
+      const authInstance = getAuth();
+      currentUser = authInstance.currentUser;
+      if (!currentUser) return; // sign-in was cancelled
+    }
+
     const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
     const randomMission = missions[Math.floor(Math.random() * missions.length)];
 
     const newRoom: RoomData = {
       missionId: randomMission.id,
-      createdBy: user!.uid,
-      createdByName: user!.displayName || "Unknown",
+      createdBy: currentUser.uid,
+      createdByName: currentUser.displayName || "Unknown",
       createdAt: Date.now(),
       GroupA: { sprint1Completed: false, sprint2Completed: false },
       GroupB: { sprint1Completed: false, sprint2Completed: false },
@@ -212,75 +224,7 @@ export default function SprintPage() {
     if (roomData.GroupA.sprint1Completed && roomData.GroupB.sprint2Completed) sprintStage = 3;
   }
 
-  // ─── Auth Loading State ───
-  if (authLoading) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "50vh", gap: "1.5rem" }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-          <Loader2 size={48} color="var(--accent-indigo)" />
-        </motion.div>
-        <p style={{ color: "var(--text-muted)", fontSize: "1.1rem" }}>Loading...</p>
-      </div>
-    );
-  }
-
-  // ─── 1. Login Gate ───
-  if (!user) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "70vh" }}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginBottom: "1rem" }}>
-            <Radio size={28} color="var(--accent-blue)" className="animate-pulse-glow" />
-            <span style={{ color: "var(--accent-blue)", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 600 }}>Live Session</span>
-          </div>
-          <h1 className="page-title" style={{ fontSize: "3rem" }}>Mission Control</h1>
-          <p className="page-subtitle" style={{ maxWidth: "500px", margin: "0.5rem auto 0" }}>
-            Sign in with Google to create or join a live coding mission with your teammates.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="glass-card"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          style={{ padding: "3rem", width: "100%", maxWidth: "420px", textAlign: "center" }}
-        >
-          <div style={{
-            width: "80px", height: "80px", borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--accent-indigo-dim), rgba(59, 130, 246, 0.1))",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 1.5rem",
-            boxShadow: "0 0 30px var(--accent-indigo-glow)"
-          }}>
-            <LogIn size={36} color="var(--accent-indigo)" />
-          </div>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "0.5rem" }}>Sign In Required</h2>
-          <p style={{ color: "var(--text-muted)", marginBottom: "2rem", lineHeight: 1.6 }}>
-            Authentication ensures your sprint progress is tracked and your team can find you.
-          </p>
-          <motion.button
-            className="btn-primary"
-            onClick={signInWithGoogle}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            style={{
-              width: "100%", padding: "1.25rem", fontSize: "1.1rem",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem"
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 48 48">
-              <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.7 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.2-2.7-.4-3.9z" />
-              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.5 18.8 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.7 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.8 13.4-4.7l-6.2-5.2C29.2 35.9 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8h-6.6C9.5 35.3 16.1 44 24 44z" />
-              <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.7 39.4 44 34 44 24c0-1.3-.2-2.7-.4-3.9z" />
-            </svg>
-            Sign in with Google
-          </motion.button>
-        </motion.div>
-      </div>
-    );
-  }
+  // ─── No login gate — go straight to session setup ───
 
   // ─── 2. Session Setup Screen (authenticated) ───
   if (!sessionCode) {
@@ -293,38 +237,40 @@ export default function SprintPage() {
           </div>
           <h1 className="page-title" style={{ fontSize: "3rem" }}>Mission Control</h1>
           <p className="page-subtitle text-xl max-w-2xl mx-auto">
-            Create a secure room or join your teammates in a live coding mission.
+            Create a room or join your teammates with just a code.
           </p>
         </motion.div>
 
-        {/* User Badge */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}
-        >
-          <div className="badge-premium" style={{ background: "var(--accent-indigo-dim)", padding: "0.5rem 1rem" }}>
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="" style={{ width: 20, height: 20, borderRadius: "50%" }} />
-            ) : (
-              <User size={16} />
-            )}
-            <span style={{ fontWeight: 600 }}>{user.displayName || user.email}</span>
-          </div>
-          <motion.button
-            onClick={logout}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)",
-              borderRadius: "var(--radius-md)", padding: "0.5rem 0.75rem",
-              color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.375rem",
-              fontSize: "0.8rem"
-            }}
+        {/* User Badge — only shown when logged in */}
+        {user && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}
           >
-            <LogOut size={14} /> Sign Out
-          </motion.button>
-        </motion.div>
+            <div className="badge-premium" style={{ background: "var(--accent-indigo-dim)", padding: "0.5rem 1rem" }}>
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" style={{ width: 20, height: 20, borderRadius: "50%" }} />
+              ) : (
+                <User size={16} />
+              )}
+              <span style={{ fontWeight: 600 }}>{user.displayName || user.email}</span>
+            </div>
+            <motion.button
+              onClick={logout}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)",
+                borderRadius: "var(--radius-md)", padding: "0.5rem 0.75rem",
+                color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.375rem",
+                fontSize: "0.8rem"
+              }}
+            >
+              <LogOut size={14} /> Sign Out
+            </motion.button>
+          </motion.div>
+        )}
 
         <motion.div
           className="glass-card"
