@@ -835,6 +835,339 @@ body::after {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* ═══ Sprint-specific styles ═══ */
+
+/* Terminal Chrome — wraps code-entry sections */
+.terminal-chrome {
+  background: #0a0c10;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.terminal-chrome::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.008) 2px,
+    rgba(255,255,255,0.008) 4px
+  );
+  pointer-events: none;
+}
+
+.terminal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.terminal-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.terminal-dots span:nth-child(1) { background: #ef4444; }
+.terminal-dots span:nth-child(2) { background: #f59e0b; }
+.terminal-dots span:nth-child(3) { background: #22c55e; }
+
+.terminal-body {
+  padding: 1.25rem 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 2;
+  color: var(--text-primary);
+}
+
+/* Timeline connector for sprint stages */
+.sprint-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sprint-timeline::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--glass-border);
+  z-index: 0;
+}
+
+.timeline-node {
+  position: relative;
+  display: flex;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.timeline-node:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-marker {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  z-index: 1;
+  border: 2px solid var(--glass-border);
+  background: var(--bg-primary);
+  transition: all 0.4s ease;
+}
+
+.timeline-marker.active {
+  border-color: var(--accent-blue);
+  background: var(--accent-blue-dim);
+  box-shadow: 0 0 20px var(--accent-blue-glow);
+}
+
+.timeline-marker.completed {
+  border-color: var(--accent-emerald);
+  background: var(--accent-emerald);
+  color: white;
+}
+
+.timeline-marker.locked {
+  opacity: 0.4;
+}
+
+.timeline-content {
+  flex: 1;
+  padding-top: 0.5rem;
+}
+
+/* Status dot — replaces spinning loaders */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+.status-dot.live { background: var(--accent-emerald); }
+.status-dot.waiting { background: var(--accent-amber); }
+.status-dot.idle { background: var(--text-muted); animation: none; }
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Blinking cursor for room code input */
+.code-input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.code-input-wrapper::after {
+  content: '';
+  width: 2px;
+  height: 2.2em;
+  background: var(--accent-blue);
+  animation: blinkCursor 1s steps(1) infinite;
+  margin-left: -2px;
+  border-radius: 1px;
+}
+
+.code-input-wrapper:focus-within::after {
+  display: block;
+}
+
+.code-input-wrapper input:not(:placeholder-shown) + .code-input-wrapper::after,
+.code-input-wrapper input[value]:not([value=''])::after {
+  display: none;
+}
+
+@keyframes blinkCursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Chunky room code input */
+.room-code-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.75rem;
+  text-align: center;
+  width: 100%;
+  padding: 1rem 0;
+  caret-color: var(--accent-blue);
+}
+
+.room-code-input:focus {
+  outline: none;
+}
+
+.room-code-input::placeholder {
+  color: rgba(255,255,255,0.12);
+  letter-spacing: 0.75rem;
+}
+
+/* Sprint stage card */
+.sprint-stage-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.sprint-stage-card.active {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* Status bar chip */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.status-chip.live {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-chip.waiting {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.status-chip.done {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Lobby split layout */
+.lobby-split {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  min-height: 70vh;
+}
+
+.lobby-hero {
+  flex: 1;
+  max-width: 420px;
+}
+
+.lobby-action {
+  flex: 1;
+  max-width: 400px;
+}
+
+/* Team select cards */
+.team-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.team-card:hover {
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+
+.team-card:hover::before {
+  opacity: 1;
+}
+
+.team-card[data-team="a"]::before {
+  background: radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.08), transparent 60%);
+}
+
+.team-card[data-team="b"]::before {
+  background: radial-gradient(ellipse at top left, rgba(59, 130, 246, 0.08), transparent 60%);
+}
+
+.team-card[data-team="a"]:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.team-card[data-team="b"]:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Victory section */
+.victory-section {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.06), transparent 70%);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+
+.victory-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-amber), transparent);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
