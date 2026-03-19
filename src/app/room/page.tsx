@@ -51,52 +51,61 @@ export default function RoomPage() {
       variants={containerVariants}
     >
       {/* Header */}
-      <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '2.5rem' }}>
-        <div className="page-header">
-          <h1 className="page-title">Your Room</h1>
-          <p className="page-subtitle">Your personal trophy space and achievements.</p>
+      <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '2.5rem', alignItems: 'flex-end' }}>
+        <div>
+          <h1 style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem" }}>
+            Your Room
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
+            Dashboard & Achievements.
+          </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '1rem' }}>
           {/* Level Card */}
           <motion.div
-            className="glass-card"
-            style={{ padding: '1.25rem 1.75rem', minWidth: '180px' }}
-            whileHover={{ scale: 1.02 }}
+            style={{ 
+              padding: '1.25rem 1.5rem', 
+              minWidth: '180px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 'var(--radius-md)'
+            }}
+            whileHover={{ y: -2 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px var(--accent-indigo-glow)'
               }}>
-                <Crown size={24} color="white" />
+                <Crown size={20} color="var(--accent-blue)" />
               </div>
               <div>
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '0.125rem' }}>
+                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '0.125rem', fontFamily: "'JetBrains Mono', monospace" }}>
                   Level
                 </div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace" }}>
                   {level}
                 </div>
               </div>
             </div>
-            <div style={{ marginTop: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+            <div style={{ marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.35rem', fontFamily: "'JetBrains Mono', monospace" }}>
                 <span>{currentLevelXp} XP</span>
                 <span>{xpToNextLevel} XP</span>
               </div>
-              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.3)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '0', overflow: 'hidden' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
                   transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-indigo), var(--accent-blue))' }}
+                  style={{ height: '100%', background: 'var(--accent-blue)' }}
                 />
               </div>
             </div>
@@ -104,43 +113,49 @@ export default function RoomPage() {
 
           {/* XP Card */}
           <motion.div
-            className="glass-card"
-            style={{ padding: '1.25rem 1.75rem', minWidth: '140px' }}
-            whileHover={{ scale: 1.02 }}
+            style={{ 
+              padding: '1.25rem 1.5rem', 
+              minWidth: '140px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 'var(--radius-md)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'center'
+            }}
+            whileHover={{ y: -2 }}
           >
-            <div className="xp-label" style={{ marginBottom: '0.25rem' }}>Total XP</div>
-            <div className="xp-value" style={{ fontSize: '1.75rem' }}>{xp}</div>
+            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '0.25rem', fontFamily: "'JetBrains Mono', monospace" }}>TOTAL XP</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace" }}>{xp}</div>
           </motion.div>
         </div>
       </motion.div>
 
       {/* Stats Row */}
-      <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
-        <div className="badge-premium" style={{ background: 'var(--accent-indigo-dim)' }}>
-          <Trophy size={16} color="var(--accent-indigo)" />
-          <span>{unlockedCount} / {totalTrophies} Achievements</span>
+      <motion.div variants={itemVariants} style={{ display: 'flex', gap: '0.75rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
+        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+          <Trophy size={14} color="var(--text-secondary)" />
+          <span style={{ color: 'var(--text-secondary)' }}>{unlockedCount} / {totalTrophies} ACHIEVEMENTS</span>
         </div>
-        <div className="badge-premium" style={{ background: 'var(--accent-blue-dim)' }}>
-          <Star size={16} color="var(--accent-blue)" />
-          <span>Level {level} {level >= 5 ? '- Expert' : level >= 3 ? '- Advanced' : '- Novice'}</span>
+        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+          <Star size={14} color="var(--text-secondary)" />
+          <span style={{ color: 'var(--text-secondary)' }}>ROLE: {level >= 5 ? 'EXPERT' : level >= 3 ? 'ADVANCED' : 'NOVICE'}</span>
         </div>
-        <div className="badge-premium" style={{ background: 'var(--accent-amber-dim)' }}>
-          <Gem size={16} color="var(--accent-amber)" />
-          <span>Rank {level <= 2 ? 'Bronze' : level <= 4 ? 'Silver' : level <= 6 ? 'Gold' : 'Platinum'}</span>
+        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+          <Gem size={14} color="var(--text-secondary)" />
+          <span style={{ color: 'var(--text-secondary)' }}>TIER: {level <= 2 ? 'BRONZE' : level <= 4 ? 'SILVER' : level <= 6 ? 'GOLD' : 'PLATINUM'}</span>
         </div>
       </motion.div>
 
       {/* Trophies Section */}
-      <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem' }}>
+      <motion.div variants={itemVariants} style={{ marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <Trophy size={24} color="var(--accent-amber)" />
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trophy Wall</h2>
+          <Trophy size={18} color="var(--text-primary)" />
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Trophy Wall</h2>
         </div>
 
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          gap: '1.25rem'
+          gap: '1rem'
         }}>
           {allTrophies.map((trophy, index) => {
             const isUnlocked = unlockedItems.some(item => item.id === trophy.id);
@@ -150,63 +165,52 @@ export default function RoomPage() {
               <motion.div
                 key={trophy.id}
                 variants={itemVariants}
-                className={`trophy-card ${isUnlocked ? 'unlocked' : 'locked'}`}
-                whileHover={isUnlocked ? { scale: 1.03, y: -5 } : {}}
+                whileHover={isUnlocked ? { y: -2 } : {}}
                 style={{
-                  borderColor: isUnlocked ? trophy.color : 'var(--glass-border)',
-                  minHeight: '200px'
+                  background: isUnlocked ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.2)',
+                  border: isUnlocked ? `1px solid ${trophy.color}` : '1px dashed rgba(255,255,255,0.1)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '1.5rem',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative',
+                  opacity: isUnlocked ? 1 : 0.4
                 }}
               >
                 <div
-                  className="trophy-icon"
                   style={{
-                    fontSize: '3.5rem',
-                    filter: isUnlocked ? `drop-shadow(0 0 15px ${trophy.color}80)` : 'grayscale(1) brightness(0.5)'
+                    fontSize: '3rem',
+                    marginBottom: '1rem',
+                    filter: isUnlocked ? 'none' : 'grayscale(1)'
                   }}
                 >
                   {isUnlocked ? (unlockedItem?.icon || trophy.icon) : trophy.icon}
                 </div>
-                <div style={{
-                  textAlign: 'center',
-                  position: 'relative',
-                  zIndex: 1
-                }}>
+                <div style={{ textAlign: 'center' }}>
                   <h3 style={{
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
                     color: isUnlocked ? 'var(--text-primary)' : 'var(--text-muted)',
-                    marginBottom: '0.25rem'
+                    marginBottom: '0.25rem',
+                    fontFamily: "'JetBrains Mono', monospace"
                   }}>
                     {isUnlocked ? (unlockedItem?.name || trophy.name) : trophy.name}
                   </h3>
                   <p style={{
                     fontSize: '0.8rem',
-                    color: isUnlocked ? 'var(--text-secondary)' : 'var(--text-muted)',
-                    opacity: isUnlocked ? 1 : 0.6
+                    color: 'var(--text-muted)',
                   }}>
-                    {isUnlocked ? 'Unlocked!' : trophy.desc}
+                    {isUnlocked ? 'UNLOCKED' : trophy.desc}
                   </p>
                 </div>
                 {isUnlocked && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.3, type: "spring" }}
-                    style={{
+                  <div style={{
                       position: 'absolute',
                       top: '0.75rem',
                       right: '0.75rem',
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      background: trophy.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
+                      color: trophy.color
                     }}
                   >
-                    <CheckCircle size={14} color="white" />
-                  </motion.div>
+                    <CheckCircle size={14} color={trophy.color} />
+                  </div>
                 )}
               </motion.div>
             );
@@ -217,29 +221,29 @@ export default function RoomPage() {
       {/* Recent Activity / Progress */}
       <motion.div variants={itemVariants}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <Sparkles size={24} color="var(--accent-indigo)" />
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Progress Overview</h2>
+          <Sparkles size={18} color="var(--text-primary)" />
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Overview</h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
           {/* Skills Progress */}
-          <motion.div className="glass-card" whileHover={{ y: -3 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Skills Progress</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Skills Progress</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {[
                 { name: 'Variables', icon: '🔧', progress: 80, color: '#a855f7' },
                 { name: 'Logic', icon: '🧠', progress: 65, color: '#3b82f6' },
                 { name: 'Loops', icon: '♾️', progress: 45, color: '#10b981' },
                 { name: 'Math', icon: '📐', progress: 70, color: '#f59e0b' },
               ].map(skill => (
-                <div key={skill.name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.25rem' }}>{skill.icon}</span>
+                <div key={skill.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ fontSize: '1.25rem', width: '24px', textAlign: 'center' }}>{skill.icon}</span>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', fontSize: '0.85rem' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>{skill.name}</span>
-                      <span style={{ color: skill.color, fontWeight: 600 }}>{skill.progress}%</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace" }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>{skill.name.toUpperCase()}</span>
+                      <span style={{ color: skill.color, fontWeight: 700 }}>{skill.progress}%</span>
                     </div>
-                    <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.3)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${skill.progress}%` }}
@@ -251,12 +255,12 @@ export default function RoomPage() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Milestones */}
-          <motion.div className="glass-card" whileHover={{ y: -3 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Milestones</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Milestones</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {[
                 { name: 'First Challenge', icon: '🎯', achieved: true },
                 { name: '10 Questions Solved', icon: '📝', achieved: true },
@@ -269,34 +273,30 @@ export default function RoomPage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.5rem',
-                    borderRadius: 'var(--radius-sm)',
-                    background: milestone.achieved ? 'var(--accent-indigo-dim)' : 'rgba(0,0,0,0.2)',
-                    opacity: milestone.achieved ? 1 : 0.5
+                    gap: '1rem',
+                    padding: '0.75rem 1rem',
+                    border: '1px solid',
+                    borderColor: milestone.achieved ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    background: milestone.achieved ? 'rgba(255,255,255,0.02)' : 'transparent',
+                    opacity: milestone.achieved ? 1 : 0.4
                   }}
                 >
-                  <span style={{ fontSize: '1.25rem' }}>{milestone.icon}</span>
+                  <span style={{ fontSize: '1rem' }}>{milestone.icon}</span>
                   <span style={{
                     flex: 1,
                     color: milestone.achieved ? 'var(--text-primary)' : 'var(--text-muted)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.85rem',
+                    fontFamily: "'JetBrains Mono', monospace"
                   }}>
                     {milestone.name}
                   </span>
                   {milestone.achieved && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring" }}
-                    >
-                      <CheckCircle size={18} color="#10b981" />
-                    </motion.div>
+                    <CheckCircle size={14} color="#10b981" />
                   )}
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
     </motion.div>

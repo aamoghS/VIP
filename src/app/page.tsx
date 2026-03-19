@@ -38,78 +38,110 @@ export default function Home() {
         variants={containerVariants}
       >
         {/* Header Section */}
-        <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '3.5rem' }}>
-          <div className="page-header">
-            <h1 className="page-title">Welcome back</h1>
-            <p className="page-subtitle">Ready to level up your coding skills?</p>
+        <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '3.5rem', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
+          <div>
+            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem", fontFamily: "'JetBrains Mono', monospace" }}>
+              Welcome back
+            </h1>
+            <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
+              SYSTEM_STATUS: <span style={{ color: '#10b981' }}>ONLINE</span>
+            </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            {/* Level Badge */}
-            <div className="xp-display">
-              <div className="flex-center" style={{ gap: '1rem' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent-indigo)', marginBottom: '0.25rem' }}>Level</div>
-                  <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>{level}</div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            {/* Level Card */}
+            <div style={{ 
+                padding: '1.25rem 1.75rem', 
+                minWidth: '160px',
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 'var(--radius-md)',
+                display: 'flex', flexDirection: 'column',
+              }}
+            >
+              <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: '0.25rem', fontFamily: "'JetBrains Mono', monospace" }}>
+                Current Level
+              </div>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-blue)', fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>
+                {level}
+              </div>
+            </div>
+
+            {/* XP Card */}
+            <div style={{ 
+                padding: '1.25rem 1.75rem', 
+                minWidth: '200px',
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 'var(--radius-md)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+                   TOTAL XP
                 </div>
-                <div style={{ width: '1px', height: '40px', background: 'var(--glass-border)' }} />
-                <div style={{ textAlign: 'center' }}>
-                  <div className="xp-label">XP</div>
-                  <div className="xp-value">{xp}</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace" }}>
+                  {xp}
                 </div>
               </div>
-              <div style={{ marginTop: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
-                  <span>Current</span>
-                  <span>Next: {nextLevelXp}</span>
-                </div>
-                <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.3)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                    style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-indigo), var(--accent-blue))' }}
-                  />
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.35rem', fontFamily: "'JetBrains Mono', monospace" }}>
+                <span>XP to next:</span>
+                <span>{nextLevelXp - xp}</span>
+              </div>
+              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  style={{ height: '100%', background: 'var(--accent-blue)' }}
+                />
               </div>
             </div>
           </div>
         </motion.div>
 
         {/* Stats Row */}
-        <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '3rem' }}>
-          <div className="badge-premium" style={{ background: 'var(--accent-indigo-dim)' }}>
-            <Star size={16} color="var(--accent-indigo)" />
-            <span>{unlockedItems.length} Achievements</span>
+        <motion.div variants={itemVariants} style={{ display: 'flex', gap: '0.75rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
+          <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <Star size={14} color="var(--text-secondary)" />
+            <span style={{ color: 'var(--text-secondary)' }}>{unlockedItems.length} ACHIEVEMENTS</span>
           </div>
-          <div className="badge-premium" style={{ background: 'var(--accent-blue-dim)' }}>
-            <Code2 size={16} color="var(--accent-blue)" />
-            <span>42 Questions Solved</span>
+          <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <Code2 size={14} color="var(--text-secondary)" />
+            <span style={{ color: 'var(--text-secondary)' }}>42 QUESTIONS SOLVED</span>
           </div>
-          <div className="badge-premium" style={{ background: 'var(--accent-amber-dim)' }}>
-            <Users size={16} color="var(--accent-amber)" />
-            <span>3 Team Missions</span>
+          <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <Users size={14} color="var(--text-secondary)" />
+            <span style={{ color: 'var(--text-secondary)' }}>3 TEAM MISSIONS</span>
           </div>
         </motion.div>
 
-        {/* Hero Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Core Modules Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           <motion.div variants={itemVariants}>
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
               <motion.div
-                className="hero-card"
-                data-variant="indigo"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '320px' }}
+                whileHover={{ y: -4, borderColor: 'var(--accent-indigo)' }}
+                style={{ 
+                  height: '100%', display: 'flex', flexDirection: 'column',
+                  padding: '2rem', background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',
+                  transition: 'all 0.2s ease', cursor: 'pointer'
+                }}
               >
-                <div className="hero-card-icon">
-                  <Wrench size={32} color="var(--accent-indigo)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '0.75rem', borderRadius: '8px' }}>
+                    <Wrench size={24} color="var(--accent-indigo)" />
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>
+                    The Toolbox
+                  </h3>
                 </div>
-                <h3>The Toolbox</h3>
-                <p>Practice your skills with bite-sized, interactive coding challenges. Master variables, logic, and loops.</p>
-                <div className="hero-card-action">
-                  Start Practicing <ArrowRight size={18} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, flex: 1, marginBottom: '2rem' }}>
+                  Practice your skills with bite-sized, interactive coding challenges. Master concepts like variables, logic, and loops.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-indigo)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+                  START_PRACTICING <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>
@@ -118,19 +150,27 @@ export default function Home() {
           <motion.div variants={itemVariants}>
             <Link href="/sprint" style={{ textDecoration: 'none' }}>
               <motion.div
-                className="hero-card"
-                data-variant="blue"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '320px' }}
+                whileHover={{ y: -4, borderColor: 'var(--accent-blue)' }}
+                style={{ 
+                  height: '100%', display: 'flex', flexDirection: 'column',
+                  padding: '2rem', background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',
+                  transition: 'all 0.2s ease', cursor: 'pointer'
+                }}
               >
-                <div className="hero-card-icon">
-                  <Zap size={32} color="var(--accent-blue)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '0.75rem', borderRadius: '8px' }}>
+                    <Zap size={24} color="var(--accent-blue)" />
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>
+                    The Sprint
+                  </h3>
                 </div>
-                <h3>The Sprint</h3>
-                <p>Team up with classmates to solve real-world coding missions. Coordinate, collaborate, and conquer!</p>
-                <div className="hero-card-action">
-                  Join Mission <ArrowRight size={18} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, flex: 1, marginBottom: '2rem' }}>
+                  Team up to solve real-world coding missions. Coordinate, collaborate, and conquer challenges together!
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+                  JOIN_MISSION <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>
@@ -139,19 +179,27 @@ export default function Home() {
           <motion.div variants={itemVariants}>
             <Link href="/room" style={{ textDecoration: 'none' }}>
               <motion.div
-                className="hero-card"
-                data-variant="amber"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '320px' }}
+                whileHover={{ y: -4, borderColor: 'var(--accent-amber)' }}
+                style={{ 
+                  height: '100%', display: 'flex', flexDirection: 'column',
+                  padding: '2rem', background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)',
+                  transition: 'all 0.2s ease', cursor: 'pointer'
+                }}
               >
-                <div className="hero-card-icon">
-                  <Trophy size={32} color="var(--accent-amber)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.75rem', borderRadius: '8px' }}>
+                    <Trophy size={24} color="var(--accent-amber)" />
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>
+                    The Room
+                  </h3>
                 </div>
-                <h3>The Room</h3>
-                <p>Your personal trophy space. Showcase achievements and track your progress through the ranks.</p>
-                <div className="hero-card-action">
-                  View Collection <ArrowRight size={18} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, flex: 1, marginBottom: '2rem' }}>
+                  Your personal trophy space. Showcase achievements, track progress through ranks, and view stats.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-amber)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+                  VIEW_COLLECTION <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>

@@ -214,23 +214,23 @@ export default function ToolboxPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex-between" style={{ marginBottom: '2.5rem' }}>
-        <div className="page-header">
-          <h1 className="page-title">The Toolbox</h1>
-          <p className="page-subtitle">Sharpen your skills with interactive challenges.</p>
+      <div className="flex-between" style={{ marginBottom: '2.5rem', alignItems: 'flex-end' }}>
+        <div>
+          <h1 style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem" }}>
+            The Toolbox
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
+            Interactive coding challenges.
+          </p>
         </div>
-        <div
-          className="badge-premium"
-          style={{
+        <div className="status-chip live" style={{
             background: colors.bg,
             borderColor: colors.main,
             color: colors.main,
-            padding: '0.75rem 1.25rem',
-            fontSize: '0.9rem'
           }}
         >
-          <Sparkles size={16} />
-          <span style={{ textTransform: 'capitalize' }}>{question.topic}</span>
+          <Sparkles size={14} style={{ marginRight: '0.25rem' }} />
+          <span>{question.topic}</span>
         </div>
       </div>
 
@@ -279,173 +279,163 @@ export default function ToolboxPage() {
         )}
       </AnimatePresence>
 
-      {/* Question Card */}
+      {/* Question Card using Terminal Chrome */}
       <motion.div
-        className="question-card"
-        initial={{ opacity: 0, y: 20 }}
+        className="terminal-chrome"
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
+        style={{ marginBottom: '2rem' }}
       >
-        {/* Card Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            background: colors.bg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: `0 0 20px ${colors.glow}`
-          }}>
-            <Zap size={20} color={colors.main} />
-          </div>
-          <span style={{ color: colors.main, fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Challenge
-          </span>
+        <div className="terminal-titlebar">
+          <div className="terminal-dots"><span /><span /><span /></div>
+          <span>challenge.sh — {question.id}</span>
         </div>
-
-        {/* Question Text */}
-        <h2 style={{
-          marginBottom: '2.5rem',
-          fontSize: '1.4rem',
-          lineHeight: '1.7',
-          color: 'var(--text-primary)',
-          fontWeight: 500
-        }}>
-          {question.question}
-        </h2>
-
-        {/* Answers Section */}
-        {isDragAndDrop ? (
-          <DndContext onDragEnd={handleDragEnd}>
-            <div style={{ marginBottom: '2rem' }}>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>Available options:</p>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                {question.options.map((opt) => (
-                  <DraggableVar key={opt} id={opt} text={opt} />
-                ))}
-              </div>
-            </div>
-
-            <div style={{
-              background: 'rgba(0,0,0,0.3)',
-              padding: '2rem',
-              borderRadius: 'var(--radius-lg)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1.5rem',
-              fontSize: '1.15rem',
-              fontFamily: "'JetBrains Mono', monospace"
-            }}>
-              <DroppableArea />
-              {question.topic === "variables" && (
-                <span style={{ color: colors.main }}>myName = "Sona";</span>
-              )}
-            </div>
-          </DndContext>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            {question.options.map((opt, index) => (
-              <motion.button
-                key={opt}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={evaluated ? {} : { scale: 1.01, y: -2 }}
-                whileTap={evaluated ? {} : { scale: 0.99 }}
-                onClick={() => !evaluated && handleEvaluate(opt)}
-                disabled={evaluated}
-                style={{
-                  padding: '1.25rem 1.5rem',
-                  background: selectedAnswer === opt
-                    ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)')
-                    : 'rgba(255,255,255,0.03)',
-                  border: `2px solid ${
-                    evaluated && selectedAnswer === opt
-                      ? isCorrect ? '#10b981' : '#ef4444'
-                      : 'var(--glass-border)'
-                  }`,
-                  borderRadius: 'var(--radius-md)',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  cursor: evaluated ? 'default' : 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.3s ease',
-                  fontFamily: "'JetBrains Mono', monospace"
-                }}
-              >
-                {opt}
-              </motion.button>
-            ))}
+        
+        <div style={{ padding: '2rem 2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <Zap size={18} color={colors.main} />
+            <span style={{ color: colors.main, fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: "'JetBrains Mono', monospace" }}>
+              Task
+            </span>
           </div>
-        )}
+
+          {/* Question Text */}
+          <h2 style={{
+            marginBottom: '2.5rem',
+            fontSize: '1.35rem',
+            lineHeight: '1.6',
+            color: 'var(--text-primary)',
+            fontWeight: 500
+          }}>
+            {question.question}
+          </h2>
+
+          {/* Answers Section */}
+          {isDragAndDrop ? (
+            <DndContext onDragEnd={handleDragEnd}>
+              <div style={{ marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  // Available Options
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {question.options.map((opt) => (
+                    <DraggableVar key={opt} id={opt} text={opt} />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{
+                background: 'rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                padding: '2rem',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.5rem',
+                fontSize: '1.15rem',
+                fontFamily: "'JetBrains Mono', monospace"
+              }}>
+                <DroppableArea />
+                {question.topic === "variables" && (
+                  <span style={{ color: colors.main }}>myName = "Sona";</span>
+                )}
+              </div>
+            </DndContext>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
+              {question.options.map((opt, index) => (
+                <motion.button
+                  key={opt}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={evaluated ? {} : { x: 4 }}
+                  whileTap={evaluated ? {} : { scale: 0.99 }}
+                  onClick={() => !evaluated && handleEvaluate(opt)}
+                  disabled={evaluated}
+                  style={{
+                    padding: '1.25rem 1.5rem',
+                    background: selectedAnswer === opt
+                      ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)')
+                      : 'rgba(255,255,255,0.02)',
+                    border: '1px solid',
+                    borderColor: evaluated && selectedAnswer === opt
+                        ? isCorrect ? '#10b981' : '#ef4444'
+                        : 'rgba(255,255,255,0.08)',
+                    borderRadius: 'var(--radius-sm)',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    cursor: evaluated ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s ease',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem'
+                  }}
+                >
+                  <div style={{ 
+                    color: selectedAnswer === opt ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--text-muted)',
+                    fontSize: '0.85rem',
+                    fontWeight: 700 
+                  }}>
+                    [{String.fromCharCode(65 + index)}]
+                  </div>
+                  {opt}
+                </motion.button>
+              ))}
+            </div>
+          )}
 
         {/* Result Feedback */}
         <AnimatePresence>
           {evaluated && (
             <motion.div
-              initial={{ opacity: 0, y: 20, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: 'auto' }}
-              exit={{ opacity: 0, y: -20 }}
-              style={{ overflow: 'hidden', marginTop: '2rem' }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ overflow: 'hidden' }}
             >
               <div style={{
-                padding: '1.5rem',
-                background: isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                borderRadius: 'var(--radius-lg)',
-                border: `1px solid ${isCorrect ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                marginTop: '1.5rem',
+                padding: '1.25rem 1.5rem',
+                background: isCorrect ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                borderLeft: `4px solid ${isCorrect ? '#10b981' : '#ef4444'}`,
+                display: 'flex', alignItems: 'flex-start', gap: '1rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    {isCorrect ? (
-                      <CheckCircle size={36} color="#10b981" />
-                    ) : (
-                      <XCircle size={36} color="#ef4444" />
-                    )}
-                  </motion.div>
-                  <div style={{ flex: 1 }}>
-                    <strong style={{ display: 'block', color: '#fff', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
-                      {evalMessage}
-                    </strong>
-                    {reasoningText && (
-                      <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: isCorrect ? '0.5rem' : '0' }}>
-                        {reasoningText}
-                      </p>
-                    )}
-                    {isCorrect && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        style={{ color: 'var(--accent-indigo)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                      >
-                        <Sparkles size={16} /> +100 XP added to your profile!
-                      </motion.span>
-                    )}
-                  </div>
-
-                  {(isCorrect || attempts >= 2) && (
-                    <motion.button
-                      className="btn-primary"
-                      onClick={handleNextQuestion}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem' }}
-                    >
-                      Next <ArrowRight size={18} />
-                    </motion.button>
+                <div style={{ flex: 1 }}>
+                  <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: '1rem', fontFamily: "'JetBrains Mono', monospace", marginBottom: '0.25rem' }}>
+                     &gt; {isCorrect ? "COMPILATION_SUCCESS" : "ERR_INVALID_LOGIC"}
+                  </strong>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: isCorrect ? '0.75rem' : '0' }}>
+                    {evalMessage} {reasoningText}
+                  </p>
+                  {isCorrect && (
+                    <div style={{ color: 'var(--accent-emerald)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Sparkles size={14} /> +100 XP REWARDED
+                    </div>
                   )}
                 </div>
+
+                {(isCorrect || attempts >= 2) && (
+                  <button
+                    onClick={handleNextQuestion}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'var(--text-primary)', padding: '0.5rem 1rem', borderRadius: '4px',
+                      cursor: 'pointer', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.85rem',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem', alignSelf: 'center'
+                    }}
+                  >
+                    NEXT_TASK <ArrowRight size={14} />
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );
