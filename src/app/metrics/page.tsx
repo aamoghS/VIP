@@ -384,7 +384,7 @@ export default function MetricsPage() {
                               +{String(event.payload.amount)}
                             </span>
                           )}
-                          {event.payload?.topic && (
+                          {Boolean(event.payload?.topic) && (
                             <span style={{
                               color: topicColors[String(event.payload.topic)] || "var(--text-muted)",
                               textTransform: "capitalize", fontSize: "0.8rem"
