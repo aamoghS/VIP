@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { ProgressProvider } from "@/context/ProgressContext";
+import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,14 +22,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <ProgressProvider>
-            <div className="app-container">
-              <Navigation />
-              <main className="main-content">
-                {children}
-              </main>
-            </div>
-          </ProgressProvider>
+          <AuthProvider>
+            <ProgressProvider>
+              <div className="app-container">
+                <Navigation />
+                <main className="main-content">
+                  {children}
+                </main>
+              </div>
+            </ProgressProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

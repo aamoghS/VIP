@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { readSessionIdFromRequest } from '@/lib/session';
+import { recordEvent } from '@/lib/sessionStore';
 
 export const missions = [
   {
@@ -115,14 +117,39 @@ export async function POST(request: Request) {
     const session = activeSessions[sessionId];
     const team = teamId as 'GroupA' | 'GroupB';
 
+    // Record metrics event
+    const cookieSessionId = readSessionIdFromRequest(request);
+
     if (action === 'completeSprint1') {
       session[team].sprint1Completed = true;
       session[team].dataSentToOtherTeam = payload;
+
+      if (cookieSessionId) {
+        recordEvent(cookieSessionId, 'sprint_completed', {
+          sprintSessionId: sessionId,
+          teamId,
+          action,
+          missionId: session.missionId,
+        }).catch(() => {});
+        recordEvent(cookieSessionId, 'xp_earned', { amount: 200, source: 'sprint1' }).catch(() => {});
+      }
+
       return NextResponse.json({ success: true, updatedState: session });
     }
 
     if (action === 'completeSprint2') {
       session[team].sprint2Completed = true;
+
+      if (cookieSessionId) {
+        recordEvent(cookieSessionId, 'sprint_completed', {
+          sprintSessionId: sessionId,
+          teamId,
+          action,
+          missionId: session.missionId,
+        }).catch(() => {});
+        recordEvent(cookieSessionId, 'xp_earned', { amount: 300, source: 'sprint2' }).catch(() => {});
+      }
+
       return NextResponse.json({ success: true, updatedState: session });
     }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wrench, Zap, Trophy, Sparkles } from "lucide-react";
+import { Wrench, Zap, Trophy, Sparkles, BarChart3 } from "lucide-react";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -43,6 +43,15 @@ export default function Navigation() {
           >
             <Trophy className="icon" />
             <span>The Room</span>
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/metrics"
+            className={`nav-item ${isActive('/metrics') ? 'active' : ''}`}
+          >
+            <BarChart3 className="icon" />
+            <span>Metrics</span>
           </Link>
         </li>
       </ul>
