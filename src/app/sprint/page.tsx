@@ -6,6 +6,7 @@ import { useProgress } from "@/context/ProgressContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
+import type { User } from "firebase/auth";
 import {
   CheckCircle,
   Lock,
@@ -18,12 +19,13 @@ import {
   Sparkles,
   Cpu,
   LogOut,
-  User,
+  User as UserIcon,
   Terminal,
   Trophy,
   Zap,
   Code2,
   Hash,
+  X,
 } from "lucide-react";
 
 // ─── Missions ───
@@ -112,7 +114,7 @@ type RoomData = {
 
 export default function SprintPage() {
   const { addXp, unlockItem } = useProgress();
-  const { user, loading: authLoading, signInWithGoogle, logout } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, logout } = useAuth();
 
   const [sessionCodeInput, setSessionCodeInput] = useState("");
   const [sessionCode, setSessionCode] = useState<string | null>(null);
@@ -126,6 +128,14 @@ export default function SprintPage() {
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [roomError, setRoomError] = useState<string | null>(null);
+
+  // Auth Modal State
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<"create" | null>(null);
 
   useEffect(() => {
     if (!sessionCode) return;
@@ -144,20 +154,22 @@ export default function SprintPage() {
   const handleCreateRoom = async () => {
     let currentUser = user;
     if (!currentUser) {
-      await signInWithGoogle();
-      const { getAuth } = await import("firebase/auth");
-      const authInstance = getAuth();
-      currentUser = authInstance.currentUser;
-      if (!currentUser) return;
+      setAuthModalOpen(true);
+      setPendingAction("create");
+      return;
     }
 
+    createRoomWithUser(currentUser);
+  };
+
+  const createRoomWithUser = async (currentUser: User) => {
     const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
     const randomMission = missions[Math.floor(Math.random() * missions.length)];
 
     const newRoom: RoomData = {
       missionId: randomMission.id,
       createdBy: currentUser.uid,
-      createdByName: currentUser.displayName || "Unknown",
+      createdByName: currentUser.displayName || currentUser.email || "Unknown",
       createdAt: Date.now(),
       GroupA: { sprint1Completed: false, sprint2Completed: false },
       GroupB: { sprint1Completed: false, sprint2Completed: false },
@@ -165,6 +177,38 @@ export default function SprintPage() {
 
     await setDoc(doc(db, "sprint_rooms", randomCode), newRoom);
     setSessionCode(randomCode);
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    try {
+      if (isLoginMode) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password);
+      }
+      
+      // Wait for auth context to update user, then run pending action.
+      // Since context update is async, we'll listen for user changes in an effect or directly get auth.
+      const { getAuth } = await import("firebase/auth");
+      const authInstance = getAuth();
+      // small delay to let auth persist
+      await new Promise(r => setTimeout(r, 500));
+      
+      const currentUser = authInstance.currentUser;
+      
+      if (currentUser && pendingAction === "create") {
+         await createRoomWithUser(currentUser);
+      }
+      
+      setAuthModalOpen(false);
+      setPendingAction(null);
+      setEmail("");
+      setPassword("");
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication failed. Please check your credentials.");
+    }
   };
 
   const handleJoinSession = async () => {
@@ -224,8 +268,9 @@ export default function SprintPage() {
   // ═══════════════════════════════════════════════════
   if (!sessionCode) {
     return (
-      <div className="lobby-split">
-        {/* Left — big bold hero text */}
+      <>
+        <div className="lobby-split">
+          {/* Left — big bold hero text */}
         <motion.div
           className="lobby-hero"
           initial={{ opacity: 0, x: -30 }}
@@ -270,7 +315,7 @@ export default function SprintPage() {
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="" style={{ width: 18, height: 18, borderRadius: "50%" }} />
                 ) : (
-                  <User size={14} />
+                  <UserIcon size={14} />
                 )}
                 {user.displayName || user.email}
               </div>
@@ -424,6 +469,99 @@ export default function SprintPage() {
           </AnimatePresence>
         </motion.div>
       </div>
+
+      {/* Auth Modal Overlay */}
+      <AnimatePresence>
+        {authModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+              background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              zIndex: 100
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="terminal-chrome"
+              style={{ width: "100%", maxWidth: "400px", background: "var(--bg-secondary)" }}
+            >
+              <div className="terminal-titlebar" style={{ justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                   <div className="terminal-dots"><span /><span /><span /></div>
+                   <span>{isLoginMode ? "authenticate.sh" : "register.sh"}</span>
+                </div>
+                <button onClick={() => setAuthModalOpen(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
+                  <X size={16} />
+                </button>
+              </div>
+              
+              <div style={{ padding: "2rem" }}>
+                <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem", color: "var(--text-primary)" }}>
+                  {isLoginMode ? "Sign In" : "Create Account"}
+                </h2>
+                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+                  You need an account to create a room.
+                </p>
+
+                {authError && (
+                  <div style={{
+                    background: "rgba(239, 68, 68, 0.1)", color: "#ef4444",
+                    padding: "0.75rem", borderRadius: "var(--radius-sm)",
+                    fontSize: "0.85rem", marginBottom: "1.5rem", border: "1px solid rgba(239, 68, 68, 0.2)"
+                  }}>
+                    {authError}
+                  </div>
+                )}
+
+                <form onSubmit={handleAuthSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="input-premium"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="input-premium"
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary" style={{ marginTop: "0.5rem" }}>
+                    {isLoginMode ? "Sign In" : "Sign Up"}
+                  </button>
+                </form>
+
+                <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+                  <button
+                    onClick={() => {
+                        setIsLoginMode(!isLoginMode);
+                        setAuthError(null);
+                    }}
+                    style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "0.85rem", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    {isLoginMode ? "Need an account? Sign up" : "Already have an account? Sign in"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </>
     );
   }
 
