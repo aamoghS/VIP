@@ -69,6 +69,7 @@ export default function ToolboxPage() {
       return res.json();
     },
     onSuccess: (data) => {
+      setEvaluated(true);
       setIsCorrect(data.isCorrect);
 
       if (data.isCorrect) {
@@ -106,6 +107,10 @@ export default function ToolboxPage() {
         }
       }
     },
+    onError: () => {
+      setEvaluated(false);
+      setSelectedAnswer(null);
+    },
   });
 
   const handleNextQuestion = () => {
@@ -121,13 +126,12 @@ export default function ToolboxPage() {
   const handleEvaluate = (answer: string) => {
     if (!question) return;
     setSelectedAnswer(answer);
-    setEvaluated(true);
     evaluateMutation.mutate({ questionId: question.id, answer });
   };
 
   // DND Components
   const DraggableVar = ({ id, text }: { id: string; text: string }) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id, disabled: evaluated });
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id, disabled: evaluated || evaluateMutation.isPending });
     const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 10 } : undefined;
 
     return (
@@ -137,7 +141,7 @@ export default function ToolboxPage() {
         {...listeners}
         {...attributes}
         className="draggable-item"
-        disabled={evaluated}
+        disabled={evaluated || evaluateMutation.isPending}
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -152,6 +156,8 @@ export default function ToolboxPage() {
     let borderColor = isOver ? colors.main : "var(--glass-border)";
     if (evaluated) {
       borderColor = isCorrect ? "#10b981" : "#ef4444";
+    } else if (evaluateMutation.isPending && selectedAnswer) {
+      borderColor = colors.main;
     }
 
     return (
@@ -173,7 +179,7 @@ export default function ToolboxPage() {
               transform: "none",
               cursor: "default",
               border: `2px solid ${borderColor}`,
-              background: isCorrect ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)"
+              background: evaluated ? (isCorrect ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)") : "rgba(255,255,255,0.05)"
             }}
           >
             {selectedAnswer}
@@ -189,7 +195,7 @@ export default function ToolboxPage() {
   };
 
   const handleDragEnd = (event: any) => {
-    if (event.over && event.over.id === "drop-zone" && !evaluated) {
+    if (event.over && event.over.id === "drop-zone" && !evaluated && !evaluateMutation.isPending) {
       handleEvaluate(event.active.id);
     }
   };
@@ -351,23 +357,23 @@ export default function ToolboxPage() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  whileHover={evaluated ? {} : { x: 4 }}
-                  whileTap={evaluated ? {} : { scale: 0.99 }}
-                  onClick={() => !evaluated && handleEvaluate(opt)}
-                  disabled={evaluated}
+                  whileHover={evaluated || evaluateMutation.isPending ? {} : { x: 4 }}
+                  whileTap={evaluated || evaluateMutation.isPending ? {} : { scale: 0.99 }}
+                  onClick={() => !evaluated && !evaluateMutation.isPending && handleEvaluate(opt)}
+                  disabled={evaluated || evaluateMutation.isPending}
                   style={{
                     padding: '1.25rem 1.5rem',
                     background: selectedAnswer === opt
-                      ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)')
+                      ? (evaluated ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)') : 'rgba(255,255,255,0.1)')
                       : 'rgba(255,255,255,0.02)',
                     border: '1px solid',
                     borderColor: evaluated && selectedAnswer === opt
                       ? isCorrect ? '#10b981' : '#ef4444'
-                      : 'rgba(255,255,255,0.08)',
+                      : (selectedAnswer === opt && evaluateMutation.isPending ? colors.main : 'rgba(255,255,255,0.08)'),
                     borderRadius: 'var(--radius-sm)',
                     color: '#fff',
                     fontSize: '1rem',
-                    cursor: evaluated ? 'default' : 'pointer',
+                    cursor: evaluated || evaluateMutation.isPending ? 'default' : 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.2s ease',
                     fontFamily: "'JetBrains Mono', monospace",
