@@ -113,7 +113,7 @@ type RoomData = {
 };
 
 export default function SprintPage() {
-  const { addXp, unlockItem } = useProgress();
+  const { addXp, unlockItem, incrementTeamMissions } = useProgress();
   const { user, loading: authLoading, signIn, signUp, logout } = useAuth();
 
   const [sessionCodeInput, setSessionCodeInput] = useState("");
@@ -228,6 +228,7 @@ export default function SprintPage() {
     if (!mission || !sessionCode) return;
     if (var1 === mission.groupA.vars[0].target && var2 === mission.groupA.vars[1].target) {
       addXp(200);
+      incrementTeamMissions?.();
       const roomRef = doc(db, "sprint_rooms", sessionCode);
       await setDoc(roomRef, { GroupA: { sprint1Completed: true, sprint2Completed: false } }, { merge: true });
     }
@@ -244,6 +245,7 @@ export default function SprintPage() {
     if (op === "==" && val === target) isCorrect = true;
     if (isCorrect) {
       addXp(300);
+      incrementTeamMissions?.();
       const roomRef = doc(db, "sprint_rooms", sessionCode);
       await setDoc(roomRef, { GroupB: { sprint1Completed: true, sprint2Completed: true } }, { merge: true });
     }
@@ -252,6 +254,7 @@ export default function SprintPage() {
   const handleClaimReward = () => {
     if (!rewardClaimed && mission) {
       addXp(500);
+      incrementTeamMissions?.();
       unlockItem(mission.reward);
       setRewardClaimed(true);
     }

@@ -5,7 +5,7 @@ import { questionBank } from '@/data/questions';
 const cachedBank = questionBank;
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 5;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -33,8 +33,8 @@ export async function GET(request: Request) {
 
   return NextResponse.json(selectedQuestion, {
     headers: {
-      'Cache-Control': 'no-store, must-revalidate',
-      'CDN-Cache-Control': 'max-age=0, s-maxage=0',
+      'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=59',
+      'CDN-Cache-Control': 'public, s-maxage=5, stale-while-revalidate=59',
     },
   });
 }

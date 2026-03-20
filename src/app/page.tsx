@@ -6,7 +6,7 @@ import { Wrench, Zap, Trophy, ArrowRight, Star, Code2, Users } from "lucide-reac
 import { useProgress } from "@/context/ProgressContext";
 
 export default function Home() {
-  const { xp, unlockedItems } = useProgress();
+  const { xp, unlockedItems, questionsSolved, teamMissionsCompleted } = useProgress();
   const level = Math.floor(xp / 100) + 1;
   const nextLevelXp = level * 100;
   const progressPercent = (xp % 100);
@@ -86,11 +86,11 @@ export default function Home() {
           </div>
           <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
             <Code2 size={14} color="var(--text-secondary)" />
-            <span style={{ color: 'var(--text-secondary)' }}>42 QUESTIONS SOLVED</span>
+            <span style={{ color: 'var(--text-secondary)' }}>{questionsSolved} QUESTIONS SOLVED</span>
           </div>
           <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
             <Users size={14} color="var(--text-secondary)" />
-            <span style={{ color: 'var(--text-secondary)' }}>3 TEAM MISSIONS</span>
+            <span style={{ color: 'var(--text-secondary)' }}>{teamMissionsCompleted} TEAM MISSIONS</span>
           </div>
         </motion.div>
 

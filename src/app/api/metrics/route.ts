@@ -3,6 +3,7 @@ import { getOrCreateSessionId } from '@/lib/session';
 import { recordEvent, getAggregatedMetrics, getSessionEvents, EventType } from '@/lib/sessionStore';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 /**
  * GET /api/metrics — returns aggregated real-time metrics.

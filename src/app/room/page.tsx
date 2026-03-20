@@ -32,7 +32,7 @@ const itemVariants = {
 };
 
 export default function RoomPage() {
-  const { xp, unlockedItems } = useProgress();
+  const { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted } = useProgress();
   const level = Math.floor(xp / 100) + 1;
 
   // Calculate level progress
@@ -262,9 +262,9 @@ export default function RoomPage() {
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Milestones</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {[
-                { name: 'First Challenge', icon: '🎯', achieved: true },
-                { name: '10 Questions Solved', icon: '📝', achieved: true },
-                { name: 'Complete a Sprint', icon: '🏃', achieved: true },
+                { name: 'First Challenge', icon: '🎯', achieved: questionsSolved >= 1 },
+                { name: '10 Questions Solved', icon: '📝', achieved: questionsSolved >= 10 },
+                { name: 'Complete a Sprint', icon: '🏃', achieved: teamMissionsCompleted >= 1 },
                 { name: 'Unlock 5 Trophies', icon: '🏆', achieved: unlockedCount >= 5 },
                 { name: 'Reach Level 10', icon: '⬆️', achieved: level >= 10 },
               ].map(milestone => (

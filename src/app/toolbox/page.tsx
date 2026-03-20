@@ -40,7 +40,7 @@ const topicColors: Record<string, { main: string; glow: string; bg: string }> = 
 
 export default function ToolboxPage() {
   const queryClient = useQueryClient();
-  const { addXp, unlockItem } = useProgress();
+  const { addXp, unlockItem, incrementQuestionsSolved } = useProgress();
   const [attempts, setAttempts] = useState(0);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -76,6 +76,7 @@ export default function ToolboxPage() {
         setReasoningText(data.reasoning || "");
         setShowConfetti(true);
         addXp(100);
+        incrementQuestionsSolved?.();
 
         const itemMap: Record<string, { id: string; name: string; icon: string }> = {
           variables: { id: "wrench", name: "Variables Wrench", icon: "🔧" },
@@ -438,7 +439,7 @@ export default function ToolboxPage() {
                     {(isCorrect || attempts >= 2) && (
                       <motion.button
                         className="btn-primary"
-                        onClick={fetchQuestion}
+                        onClick={handleNextQuestion}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         whileHover={{ scale: 1.05 }}
