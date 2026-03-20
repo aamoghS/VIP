@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { readSessionIdFromRequest } from '@/lib/session';
 import { recordEvent } from '@/lib/sessionStore';
 
@@ -125,13 +125,17 @@ export async function POST(request: Request) {
       session[team].dataSentToOtherTeam = payload;
 
       if (cookieSessionId) {
-        recordEvent(cookieSessionId, 'sprint_completed', {
-          sprintSessionId: sessionId,
-          teamId,
-          action,
-          missionId: session.missionId,
-        }).catch(() => {});
-        recordEvent(cookieSessionId, 'xp_earned', { amount: 200, source: 'sprint1' }).catch(() => {});
+        after(async () => {
+          try {
+            await recordEvent(cookieSessionId, 'sprint_completed', {
+              sprintSessionId: sessionId,
+              teamId,
+              action,
+              missionId: session.missionId,
+            });
+            await recordEvent(cookieSessionId, 'xp_earned', { amount: 200, source: 'sprint1' });
+          } catch (e) {}
+        });
       }
 
       return NextResponse.json({ success: true, updatedState: session });
@@ -141,13 +145,17 @@ export async function POST(request: Request) {
       session[team].sprint2Completed = true;
 
       if (cookieSessionId) {
-        recordEvent(cookieSessionId, 'sprint_completed', {
-          sprintSessionId: sessionId,
-          teamId,
-          action,
-          missionId: session.missionId,
-        }).catch(() => {});
-        recordEvent(cookieSessionId, 'xp_earned', { amount: 300, source: 'sprint2' }).catch(() => {});
+        after(async () => {
+          try {
+            await recordEvent(cookieSessionId, 'sprint_completed', {
+              sprintSessionId: sessionId,
+              teamId,
+              action,
+              missionId: session.missionId,
+            });
+            await recordEvent(cookieSessionId, 'xp_earned', { amount: 300, source: 'sprint2' });
+          } catch (e) {}
+        });
       }
 
       return NextResponse.json({ success: true, updatedState: session });

@@ -13,6 +13,7 @@ import {
   limit,
   where,
   Timestamp,
+  getCountFromServer,
 } from 'firebase/firestore';
 
 export type EventType =
@@ -136,11 +137,11 @@ export async function getAggregatedMetrics() {
   const activeSessions = await getActiveSessions();
 
   // Total sessions
-  const sessionsSnap = await getDocs(sessionsCol);
+  const sessionsSnap = await getCountFromServer(sessionsCol);
 
   return {
     activeSessionCount: activeSessions.length,
-    totalSessions: sessionsSnap.size,
+    totalSessions: sessionsSnap.data().count,
     totalQuestions: questionEvents.length,
     totalCorrect: correctEvents.length,
     accuracyRate: questionEvents.length > 0

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { questionBank } from '@/data/questions';
 import { readSessionIdFromRequest } from '@/lib/session';
 import { recordEvent } from '@/lib/sessionStore';
@@ -21,19 +21,25 @@ export async function POST(request: Request) {
     const correctAnswer = questionRecord.currentAnswer;
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
 
-    // Record metrics event (fire-and-forget)
+    // Record metrics event in the background for fast API responses
     const sessionId = readSessionIdFromRequest(request);
     if (sessionId) {
-      recordEvent(sessionId, 'question_answered', {
-        questionId,
-        topic: questionRecord.topic,
-        isCorrect,
-        studentAnswer,
-      }).catch(() => {}); // don't fail the response if metrics fail
+      after(async () => {
+        try {
+          await recordEvent(sessionId, 'question_answered', {
+            questionId,
+            topic: questionRecord.topic,
+            isCorrect,
+            studentAnswer,
+          });
 
-      if (isCorrect) {
-        recordEvent(sessionId, 'xp_earned', { amount: 100, source: 'toolbox' }).catch(() => {});
-      }
+          if (isCorrect) {
+            await recordEvent(sessionId, 'xp_earned', { amount: 100, source: 'toolbox' });
+          }
+        } catch (error) {
+          // background task failed quietly
+        }
+      });
     }
 
     return NextResponse.json({
