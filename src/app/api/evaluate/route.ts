@@ -1,5 +1,6 @@
 import { NextResponse, after } from 'next/server';
-import { questionBank } from '@/data/questions';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { readSessionIdFromRequest } from '@/lib/session';
 import { recordEvent } from '@/lib/sessionStore';
 
@@ -8,16 +9,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { questionId, studentAnswer } = body;
 
-    if (!questionId || !studentAnswer) {
+    if (!questionId || studentAnswer === undefined) {
       return NextResponse.json({ error: 'Missing questionId or studentAnswer' }, { status: 400 });
     }
 
-    const questionRecord = questionBank.find(q => q.id === questionId);
+    const qRef = doc(db, 'questions', String(questionId));
+    const qSnap = await getDoc(qRef);
 
-    if (!questionRecord) {
-      return NextResponse.json({ error: 'Question ID not found in answer key' }, { status: 404 });
+    if (!qSnap.exists()) {
+      return NextResponse.json({ error: 'Question ID not found in database' }, { status: 404 });
     }
 
+    const questionRecord = qSnap.data();
     const correctAnswer = questionRecord.currentAnswer;
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
 

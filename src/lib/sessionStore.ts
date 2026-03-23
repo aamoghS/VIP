@@ -101,11 +101,25 @@ export async function getRecentEvents(count: number = 20): Promise<MetricEvent[]
 /**
  * Get aggregated metrics for the dashboard.
  */
-export async function getAggregatedMetrics() {
-  // Fetch recent events (last 200 for aggregation)
-  const q = query(eventsCol, orderBy('timestamp', 'desc'), limit(200));
-  const snap = await getDocs(q);
-  const events = snap.docs.map(d => ({ id: d.id, ...d.data() } as MetricEvent));
+export async function getAggregatedMetrics(sessionId?: string) {
+  let snap;
+  if (sessionId) {
+    // Private query bounded by active cookie session id
+    const q = query(eventsCol, where('sessionId', '==', sessionId));
+    snap = await getDocs(q);
+  } else {
+    // Global fallback
+    const q = query(eventsCol, orderBy('timestamp', 'desc'), limit(200));
+    snap = await getDocs(q);
+  }
+
+  let events = snap.docs.map(d => ({ id: d.id, ...d.data() } as MetricEvent));
+
+  if (sessionId) {
+    // Sort mathematically in memory to bypass Firestore "Index required" strict blockages
+    events.sort((a, b) => b.timestamp - a.timestamp);
+    events = events.slice(0, 200);
+  }
 
   const questionEvents = events.filter(e => e.type === 'question_answered');
   const correctEvents = questionEvents.filter(e => e.payload.isCorrect === true);
