@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
-import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Target, Zap } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Target, Zap, User as UserIcon } from "lucide-react";
+import TypewriterText from "@/components/TypewriterText";
 
 type Question = {
   id: number;
@@ -42,9 +43,11 @@ export default function ToolboxPage() {
   const queryClient = useQueryClient();
   const { addXp, unlockItem, incrementQuestionsSolved } = useProgress();
   const [attempts, setAttempts] = useState(0);
+  const [userName, setUserName] = useState("");
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [evaluated, setEvaluated] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState(false);
   const [evalMessage, setEvalMessage] = useState("");
   const [reasoningText, setReasoningText] = useState("");
@@ -129,15 +132,16 @@ export default function ToolboxPage() {
     evaluateMutation.mutate({ questionId: question.id, answer });
   };
 
-  // DND Components
-  const DraggableVar = ({ id, text }: { id: string; text: string }) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id, disabled: evaluated || evaluateMutation.isPending });
-    const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 10 } : undefined;
 
+  const DraggableVar = ({ id, text }: { id: string; text: string }) => {
+    // If it's a fill in the blank and the option is [name], map it to the user's name
+    const displayText = text === "[name]" && userName ? `"${userName}"` : text;
+
+    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id, disabled: evaluated || evaluateMutation.isPending });
     return (
       <motion.button
         ref={setNodeRef}
-        style={style}
+        style={{ opacity: isDragging ? 0.2 : 1 }}
         {...listeners}
         {...attributes}
         className="draggable-item"
@@ -145,7 +149,7 @@ export default function ToolboxPage() {
         whileHover={{ scale: 1.02, y: -2 }}
         whileTap={{ scale: 0.95 }}
       >
-        {text}
+        {displayText}
       </motion.button>
     );
   };
@@ -195,6 +199,7 @@ export default function ToolboxPage() {
   };
 
   const handleDragEnd = (event: any) => {
+    setActiveId(null);
     if (event.over && event.over.id === "drop-zone" && !evaluated && !evaluateMutation.isPending) {
       handleEvaluate(event.active.id);
     }
@@ -220,7 +225,7 @@ export default function ToolboxPage() {
 
   return (
     <div>
-      {/* Header */}
+
       <div className="flex-between" style={{ marginBottom: '2.5rem', alignItems: 'flex-end' }}>
         <div>
           <h1 style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem" }}>
@@ -241,7 +246,7 @@ export default function ToolboxPage() {
         </div>
       </div>
 
-      {/* Confetti Effect */}
+
       <AnimatePresence>
         {showConfetti && (
           <motion.div
@@ -286,7 +291,7 @@ export default function ToolboxPage() {
         )}
       </AnimatePresence>
 
-      {/* Question Card using Terminal Chrome */}
+
       <motion.div
         className="terminal-chrome"
         initial={{ opacity: 0, y: 15 }}
@@ -307,7 +312,7 @@ export default function ToolboxPage() {
             </span>
           </div>
 
-          {/* Question Text */}
+
           <h2 style={{
             marginBottom: '2.5rem',
             fontSize: '1.35rem',
@@ -315,16 +320,38 @@ export default function ToolboxPage() {
             color: 'var(--text-primary)',
             fontWeight: 500
           }}>
-            {question.question}
+            <TypewriterText text={question.question} speed={12} />
           </h2>
 
-          {/* Answers Section */}
+
           {isDragAndDrop ? (
-            <DndContext onDragEnd={handleDragEnd}>
+            <DndContext 
+              onDragStart={(e) => setActiveId(String(e.active.id))}
+              onDragEnd={handleDragEnd}
+              onDragCancel={() => setActiveId(null)}
+            >
               <div style={{ marginBottom: '2rem' }}>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>
                   // Available Options
                 </p>
+                
+                {question.options.includes("[name]") && (
+                  <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: colors.main }}>
+                      <UserIcon size={18} />
+                      <span style={{ fontSize: '0.9rem', fontFamily: "'JetBrains Mono', monospace" }}>let myName =</span>
+                    </div>
+                    <input 
+                      type="text" 
+                      className="input-premium" 
+                      placeholder="Enter your name..." 
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      style={{ maxWidth: '200px', padding: '0.5rem 1rem' }}
+                    />
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {question.options.map((opt) => (
                     <DraggableVar key={opt} id={opt} text={opt} />
@@ -344,10 +371,26 @@ export default function ToolboxPage() {
                 fontFamily: "'JetBrains Mono', monospace"
               }}>
                 <DroppableArea />
-                {question.topic === "variables" && (
+                {question.topic === "variables" && !question.options.includes("[name]") && (
                   <span style={{ color: colors.main }}>myName = "Sona";</span>
                 )}
+                {question.options.includes("[name]") && (
+                  <span style={{ color: colors.main }}>`Welcome, ${"{"}userName{"}"}!`</span>
+                )}
               </div>
+
+              <DragOverlay dropAnimation={{ duration: 250, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+                {activeId ? (
+                  <div className="draggable-item" style={{
+                    cursor: 'grabbing',
+                    borderColor: colors.main,
+                    boxShadow: `0 10px 25px rgba(0,0,0,0.5), 0 0 15px ${colors.glow}`,
+                    transform: 'scale(1.05)'
+                  }}>
+                    {activeId}
+                  </div>
+                ) : null}
+              </DragOverlay>
             </DndContext>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
@@ -395,7 +438,7 @@ export default function ToolboxPage() {
             </div>
           )}
 
-          {/* Result Feedback */}
+
           <AnimatePresence>
             {evaluated && (
               <motion.div

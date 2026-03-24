@@ -24,24 +24,13 @@ export async function POST(request: Request) {
     const correctAnswer = questionRecord.currentAnswer;
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
 
-    // Record metrics event in the background for fast API responses
     const sessionId = readSessionIdFromRequest(request);
     if (sessionId) {
       after(async () => {
         try {
-          await recordEvent(sessionId, 'question_answered', {
-            questionId,
-            topic: questionRecord.topic,
-            isCorrect,
-            studentAnswer,
-          });
-
-          if (isCorrect) {
-            await recordEvent(sessionId, 'xp_earned', { amount: 100, source: 'toolbox' });
-          }
-        } catch (error) {
-          // background task failed quietly
-        }
+          await recordEvent(sessionId, 'question_answered', { questionId, topic: questionRecord.topic, isCorrect, studentAnswer });
+          if (isCorrect) await recordEvent(sessionId, 'xp_earned', { amount: 100, source: 'toolbox' });
+        } catch {}
       });
     }
 

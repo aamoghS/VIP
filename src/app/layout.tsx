@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import MouseSpotlight from "@/components/MouseSpotlight";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/components/QueryProvider";
@@ -25,6 +26,7 @@ export default function RootLayout({
           <AuthProvider>
             <ProgressProvider>
               <div className="app-container">
+                <MouseSpotlight />
                 <Navigation />
                 <main className="main-content">
                   {children}

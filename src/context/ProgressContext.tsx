@@ -36,7 +36,7 @@ function readProgressFromCookie(): { xp: number; unlockedItems: UnlockedItem[]; 
 
 function writeProgressToCookie(data: { xp: number; unlockedItems: UnlockedItem[]; sprintStage: number; questionsSolved: number; teamMissionsCompleted: number }) {
   if (typeof document === "undefined") return;
-  const maxAge = 60 * 60 * 24 * 30; // 30 days
+  const maxAge = 60 * 60 * 24 * 30;
   const json = encodeURIComponent(JSON.stringify(data));
   document.cookie = `${PROGRESS_COOKIE_NAME}=${json}; path=/; max-age=${maxAge}; samesite=lax`;
 }
@@ -51,7 +51,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [teamMissionsCompleted, setTeamMissionsCompleted] = useState(0);
   const [hydrated, setHydrated] = useState(false);
 
-  // Restore from cookie on mount
+
   useEffect(() => {
     const saved = readProgressFromCookie();
     if (saved) {
@@ -64,7 +64,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
-  // Persist to cookie on every change (after hydration)
+
   useEffect(() => {
     if (hydrated) {
       writeProgressToCookie({ xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted });

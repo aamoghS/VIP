@@ -35,12 +35,12 @@ export default function RoomPage() {
   const { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted } = useProgress();
   const level = Math.floor(xp / 100) + 1;
 
-  // Calculate level progress
+
   const currentLevelXp = xp % 100;
   const xpToNextLevel = 100;
   const progressPercent = (currentLevelXp / xpToNextLevel) * 100;
 
-  // Get achievement stats
+
   const unlockedCount = unlockedItems.length;
   const totalTrophies = allTrophies.length;
 
@@ -50,7 +50,7 @@ export default function RoomPage() {
       animate="visible"
       variants={containerVariants}
     >
-      {/* Header */}
+
       <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '2.5rem', alignItems: 'flex-end' }}>
         <div>
           <h1 style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem" }}>
@@ -62,7 +62,7 @@ export default function RoomPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem' }}>
-          {/* Level Card */}
+
           <motion.div
             style={{
               padding: '1.25rem 1.5rem',
@@ -111,7 +111,7 @@ export default function RoomPage() {
             </div>
           </motion.div>
 
-          {/* XP Card */}
+
           <motion.div
             style={{
               padding: '1.25rem 1.5rem',
@@ -129,7 +129,7 @@ export default function RoomPage() {
         </div>
       </motion.div>
 
-      {/* Stats Row */}
+
       <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap' }}>
         <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
           <Trophy size={16} color="var(--accent-purple)" />
@@ -145,7 +145,7 @@ export default function RoomPage() {
         </div>
       </motion.div>
 
-      {/* Trophies Section */}
+
       <motion.div variants={itemVariants} style={{ marginBottom: '3rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <Trophy size={18} color="var(--text-primary)" />
@@ -218,7 +218,7 @@ export default function RoomPage() {
         </div>
       </motion.div>
 
-      {/* Recent Activity / Progress */}
+
       <motion.div variants={itemVariants}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <Sparkles size={24} color="var(--accent-purple)" />
@@ -226,7 +226,7 @@ export default function RoomPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-          {/* Skills Progress */}
+
           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Skills Progress</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -257,7 +257,7 @@ export default function RoomPage() {
             </div>
           </div>
 
-          {/* Milestones */}
+
           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Milestones</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

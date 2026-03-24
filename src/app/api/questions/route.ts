@@ -11,29 +11,18 @@ export async function GET(request: Request) {
 
   try {
     const colList = collection(db, 'questions');
-    let dbQuery = query(colList);
-
-    if (topic) {
-      dbQuery = query(colList, where('topic', '==', topic));
-    }
-
+    const dbQuery = topic ? query(colList, where('topic', '==', topic)) : query(colList);
     const snap = await getDocs(dbQuery);
-    
+
     if (snap.empty) {
       return NextResponse.json(
         { error: 'No questions found for this topic.' },
-        {
-          status: 404,
-          headers: {
-            'Cache-Control': 'no-store, must-revalidate',
-          },
-        }
+        { status: 404, headers: { 'Cache-Control': 'no-store, must-revalidate' } }
       );
     }
 
-    const questions = snap.docs.map(doc => doc.data());
-    const randomIndex = Math.floor(Math.random() * questions.length);
-    const selectedQuestion = questions[randomIndex];
+    const questions = snap.docs.map((doc) => doc.data());
+    const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
 
     return NextResponse.json(selectedQuestion, {
       headers: {
@@ -41,8 +30,7 @@ export async function GET(request: Request) {
         'CDN-Cache-Control': 'public, s-maxage=5, stale-while-revalidate=59',
       },
     });
-  } catch (error: any) {
-    console.error("Firestore Error:", error);
+  } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch questions from database.' },
       { status: 500 }

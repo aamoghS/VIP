@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedNumber from "@/components/AnimatedNumber";
 import {
   BarChart3,
   Users,
@@ -105,7 +106,7 @@ export default function MetricsPage() {
       if (!res.ok) throw new Error("Failed to fetch metrics");
       return res.json();
     },
-    refetchInterval: 3000, // Real-time: refresh every 3 seconds
+    refetchInterval: 3000,
   });
 
   if (isLoading) {
@@ -134,7 +135,7 @@ export default function MetricsPage() {
 
   return (
     <motion.div initial="hidden" animate="visible" variants={containerVariants}>
-      {/* Header */}
+
       <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: "2.5rem" }}>
         <div className="page-header">
           <h1 className="page-title">Real-Time Metrics</h1>
@@ -159,12 +160,12 @@ export default function MetricsPage() {
         </div>
       </motion.div>
 
-      {/* Summary Cards */}
+
       <motion.div
         variants={itemVariants}
         style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}
       >
-        {/* Active Sessions */}
+
         <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
             <div style={{
@@ -183,14 +184,14 @@ export default function MetricsPage() {
             animate={{ scale: 1, color: "var(--text-primary)" }}
             style={{ fontSize: "2.5rem", fontWeight: 700 }}
           >
-            {data.activeSessionCount}
+            <AnimatedNumber value={data.activeSessionCount} />
           </motion.div>
           <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
             {data.totalSessions} total
           </div>
         </motion.div>
 
-        {/* Total Questions */}
+
         <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
             <div style={{
@@ -209,14 +210,14 @@ export default function MetricsPage() {
             animate={{ scale: 1, color: "var(--text-primary)" }}
             style={{ fontSize: "2.5rem", fontWeight: 700 }}
           >
-            {data.totalQuestions}
+            <AnimatedNumber value={data.totalQuestions} />
           </motion.div>
           <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
             {data.totalCorrect} correct
           </div>
         </motion.div>
 
-        {/* Accuracy Rate */}
+
         <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
             <div style={{
@@ -235,14 +236,14 @@ export default function MetricsPage() {
             animate={{ scale: 1, color: "var(--text-primary)" }}
             style={{ fontSize: "2.5rem", fontWeight: 700 }}
           >
-            {data.accuracyRate}%
+            <AnimatedNumber value={data.accuracyRate} />%
           </motion.div>
           <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
             {data.totalSprintCompletions} sprints done
           </div>
         </motion.div>
 
-        {/* Total XP */}
+
         <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
             <div style={{
@@ -261,7 +262,7 @@ export default function MetricsPage() {
             animate={{ scale: 1, color: "var(--text-primary)" }}
             style={{ fontSize: "2.5rem", fontWeight: 700 }}
           >
-            {data.totalXpEarned.toLocaleString()}
+            <AnimatedNumber value={data.totalXpEarned} />
           </motion.div>
           <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
             across all sessions
@@ -269,9 +270,9 @@ export default function MetricsPage() {
         </motion.div>
       </motion.div>
 
-      {/* Two-Column: Topic Breakdown + Activity Feed */}
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-        {/* Topic Breakdown */}
+
         <motion.div variants={itemVariants} className="glass-card">
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <BarChart3 size={22} color="var(--accent-indigo)" />
@@ -326,7 +327,7 @@ export default function MetricsPage() {
           )}
         </motion.div>
 
-        {/* Activity Feed */}
+
         <motion.div variants={itemVariants} className="glass-card" style={{ maxHeight: "450px", display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <Activity size={22} color="var(--accent-blue)" />

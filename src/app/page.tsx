@@ -37,7 +37,7 @@ export default function Home() {
         animate="visible"
         variants={containerVariants}
       >
-        {/* Header Section */}
+
         <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '3.5rem', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
           <div>
             <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -49,7 +49,7 @@ export default function Home() {
           </div>
 
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            {/* Level Badge */}
+
             <div className="xp-display">
               <div className="flex-center" style={{ gap: '1rem' }}>
                 <div style={{ textAlign: 'center' }}>
@@ -78,7 +78,7 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Stats Row */}
+
         <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginBottom: '3rem' }}>
           <div className="badge-premium" style={{ background: 'var(--accent-purple-dim)' }}>
             <Star size={16} color="var(--accent-purple)" />
@@ -94,7 +94,7 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Core Modules Grid */}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           <motion.div variants={itemVariants}>
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>

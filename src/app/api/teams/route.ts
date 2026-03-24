@@ -70,15 +70,25 @@ type SprintState = {
   sprint2Completed: boolean;
   sprint3Completed: boolean;
   dataSentToOtherTeam: any | null;
+  points: number;
 };
 
 type SessionState = {
   missionId: string;
+  currentRound: number;
+  totalRounds: number;
   GroupA: SprintState;
   GroupB: SprintState;
+  roundHistory: { missionId: string; winner: 'GroupA' | 'GroupB' | 'tie' | null; groupAPoints: number; groupBPoints: number }[];
 };
 
-const defaultSprint = (): SprintState => ({ sprint1Completed: false, sprint2Completed: false, sprint3Completed: false, dataSentToOtherTeam: null });
+const defaultSprint = (): SprintState => ({
+  sprint1Completed: false,
+  sprint2Completed: false,
+  sprint3Completed: false,
+  dataSentToOtherTeam: null,
+  points: 0
+});
 
 let activeSessions: Record<string, SessionState> = {};
 
@@ -90,7 +100,14 @@ export async function GET(request: Request) {
 
   if (!activeSessions[sessionId]) {
     const randomMission = missions[Math.floor(Math.random() * missions.length)];
-    activeSessions[sessionId] = { missionId: randomMission.id, GroupA: defaultSprint(), GroupB: defaultSprint() };
+    activeSessions[sessionId] = {
+      missionId: randomMission.id,
+      currentRound: 1,
+      totalRounds: 3,
+      GroupA: defaultSprint(),
+      GroupB: defaultSprint(),
+      roundHistory: []
+    };
   }
 
   const session = activeSessions[sessionId];
@@ -111,54 +128,90 @@ export async function POST(request: Request) {
 
     if (!activeSessions[sessionId]) {
       const randomMission = missions[Math.floor(Math.random() * missions.length)];
-      activeSessions[sessionId] = { missionId: randomMission.id, GroupA: defaultSprint(), GroupB: defaultSprint() };
+      activeSessions[sessionId] = {
+        missionId: randomMission.id,
+        currentRound: 1,
+        totalRounds: 3,
+        GroupA: defaultSprint(),
+        GroupB: defaultSprint(),
+        roundHistory: []
+      };
     }
 
     const session = activeSessions[sessionId];
     const team = teamId as 'GroupA' | 'GroupB';
 
-    // Record metrics event
     const cookieSessionId = readSessionIdFromRequest(request);
+
+    const triggerEvents = (amount: number, source: string) => {
+      if (!cookieSessionId) return;
+      after(async () => {
+        try {
+          await recordEvent(cookieSessionId, 'sprint_completed', { sprintSessionId: sessionId, teamId, action, missionId: session.missionId });
+          await recordEvent(cookieSessionId, 'xp_earned', { amount, source });
+        } catch {}
+      });
+    };
 
     if (action === 'completeSprint1') {
       session[team].sprint1Completed = true;
       session[team].dataSentToOtherTeam = payload;
-
-      if (cookieSessionId) {
-        after(async () => {
-          try {
-            await recordEvent(cookieSessionId, 'sprint_completed', {
-              sprintSessionId: sessionId,
-              teamId,
-              action,
-              missionId: session.missionId,
-            });
-            await recordEvent(cookieSessionId, 'xp_earned', { amount: 200, source: 'sprint1' });
-          } catch (e) {}
-        });
-      }
-
+      session[team].points += 200;
+      triggerEvents(200, 'sprint1');
       return NextResponse.json({ success: true, updatedState: session });
     }
 
     if (action === 'completeSprint2') {
       session[team].sprint2Completed = true;
+      session[team].points += 300;
+      triggerEvents(300, 'sprint2');
+      return NextResponse.json({ success: true, updatedState: session });
+    }
 
-      if (cookieSessionId) {
-        after(async () => {
-          try {
-            await recordEvent(cookieSessionId, 'sprint_completed', {
-              sprintSessionId: sessionId,
-              teamId,
-              action,
-              missionId: session.missionId,
-            });
-            await recordEvent(cookieSessionId, 'xp_earned', { amount: 300, source: 'sprint2' });
-          } catch (e) {}
-        });
+    if (action === 'completeRound') {
+      // Calculate round results
+      const groupAPoints = session.GroupA.points;
+      const groupBPoints = session.GroupB.points;
+
+      let winner: 'GroupA' | 'GroupB' | 'tie' | null = null;
+      if (groupAPoints > groupBPoints) winner = 'GroupA';
+      else if (groupBPoints > groupAPoints) winner = 'GroupB';
+      else winner = 'tie';
+
+      // Record round history
+      session.roundHistory.push({
+        missionId: session.missionId,
+        winner,
+        groupAPoints,
+        groupBPoints
+      });
+
+      // Advance to next round if not the last
+      if (session.currentRound < session.totalRounds) {
+        // Get a different mission for next round
+        const availableMissions = missions.filter(m => m.id !== session.missionId);
+        const nextMission = availableMissions[Math.floor(Math.random() * availableMissions.length)] || missions[0];
+
+        session.currentRound += 1;
+        session.missionId = nextMission.id;
+        session.GroupA = defaultSprint();
+        session.GroupB = defaultSprint();
       }
 
-      return NextResponse.json({ success: true, updatedState: session });
+      return NextResponse.json({ success: true, updatedState: session, roundWinner: winner });
+    }
+
+    if (action === 'resetGame') {
+      const randomMission = missions[Math.floor(Math.random() * missions.length)];
+      activeSessions[sessionId] = {
+        missionId: randomMission.id,
+        currentRound: 1,
+        totalRounds: session.totalRounds,
+        GroupA: defaultSprint(),
+        GroupB: defaultSprint(),
+        roundHistory: []
+      };
+      return NextResponse.json({ success: true, updatedState: activeSessions[sessionId] });
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
