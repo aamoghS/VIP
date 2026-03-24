@@ -20,6 +20,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Question ID not found in database' }, { status: 404 });
     }
 
+
+
     const questionRecord = qSnap.data();
     const correctAnswer = questionRecord.currentAnswer;
     const isCorrect = String(studentAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
@@ -39,10 +41,10 @@ export async function POST(request: Request) {
       isCorrect,
       correctAnswer: isCorrect ? undefined : correctAnswer,
       reasoning: questionRecord.reasoning,
-      message: isCorrect ? 'Correct!' : 'Incorrect, try again.'
+      message: isCorrect ? 'Correct!' : 'Incorrect, try again! '
     });
 
   } catch (error) {
-    return NextResponse.json({ error: 'Server error parsing request' }, { status: 500 });
+    return NextResponse.json({ error: 'The server couldnt evaluate the route currently'}, { status: 500});
   }
 }

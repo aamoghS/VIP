@@ -325,7 +325,7 @@ export default function ToolboxPage() {
 
 
           {isDragAndDrop ? (
-            <DndContext 
+            <DndContext
               onDragStart={(e) => setActiveId(String(e.active.id))}
               onDragEnd={handleDragEnd}
               onDragCancel={() => setActiveId(null)}
@@ -334,17 +334,17 @@ export default function ToolboxPage() {
                 <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.85rem', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>
                   // Available Options
                 </p>
-                
+
                 {question.options.includes("[name]") && (
                   <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: colors.main }}>
                       <UserIcon size={18} />
                       <span style={{ fontSize: '0.9rem', fontFamily: "'JetBrains Mono', monospace" }}>let myName =</span>
                     </div>
-                    <input 
-                      type="text" 
-                      className="input-premium" 
-                      placeholder="Enter your name..." 
+                    <input
+                      type="text"
+                      className="input-premium"
+                      placeholder="Enter your name..."
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       style={{ maxWidth: '200px', padding: '0.5rem 1rem' }}

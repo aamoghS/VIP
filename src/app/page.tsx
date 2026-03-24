@@ -44,7 +44,7 @@ export default function Home() {
               Welcome back
             </h1>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
-              SYSTEM_STATUS: <span style={{ color: '#10b981' }}>ONLINE</span>
+              Status: <span style={{ color: '#10b981' }}>ONLINE</span>
             </p>
           </div>
 
@@ -112,7 +112,7 @@ export default function Home() {
                   Practice your skills with bite-sized, interactive coding challenges. Master concepts like variables, logic, and loops.
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-indigo)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
-                  START_PRACTICING <ArrowRight size={16} />
+                  Practice <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>
@@ -141,7 +141,7 @@ export default function Home() {
                   Team up to solve real-world coding missions. Coordinate, collaborate, and conquer challenges together!
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
-                  JOIN_MISSION <ArrowRight size={16} />
+                  Join you're Team <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>
@@ -170,7 +170,7 @@ export default function Home() {
                   Your personal trophy space. Showcase achievements, track progress through ranks, and view stats.
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-amber)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
-                  VIEW_COLLECTION <ArrowRight size={16} />
+                  View Display <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>
