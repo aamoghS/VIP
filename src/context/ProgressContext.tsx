@@ -21,7 +21,7 @@ type ProgressContextType = {
   incrementTeamMissions: () => void;
 };
 
-const PROGRESS_COOKIE_NAME = "vip_progress";
+const PROGRESS_COOKIE_NAME = "codedash_progress";
 
 function readProgressFromCookie(): { xp: number; unlockedItems: UnlockedItem[]; sprintStage: number; questionsSolved: number; teamMissionsCompleted: number } | null {
   if (typeof document === "undefined") return null;

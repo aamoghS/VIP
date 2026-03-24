@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wrench, Zap, Trophy, Sparkles, BarChart3, Home } from "lucide-react";
+import { Wrench, Zap, Trophy, Sparkles, BarChart3, Home, Code2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 
 export default function Navigation() {
   const pathname = usePathname();
   const { xp } = useProgress();
-  const progressPercent = xp % 100;
+  const level = Math.floor(xp / 500) + 1;
+  const progressPercent = Math.round(((xp % 500) / 500) * 100);
 
   const links = [
     { href: '/', icon: Home, label: 'Dashboard' },
@@ -23,9 +24,9 @@ export default function Navigation() {
     <nav className="glass-sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="logo" style={{ marginBottom: "2rem" }}>
         <div className="logo-icon">
-          <Sparkles size={20} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+          <Code2 size={20} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
         </div>
-        <h1 style={{ letterSpacing: "-1px" }}>VIP</h1>
+        <h1 style={{ letterSpacing: "-1px" }}>codedash</h1>
       </div>
       
       <ul className="nav-links" style={{ display: "flex", flexDirection: "column", gap: "0.25rem", listStyle: "none", padding: 0 }}>
@@ -61,7 +62,7 @@ export default function Navigation() {
                 }}
               >
                 <Icon size={18} style={{ color: isActive ? "var(--accent-purple)" : "inherit" }} />
-                <span>{link.label}</span>
+                <span title={link.label}>{link.label}</span>
               </Link>
             </li>
           );
@@ -70,7 +71,7 @@ export default function Navigation() {
 
       <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem', fontFamily: "'JetBrains Mono', monospace" }}>
-          Level Progress
+          Level {level} • Progress
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
           <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '3px', overflow: 'hidden' }}>

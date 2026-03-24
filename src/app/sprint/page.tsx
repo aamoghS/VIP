@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
+import { doc, setDoc, onSnapshot, getDoc, getDocs, collection } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { User } from "firebase/auth";
 import {
@@ -34,74 +34,23 @@ import {
 } from "lucide-react";
 
 
-const missions = [
-  {
-    id: "reservoir",
-    title: "Save the City Reservoir",
-    description: "The City Reservoir is in crisis. We need two specialized teams to calculate the rainfall and design the smart lid logic.",
-    groupA: {
-      role: "Data Gatherers",
-      brief: "Calculate the rate and time.",
-      instruction: "The city needs to know how much rain fell. Define the variables for Rate and Time. (Hint: Rate = 5, Time = 10)",
-      vars: [
-        { name: "rainRate", type: "int", target: "5" },
-        { name: "rainTime", type: "int", target: "10" },
-      ],
-    },
-    groupB: {
-      role: "Logic Engineers",
-      brief: "Control the reservoir lid.",
-      instruction: "The water is evaporating! Group A sent us the total volume. Now, write an if-statement to close the reservoir lid if the temperature is greater than 85.",
-      logic: { variable: "temperature", operator: ">", target: "85", action: "closeReservoirLid();", bgClass: "var(--secondary)" },
-    },
-    successMessage: "The reservoir is safe. Group A collected the data, and Group B executed the logic just in time.",
-    reward: { id: "smart-lid", name: "Smart Lid", icon: "🌐" },
-  },
-  {
-    id: "space-station",
-    title: "Defend the Space Station",
-    description: "An asteroid field is approaching. Group A must calibrate the engines, and Group B must activate the shields.",
-    groupA: {
-      role: "Engineers",
-      brief: "Calibrate the thrusters.",
-      instruction: "We need maximum thrust to dodge the asteroids. Set Oxygen to 100 and Fuel to 50.",
-      vars: [
-        { name: "oxygenLevel", type: "int", target: "100" },
-        { name: "fuelLevel", type: "int", target: "50" },
-      ],
-    },
-    groupB: {
-      role: "Defense Tacticians",
-      brief: "Activate shields.",
-      instruction: "Asteroids are hitting the hull! Write an if-statement to activate the shields if the hull pressure drops below 30.",
-      logic: { variable: "hullPressure", operator: "<", target: "30", action: "activateShields();", bgClass: "#fca311" },
-    },
-    successMessage: "The space station evaded the asteroid field successfully thanks to your teamwork!",
-    reward: { id: "station-shield", name: "Deflector Shield", icon: "🛡️" },
-  },
-  {
-    id: "submarine",
-    title: "Navigate the Deep Trench",
-    description: "The submarine is approaching a dangerous trench. Group A sets the diving parameters, Group B pilots the vessel.",
-    groupA: {
-      role: "Navigators",
-      brief: "Set the depths.",
-      instruction: "We must dive quickly. Set the target Depth to 500 and Speed to 20.",
-      vars: [
-        { name: "targetDepth", type: "int", target: "500" },
-        { name: "diveSpeed", type: "int", target: "20" },
-      ],
-    },
-    groupB: {
-      role: "Pilots",
-      brief: "Watch the sonar.",
-      instruction: "We are blind down here! Write an if-statement to fire the flare if the sonar ping equals 1.",
-      logic: { variable: "sonarPing", operator: "==", target: "1", action: "fireFlare();", bgClass: "#00b4d8" },
-    },
-    successMessage: "You safely navigated the trench and illuminated the dark depths!",
-    reward: { id: "sonar-badge", name: "Sonar Badge", icon: "🌊" },
-  },
-];
+const [missions, setMissions] = useState<any[]>([]);
+
+useEffect(() => {
+  let mounted = true;
+  async function loadMissions() {
+    try {
+      const { getDocs, collection } = await import('firebase/firestore');
+      const qSnap = await getDocs(collection(db, 'missions'));
+      const loaded = qSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+      if (mounted) setMissions(loaded);
+    } catch (err) {
+      console.error('Failed to load missions from Firestore', err);
+    }
+  }
+  loadMissions();
+  return () => { mounted = false; };
+}, []);
 
 type SprintState = {
   sprint1Completed: boolean;
@@ -179,6 +128,34 @@ export default function SprintPage() {
     return () => unsubscribe();
   }, [sessionCode]);
 
+  // client-side session handling: ensure cookie exists and prompt for display name once
+  useEffect(() => {
+    // client-only cookie handling and first-time displayName prompt
+    if (typeof window === 'undefined') return;
+    const getClientSessionIdLocal = () => {
+      const match = document.cookie.match(new RegExp(`vip_session=([^;]+)`));
+      return match ? decodeURIComponent(match[1]) : null;
+    };
+    const setClientSessionIdLocal = (id: string) => {
+      const maxAge = 60 * 60 * 24 * 30;
+      document.cookie = `vip_session=${id}; path=/; max-age=${maxAge}; samesite=lax`;
+    };
+
+    const existing = getClientSessionIdLocal();
+    if (!existing) {
+      const gen = () => 'sess_' + Math.random().toString(36).substring(2, 14);
+      const newId = gen();
+      setClientSessionIdLocal(newId);
+      const name = window.prompt('Welcome to codedash! Enter a display name to use:');
+      if (name && name.trim()) {
+        setDoc(doc(db, 'sessions', newId), { sessionId: newId, displayName: name.trim(), createdAt: Date.now(), lastActiveAt: Date.now() }, { merge: true });
+      } else {
+        setDoc(doc(db, 'sessions', newId), { sessionId: newId, createdAt: Date.now(), lastActiveAt: Date.now() }, { merge: true });
+      }
+    }
+  }, []);
+
+
   const mission = roomData ? missions.find((m) => m.id === roomData.missionId) : null;
 
   const handleCreateRoom = async () => {
@@ -194,7 +171,12 @@ export default function SprintPage() {
 
   const createRoomWithUser = async (currentUser: User) => {
     const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const randomMission = missions[Math.floor(Math.random() * missions.length)];
+    const randomMission = missions.length ? missions[Math.floor(Math.random() * missions.length)] : null;
+
+    if (!randomMission) {
+      setRoomError('Cannot create room – no missions available');
+      return;
+    }
 
     const newRoom = defaultRoomData(randomMission.id, currentUser);
     await setDoc(doc(db, "sprint_rooms", randomCode), newRoom);

@@ -8,6 +8,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   User,
 } from "firebase/auth";
 
@@ -39,8 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email, pass);
   };
 
-  const signUp = async (email: string, pass: string) => {
-    await createUserWithEmailAndPassword(auth, email, pass);
+  const signUp = async (email: string, pass: string, displayName?: string) => {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    if (displayName && cred.user) {
+      try { await updateProfile(cred.user, { displayName }); } catch {}
+    }
   };
 
   const logout = async () => {

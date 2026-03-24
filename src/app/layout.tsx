@@ -10,7 +10,7 @@ import QueryProvider from "@/components/QueryProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "VIP - Middle School Coding Platform",
+  title: "codedash - Middle School Coding Platform",
   description: "Learn to code by solving real-world problems.",
 };
 

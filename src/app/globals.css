@@ -5,36 +5,36 @@
 @tailwind utilities;
 
 :root {
-  /* Core palette - refined dark theme */
-  --bg-primary: #08090d;
-  --bg-secondary: #0f1118;
-  --bg-elevated: #161922;
-  --bg-card: rgba(22, 25, 34, 0.7);
+  /* Core palette - teal & coral dark theme */
+  --bg-primary: #041f1f;
+  --bg-secondary: #062626;
+  --bg-elevated: #0b3a38;
+  --bg-card: rgba(11, 58, 56, 0.7);
 
-  /* Vibrant accent colors */
-  --accent-indigo: #6366f1;
-  --accent-indigo-glow: rgba(99, 102, 241, 0.4);
-  --accent-indigo-dim: rgba(99, 102, 241, 0.15);
-  --accent-blue: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.4);
-  --accent-blue-dim: rgba(59, 130, 246, 0.15);
-  --accent-amber: #f59e0b;
-  --accent-amber-glow: rgba(245, 158, 11, 0.4);
-  --accent-amber-dim: rgba(245, 158, 11, 0.15);
-  --accent-emerald: #10b981;
-  --accent-emerald-glow: rgba(16, 185, 129, 0.4);
-  --accent-rose: #f43f5e;
+  /* Accent colors (mapped to previous variable names for compatibility) */
+  --accent-indigo: #14b8a6; /* teal */
+  --accent-indigo-glow: rgba(20, 184, 166, 0.35);
+  --accent-indigo-dim: rgba(20, 184, 166, 0.12);
+  --accent-blue: #0ea5a4; /* teal variant */
+  --accent-blue-glow: rgba(14, 165, 164, 0.3);
+  --accent-blue-dim: rgba(14, 165, 164, 0.12);
+  --accent-amber: #ff6b6b; /* coral */
+  --accent-amber-glow: rgba(255, 107, 107, 0.25);
+  --accent-amber-dim: rgba(255, 107, 107, 0.08);
+  --accent-emerald: #0fbf9a;
+  --accent-emerald-glow: rgba(15, 191, 154, 0.25);
+  --accent-rose: #ff6b6b;
 
   /* Text colors */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #e6fffb;
+  --text-secondary: #a7f3eb;
+  --text-muted: #8bd0c9;
 
   /* Glass & borders */
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-hover: rgba(255, 255, 255, 0.15);
-  --glass-surface: rgba(22, 25, 34, 0.6);
-  --glass-glow: 0 0 40px rgba(0, 0, 0, 0.3);
+  --glass-border: rgba(230, 255, 251, 0.06);
+  --glass-border-hover: rgba(230, 255, 251, 0.12);
+  --glass-surface: rgba(11, 58, 56, 0.5);
+  --glass-glow: 0 0 40px rgba(20, 184, 166, 0.08);
 
   /* Radii */
   --radius-sm: 8px;
