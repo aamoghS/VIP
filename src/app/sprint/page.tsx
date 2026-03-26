@@ -34,24 +34,6 @@ import {
 } from "lucide-react";
 
 
-const [missions, setMissions] = useState<any[]>([]);
-
-useEffect(() => {
-  let mounted = true;
-  async function loadMissions() {
-    try {
-      const { getDocs, collection } = await import('firebase/firestore');
-      const qSnap = await getDocs(collection(db, 'missions'));
-      const loaded = qSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
-      if (mounted) setMissions(loaded);
-    } catch (err) {
-      console.error('Failed to load missions from Firestore', err);
-    }
-  }
-  loadMissions();
-  return () => { mounted = false; };
-}, []);
-
 type SprintState = {
   sprint1Completed: boolean;
   sprint2Completed: boolean;
@@ -93,6 +75,8 @@ export default function SprintPage() {
   const { addXp, unlockItem, incrementTeamMissions } = useProgress();
   const { user, loading: authLoading, signIn, signUp, logout } = useAuth();
 
+  const [missions, setMissions] = useState<any[]>([]);
+
   const [sessionCodeInput, setSessionCodeInput] = useState("");
   const [sessionCode, setSessionCode] = useState<string | null>(null);
   const [roomMode, setRoomMode] = useState<"choose" | "join">("choose");
@@ -127,6 +111,23 @@ export default function SprintPage() {
     });
     return () => unsubscribe();
   }, [sessionCode]);
+
+  // Load missions from Firestore
+  useEffect(() => {
+    let mounted = true;
+    async function loadMissions() {
+      try {
+        const { getDocs, collection } = await import('firebase/firestore');
+        const qSnap = await getDocs(collection(db, 'missions'));
+        const loaded = qSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+        if (mounted) setMissions(loaded);
+      } catch (err) {
+        console.error('Failed to load missions from Firestore', err);
+      }
+    }
+    loadMissions();
+    return () => { mounted = false; };
+  }, []);
 
   // client-side session handling: ensure cookie exists and prompt for display name once
   useEffect(() => {
@@ -183,7 +184,7 @@ export default function SprintPage() {
     setSessionCode(randomCode);
   };
 
-  const handleAuthSubmit = async (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setAuthError(null);
     try {
