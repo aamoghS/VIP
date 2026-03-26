@@ -13,17 +13,11 @@ import {
   Lock,
   Users,
   ArrowRight,
-  Loader2,
-  Radio,
   Play,
-  Target,
   Sparkles,
   Cpu,
-  LogOut,
   User as UserIcon,
-  Terminal,
   Trophy,
-  Zap,
   Code2,
   Hash,
   X,
@@ -72,8 +66,8 @@ const defaultRoomData = (missionId: string, user: User): RoomData => ({
 });
 
 export default function SprintPage() {
-  const { addXp, unlockItem, incrementTeamMissions } = useProgress();
-  const { user, loading: authLoading, signIn, signUp, logout } = useAuth();
+  const { addXp, incrementTeamMissions } = useProgress();
+  const { user, signIn, signUp, logout } = useAuth();
 
   const [missions, setMissions] = useState<any[]>([]);
 
@@ -335,14 +329,6 @@ export default function SprintPage() {
     setTemp("");
     setRewardClaimed(false);
     setTeam(null);
-  };
-
-  const getTotalPoints = (teamId: 'GroupA' | 'GroupB') => {
-    if (!roomData) return 0;
-    const historyPoints = (roomData.roundHistory || []).reduce((sum, r) => {
-      return sum + (teamId === 'GroupA' ? r.groupAPoints : r.groupBPoints);
-    }, 0);
-    return historyPoints + (roomData[teamId].points || 0);
   };
 
   let sprintStage = 1;
