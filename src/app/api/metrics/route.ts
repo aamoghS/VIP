@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const event = await recordEvent(sessionId, type as EventType, payload || {});
 
     return NextResponse.json({ success: true, event });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

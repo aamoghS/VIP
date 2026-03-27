@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, onSnapshot, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { User } from "firebase/auth";
 import {
@@ -27,6 +27,25 @@ import {
   Flame,
 } from "lucide-react";
 
+type Mission = {
+  id: string;
+  title: string;
+  description: string;
+  groupA: {
+    role: string;
+    brief: string;
+    instruction: string;
+    vars: { type: string; name: string; target: string }[];
+  };
+  groupB: {
+    role: string;
+    brief: string;
+    instruction: string;
+    logic: { variable: string; operator: string; target: string; action: string };
+  };
+  reward: { icon: string };
+  successMessage: string;
+};
 
 type SprintState = {
   sprint1Completed: boolean;
@@ -69,7 +88,7 @@ export default function SprintPage() {
   const { addXp, incrementTeamMissions } = useProgress();
   const { user, signIn, signUp, logout } = useAuth();
 
-  const [missions, setMissions] = useState<any[]>([]);
+  const [missions, setMissions] = useState<Mission[]>([]);
 
   const [sessionCodeInput, setSessionCodeInput] = useState("");
   const [sessionCode, setSessionCode] = useState<string | null>(null);
@@ -113,10 +132,9 @@ export default function SprintPage() {
       try {
         const { getDocs, collection } = await import('firebase/firestore');
         const qSnap = await getDocs(collection(db, 'missions'));
-        const loaded = qSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+        const loaded = qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Mission));
         if (mounted) setMissions(loaded);
-      } catch (err) {
-        console.error('Failed to load missions from Firestore', err);
+      } catch {
       }
     }
     loadMissions();
@@ -178,7 +196,7 @@ export default function SprintPage() {
     setSessionCode(randomCode);
   };
 
-  const handleAuthSubmit = async (e: React.SubmitEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAuthError(null);
     try {
@@ -201,8 +219,8 @@ export default function SprintPage() {
       setPendingAction(null);
       setEmail("");
       setPassword("");
-    } catch (err: any) {
-      setAuthError(err.message || "Authentication failed. Please check your credentials.");
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials.");
     }
   };
 

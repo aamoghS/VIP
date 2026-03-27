@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const sessionData = sSnap.exists() ? sSnap.data() : null;
 
     return NextResponse.json({ sessionId, isNew, session: sessionData });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Could not initialize session' }, { status: 500 });
   }
 }
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     await setDoc(sRef, { sessionId, displayName: String(displayName).trim(), lastActiveAt: Date.now() }, { merge: true });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Could not set display name' }, { status: 500 });
   }
 }

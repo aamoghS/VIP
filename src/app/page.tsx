@@ -141,7 +141,7 @@ export default function Home() {
                   Team up to solve real-world coding missions. Coordinate, collaborate, and conquer challenges together!
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)', fontSize: '0.85rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
-                  Join you're Team <ArrowRight size={16} />
+                  Join your Team <ArrowRight size={16} />
                 </div>
               </motion.div>
             </Link>

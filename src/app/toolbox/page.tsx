@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
+import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Target, Zap, User as UserIcon } from "lucide-react";
@@ -198,10 +198,10 @@ export default function ToolboxPage() {
     );
   };
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
     if (event.over && event.over.id === "drop-zone" && !evaluated && !evaluateMutation.isPending) {
-      handleEvaluate(event.active.id);
+      handleEvaluate(String(event.active.id));
     }
   };
 

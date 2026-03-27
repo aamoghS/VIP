@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       message: isCorrect ? 'Correct!' : 'Incorrect, try again! '
     });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'The server couldnt evaluate the route currently'}, { status: 500});
   }
 }

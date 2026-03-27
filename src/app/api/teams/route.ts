@@ -5,24 +5,29 @@ import { recordEvent } from '@/lib/sessionStore';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
-// Missions are stored in Firestore in the 'missions' collection.
+type Mission = {
+  id: string;
+  title: string;
+  description: string;
+  [key: string]: unknown;
+};
 async function getAllMissions() {
   const qSnap = await getDocs(collection(db, 'missions'));
-  return qSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  return qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Mission));
 }
 
 async function getMissionById(id: string | undefined) {
   if (!id) return null;
   const mRef = doc(db, 'missions', id);
   const mSnap = await getDoc(mRef);
-  return mSnap.exists() ? ({ id: mSnap.id, ...(mSnap.data() as any) } as any) : null;
+  return mSnap.exists() ? ({ id: mSnap.id, ...mSnap.data() } as Mission) : null;
 }
 
 type SprintState = {
   sprint1Completed: boolean;
   sprint2Completed: boolean;
   sprint3Completed: boolean;
-  dataSentToOtherTeam: any | null;
+  dataSentToOtherTeam: Record<string, unknown> | null;
   points: number;
 };
 
@@ -176,7 +181,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Server error parsing request' }, { status: 500 });
   }
 }

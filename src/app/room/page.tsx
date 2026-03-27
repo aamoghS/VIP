@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
-import { PlusSquare, Lock, Star, Sparkles, Crown, Trophy, Gem, Zap, Code2, Users, Target } from "lucide-react";
+import { Star, Sparkles, Crown, Trophy, Gem, Code2, Users } from "lucide-react";
 
 const allTrophies = [
   { id: "wrench", name: "Variables Wrench", icon: "🔧", desc: "Master variables", color: "#a855f7" },

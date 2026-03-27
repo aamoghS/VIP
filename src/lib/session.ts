@@ -40,15 +40,3 @@ export function readSessionIdFromRequest(request: Request): string | null {
 }
 
 
-export function getClientSessionId(): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp(`${SESSION_COOKIE_NAME}=([^;]+)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-
-export function setClientSessionId(sessionId: string): void {
-  if (typeof document === 'undefined') return;
-  const maxAge = 60 * 60 * 24 * 30;
-  document.cookie = `${SESSION_COOKIE_NAME}=${sessionId}; path=/; max-age=${maxAge}; samesite=lax`;
-}

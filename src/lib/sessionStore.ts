@@ -53,11 +53,6 @@ export async function getSessionEvents(sessionId: string): Promise<MetricEvent[]
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MetricEvent));
 }
 
-export async function getRecentEvents(count = 20): Promise<MetricEvent[]> {
-  const snap = await getDocs(query(eventsCol, orderBy('timestamp', 'desc'), limit(count)));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MetricEvent));
-}
-
 export async function getAggregatedMetrics(sessionId?: string) {
   const q = sessionId
     ? query(eventsCol, where('sessionId', '==', sessionId))

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
         'CDN-Cache-Control': 'public, s-maxage=5, stale-while-revalidate=59',
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to fetch questions from database.' },
       { status: 500 }
