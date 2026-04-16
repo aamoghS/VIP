@@ -38,6 +38,7 @@ type SprintMission = {
     challenge: string;
     questions: QuizQuestion[];
   };
+  handoffMessage: string;
   successMessage: string;
 };
 
@@ -49,79 +50,85 @@ const MISSIONS: SprintMission[] = [
     topic: "Variables",
     topicIcon: "📦",
     topicColor: "#a855f7",
-    description: "Group A learns what variables are and how to name them. Group B practices storing and changing values. Variables are how programs remember things!",
+    description: "Group A sets up the game's core variable. Group B takes that exact variable and updates it when the player scores. You must pass the baton!",
     xpReward: 400,
     groupA: {
-      role: "Namers",
-      challenge: "Understand what variables are and how to name them",
+      role: "Architects",
+      challenge: "Define the score variable to start the game",
       questions: [
         {
-          prompt: "A variable is like a labeled box that stores information. Which of these is the BEST description of a variable?",
+          prompt: "We need a variable to track the player's score. Which of these is the BEST description of a variable?",
           options: [
-            "A fixed value that can never change",
-            "A named storage location that holds a value",
-            "A type of loop",
-            "A button in an app",
+            "A fixed value that never changes",
+            "A named storage box that holds a value",
+            "A type of loop for counting",
+            "A visual button in the game",
           ],
-          answer: "A named storage location that holds a value",
-          explanation: "Think of a variable like a sticky note with a label. The label is the name (like 'score'), and you can write any value on it — and change it later. That's exactly what a variable does in code.",
+          answer: "A named storage box that holds a value",
+          explanation: "A variable is like a labeled box. The label is the name ('score'), and you can store values inside it and change them later.",
         },
         {
-          prompt: "Which variable name follows good naming rules?",
-          code: `// Which is the best name for a variable
-// that stores a student's age?
-A) 1age
-B) student age
-C) studentAge
-D) STUDENTAGE!!`,
-          options: ["1age", "student age", "studentAge", "STUDENTAGE!!"],
-          answer: "studentAge",
-          explanation: "Variable names can't start with a number, can't have spaces, and shouldn't have special characters. studentAge is clear, readable, and follows the camelCase style used in Java.",
+          prompt: "What is the best data type to store a game score (like 150 points)?",
+          options: ["String", "boolean", "int", "char"],
+          answer: "int",
+          explanation: "Scores are whole numbers. 'int' stands for integer, which is perfect for counts, scores, and lives.",
         },
         {
-          prompt: "What is the value of score after this code runs?",
-          code: `int score = 0;
-score = score + 10;
-score = score + 5;`,
-          options: ["0", "10", "15", "50"],
-          answer: "15",
-          explanation: "score starts at 0. Then we add 10 (score = 10). Then we add 5 (score = 15). Each line updates the variable. This is exactly how a game keeps track of points!",
+          prompt: "Write the code to create the score variable and set it to zero for the start of the game.",
+          code: `// Set up the start of the game`,
+          options: [
+            "int score = 0;",
+            "score = 0;",
+            "String score = '0';",
+            "int score;",
+          ],
+          answer: "int score = 0;",
+          explanation: "You must declare the type (int), name the variable (score), and set its initial value (= 0). Now the game is ready!",
         },
       ],
     },
+    handoffMessage: "Group A successfully created: `int score = 0;`. Group B, you must use this variable to give the player points!",
     groupB: {
-      role: "Value Trackers",
-      challenge: "Store and update values in variables",
+      role: "Gameplay Engineers",
+      challenge: "Update the score variable Group A created",
       questions: [
         {
-          prompt: "What data type should you use to store a student's name like \"Maria\"?",
-          options: ["int", "double", "String", "boolean"],
-          answer: "String",
-          explanation: "String stores text (words, names, sentences). int stores whole numbers. double stores decimals. boolean stores true/false. For a name like \"Maria\", you always use String.",
-        },
-        {
-          prompt: "What does this print?",
-          code: `String greeting = "Hello";
-String name = "Alex";
-System.out.println(greeting + " " + name);`,
-          options: ["Hello Alex", "greeting name", "HelloAlex", "Error"],
-          answer: "Hello Alex",
-          explanation: "The + sign with Strings joins (concatenates) them together. \"Hello\" + \" \" + \"Alex\" becomes \"Hello Alex\". The space in the middle is important — without it you'd get \"HelloAlex\".",
-        },
-        {
-          prompt: "You're building a quiz app. Which variable correctly stores a score of 87.5?",
+          prompt: "Group A handed you the 'score' variable. The player just grabbed a coin! How do you add 10 points to their score?",
+          code: `// Group A code:
+int score = 0;
+// Your code:`,
           options: [
-            "int score = 87.5;",
-            "double score = 87.5;",
-            "String score = 87.5;",
-            "boolean score = 87.5;",
+            "int score = 10;",
+            "score = score + 10;",
+            "score = 10;",
+            "score + 10;"
           ],
-          answer: "double score = 87.5;",
-          explanation: "int only holds whole numbers — 87.5 would cause an error. double holds decimal numbers, making it perfect for scores, prices, temperatures, and averages.",
+          answer: "score = score + 10;",
+          explanation: "To update an existing variable, you don't redeclare the 'int' part. \"score = score + 10\" means \"take the old score (0), add 10, and save it back into the score box.\"",
+        },
+        {
+          prompt: "Now the player grabbed a rare gem worth 50 points! Update the score again.",
+          code: `// Group A code: int score = 0;
+// Your previous code: score = score + 10;
+// What is the NEW score if you add 50?`,
+          options: ["50", "60", "0", "1050"],
+          answer: "60",
+          explanation: "Variables remember their state. The score was 10. Adding 50 makes it 60. This memory is the core of all applications.",
+        },
+        {
+          prompt: "Game over! How do you print the final score to the screen for the player to see?",
+          options: [
+            "System.out.println(score);",
+            "System.out.println(\"score\");",
+            "print score;",
+            "System.print(score);"
+          ],
+          answer: "System.out.println(score);",
+          explanation: "Without quotes, Java looks inside the variable box and prints the number (60). If you used quotes, it would literally print the word 'score'.",
         },
       ],
     },
-    successMessage: "Variable Vault unlocked! Variables are the building blocks — every app, game, and website uses them to remember information.",
+    successMessage: "Variable Vault unlocked! Group A built the memory, and Group B manipulated it. That's teamwork!",
   },
 
   // ── MISSION 2: Conditionals ───────────────────────────────────────────────
@@ -131,298 +138,261 @@ System.out.println(greeting + " " + name);`,
     topic: "If / Else",
     topicIcon: "🤔",
     topicColor: "#3b82f6",
-    description: "Group A writes the conditions that check if something is true. Group B handles what happens for each answer. Together you wire up the Decision Dome!",
+    description: "Group A sets the entry criteria by writing the boolean logic. Group B takes that logic and wires up the consequences. Split the decision in half!",
     xpReward: 450,
     groupA: {
-      role: "Condition Checkers",
-      challenge: "Write and read if/else conditions",
+      role: "Gatekeepers",
+      challenge: "Write the boolean condition for a VIP club",
       questions: [
         {
-          prompt: "Real life: \"If it's raining, bring an umbrella.\" Which code matches this thinking?",
-          code: `boolean isRaining = true;`,
-          options: [
-            "if (isRaining) { bringUmbrella(); }",
-            "while (isRaining) { bringUmbrella(); }",
-            "int isRaining = bringUmbrella;",
-            "for (isRaining) { }",
-          ],
-          answer: "if (isRaining) { bringUmbrella(); }",
-          explanation: "An if statement checks a condition — if it's true, run the code inside. Just like real life decisions: IF it's raining → bring umbrella. IF your score >= 60 → you pass. IF the light is red → stop.",
+          prompt: "We are programming a bouncer for a VIP club. People must be 18 or older to enter. Which operator means 'greater than or equal to'?",
+          options: [">=", "=>", "==", ">"],
+          answer: ">=",
+          explanation: "In Java, >= means greater than or equal to. It checks if the value on the left is larger or the exact same as the right.",
         },
         {
-          prompt: "What does this code print when score = 85?",
-          code: `int score = 85;
-if (score >= 90) {
-  System.out.println("A");
-} else if (score >= 80) {
-  System.out.println("B");
-} else {
-  System.out.println("C");
-}`,
-          options: ["A", "B", "C", "A and B"],
-          answer: "B",
-          explanation: "85 is NOT >= 90, so skip. 85 IS >= 80, so print \"B\" and stop. Once an else if matches, the rest are skipped. Your grade app works just like this!",
+          prompt: "Write the if statement condition that checks if a variable 'age' is 18 or older.",
+          options: [
+            "if (age > 18)",
+            "if (age == 18)",
+            "if (age >= 18)",
+            "if age >= 18:"
+          ],
+          answer: "if (age >= 18)",
+          explanation: "Parentheses () are required around conditions in Java. 'age >= 18' is the exact boolean check we need for the bouncer.",
         },
         {
-          prompt: "What does && mean in a condition?",
-          code: `if (age >= 13 && age <= 17) {
-  System.out.println("You are a teenager!");
-}`,
-          options: [
-            "OR — either condition can be true",
-            "NOT — flips true to false",
-            "AND — both conditions must be true",
-            "EQUALS — they must be the same",
-          ],
-          answer: "AND — both conditions must be true",
-          explanation: "&& means AND. age >= 13 AND age <= 17 must BOTH be true to print the message. A 12-year-old fails the first check. An 18-year-old fails the second. Only 13–17 passes both.",
+          prompt: "Wait! We also need them to have a VIP pass. Which operator means 'AND' to combine conditions?",
+          options: ["||", "&&", "++", "=="],
+          answer: "&&",
+          explanation: "&& is the logical AND operator. It means BOTH conditions must be true. Combining them: if (age >= 18 && hasPass)",
         },
       ],
     },
+    handoffMessage: "Group A built the condition: `if (age >= 18 && hasPass)`. Group B, use this check to let them into the club or reject them!",
     groupB: {
-      role: "Branch Builders",
-      challenge: "Trace what happens in each branch",
+      role: "Consequence Coders",
+      challenge: "Write the action blocks for Group A's condition",
       questions: [
         {
-          prompt: "A game gives a badge if your score is over 100. What prints when score = 55?",
-          code: `int score = 55;
-if (score > 100) {
-  System.out.println("Gold Badge!");
+          prompt: "Group A handed you the bouncer check. If the condition is TRUE, print 'Welcome VIP!'. What block wraps this action?",
+          code: `// Group A:
+if (age >= 18 && hasPass) 
+// Your action:`,
+          options: [
+            "{ System.out.println(\"Welcome VIP!\"); }",
+            "( System.out.println(\"Welcome VIP!\"); )",
+            "[ System.out.println(\"Welcome VIP!\"); ]",
+            "print \"Welcome VIP!\""
+          ],
+          answer: "{ System.out.println(\"Welcome VIP!\"); }",
+          explanation: "Curly braces {} define the 'block' of code that runs if the condition is true. Parentheses are for conditions; braces are for actions.",
+        },
+        {
+          prompt: "What if the condition is FALSE? We need to reject them. Which keyword acts as the backup plan?",
+          options: ["otherwise", "backup", "else", "catch"],
+          answer: "else",
+          explanation: "The 'else' block acts as a catch-all. If the 'if' condition is false, the code drops immediately into the 'else' block.",
+        },
+        {
+          prompt: "Put it all together. What happens if the person is 19 but DOES NOT have a pass (hasPass = false)?",
+          code: `// Group A + Group B combined:
+if (age >= 18 && hasPass) {
+  System.out.println("Welcome VIP!");
 } else {
-  System.out.println("Keep playing!");
+  System.out.println("Go home.");
 }`,
-          options: ["Gold Badge!", "Keep playing!", "Nothing", "Error"],
-          answer: "Keep playing!",
-          explanation: "55 > 100 is FALSE, so the if block is skipped. The else block runs instead and prints \"Keep playing!\". The else is the fallback — it runs when the condition is not met.",
-        },
-        {
-          prompt: "What is the bug in this code? It should only print one message.",
-          code: `int temp = 75;
-if (temp > 60) System.out.println("Warm");
-if (temp > 50) System.out.println("Not cold");
-if (temp > 40) System.out.println("Above freezing");`,
-          options: [
-            "The numbers are wrong",
-            "All three conditions are true — use else if instead",
-            "It will print nothing",
-            "temp should be a String",
-          ],
-          answer: "All three conditions are true — use else if instead",
-          explanation: "75 > 60 ✓, 75 > 50 ✓, and 75 > 40 ✓ — all three print! Separate if statements each run independently. Change the 2nd and 3rd to else if so only one prints. This is a very common beginner mistake.",
-        },
-        {
-          prompt: "What does ! (the NOT operator) do?",
-          code: `boolean gameOver = false;
-if (!gameOver) {
-  System.out.println("Keep playing!");
-}`,
-          options: [
-            "Does nothing",
-            "Flips the boolean — turns false into true",
-            "Makes it print twice",
-            "Ends the game",
-          ],
-          answer: "Flips the boolean — turns false into true",
-          explanation: "! means NOT. !false = true, so the condition is true and \"Keep playing!\" prints. !true = false. You'll see ! in games: if (!playerDead) — meaning if the player is NOT dead, keep running the game loop.",
+          options: ["Welcome VIP!", "Go home.", "Error", "Nothing prints"],
+          answer: "Go home.",
+          explanation: "Because the && operator requires BOTH to be true, the lack of a VIP pass makes the whole condition false, triggering the else block.",
         },
       ],
     },
-    successMessage: "Decision Dome complete! Every app makes decisions — login checks, game scoring, weather alerts — they all use if/else logic.",
+    successMessage: "Decision Dome complete! Group A set the rules, Group B built the outcomes. Seamless logic pipeline!",
   },
 
   // ── MISSION 3: Loops ──────────────────────────────────────────────────────
   {
     id: "loops",
-    title: "Loop Lab",
+    title: "Loop Labyrinth",
     topic: "Loops",
     topicIcon: "🔁",
     topicColor: "#10b981",
-    description: "Group A runs for loops that count through numbers. Group B uses while loops to repeat until something changes. Loops are how computers do repetitive work instantly!",
+    description: "Group A creates the 'while' loop condition that runs the monster spawner. Group B is trapped inside the loop and must figure out how to stop it!",
     xpReward: 500,
     groupA: {
-      role: "For Loop Operators",
-      challenge: "Count with for loops and predict output",
+      role: "Loop Starters",
+      challenge: "Set up the condition that makes a loop run",
       questions: [
         {
-          prompt: "A for loop has three parts. What does each part do?",
-          code: `for (int i = 1; i <= 5; i++) {
-  System.out.println(i);
-}
-// start; condition; update`,
+          prompt: "A 'while' loop repeats code automatically. It keeps running AS LONG AS... what?",
           options: [
-            "start at 1; run while i <= 5; add 1 each time",
-            "start at 5; run while i >= 1; subtract 1",
-            "run forever; stop at 5; multiply by 1",
-            "start at 0; run 5 times; reset to 0",
+            "The program is open",
+            "Its boolean condition remains true",
+            "It runs exactly 10 times",
+            "The user presses the Enter key"
           ],
-          answer: "start at 1; run while i <= 5; add 1 each time",
-          explanation: "A for loop: (start; condition; update). int i = 1 sets start. i <= 5 means keep going while true. i++ adds 1 each round. This prints 1, 2, 3, 4, 5 — like counting on your fingers.",
+          answer: "Its boolean condition remains true",
+          explanation: "A while loop is just an 'if' statement that repeats. As long as its condition is true, it goes back to the top and runs again.",
         },
         {
-          prompt: "How many times does this loop print \"Hello\"?",
-          code: `for (int i = 0; i < 4; i++) {
-  System.out.println("Hello");
-}`,
-          options: ["3 times", "4 times", "5 times", "Infinite"],
-          answer: "4 times",
-          explanation: "i starts at 0 and goes up by 1 each time: 0, 1, 2, 3. When i = 4, the condition i < 4 is false and the loop stops. Count: 0, 1, 2, 3 = 4 times. Starting at 0 instead of 1 is called zero-based counting.",
+          prompt: "We want an enemy spawner to run while we have fewer than 5 enemies. How do we start this?",
+          options: [
+            "if (enemies < 5) {",
+            "loop (enemies == 5) {",
+            "while (enemies < 5) {",
+            "for (enemies > 5) {"
+          ],
+          answer: "while (enemies < 5) {",
+          explanation: "The 'while' keyword checks the condition before every round. If you currently have 3 enemies, 3 < 5 is true, so a new enemy spawns.",
         },
         {
-          prompt: "A teacher wants to print every student number from 1 to 30. What's the output of the LAST line printed?",
-          code: `for (int student = 1; student <= 30; student++) {
-  System.out.println("Student #" + student);
-}`,
-          options: ["Student #0", "Student #29", "Student #30", "Student #31"],
-          answer: "Student #30",
-          explanation: "The loop counts from 1 to 30 (inclusive, because of <=). The last value printed is student = 30. Loops save you from writing System.out.println 30 times!",
+          prompt: "What happens if Group B never writes the code to increase the 'enemies' count?",
+          options: [
+            "The game crashes instantly",
+            "The loop stops by itself",
+            "It creates an infinite loop and freezes the game",
+            "It skips the loop"
+          ],
+          answer: "It creates an infinite loop and freezes the game",
+          explanation: "If the condition (enemies < 5) is true, and the variable never changes, the condition stays true forever. The game will keep spawning enemies until it crashes!",
         },
       ],
     },
+    handoffMessage: "Group A wrote the loop engine: `int enemies = 0; while (enemies < 5) { spawnEnemy(); ... }`. Group B, you are trapped inside! You must write the escape code!",
     groupB: {
-      role: "While Loop Watchers",
-      challenge: "Trace while loops and spot infinite loops",
+      role: "Loop Breakers",
+      challenge: "Update the loop variable to prevent an infinite crush",
       questions: [
         {
-          prompt: "A while loop runs as long as its condition is true. What does this print?",
-          code: `int lives = 3;
-while (lives > 0) {
-  System.out.println("Lives left: " + lives);
-  lives--;
-}`,
+          prompt: "Group A threw you into a loop! `while (enemies < 5)`. To eventually break out, what must you do inside the loop?",
           options: [
-            "Lives left: 3, 2, 1",
-            "Lives left: 3, 2, 1, 0",
-            "Lives left: 0",
-            "Runs forever",
+            "Change the 'enemies' variable",
+            "Press ESC",
+            "Write 'stop'",
+            "Use an if statement"
           ],
-          answer: "Lives left: 3, 2, 1",
-          explanation: "lives starts at 3. Each loop prints lives then subtracts 1. When lives = 0, the condition 0 > 0 is false and we stop. Just like a game: keeps running while you have lives remaining.",
+          answer: "Change the 'enemies' variable",
+          explanation: "To stop a while loop, the condition must eventually become false. That means you MUST update the variable checking the condition.",
         },
         {
-          prompt: "What is WRONG with this code?",
-          code: `int count = 1;
-while (count > 0) {
-  System.out.println(count);
-  count++;
-}`,
+          prompt: "How do you increase the `enemies` variable by 1 every time the loop runs?",
           options: [
-            "count should start at 0",
-            "It's an infinite loop — count grows forever",
-            "The condition should use >=",
-            "Nothing is wrong",
+            "enemies + 1;",
+            "enemies++;",
+            "enemies = 1;",
+            "enemies == 1;"
           ],
-          answer: "It's an infinite loop — count grows forever",
-          explanation: "count starts at 1 and increases each time. count > 0 is ALWAYS true because it keeps getting bigger. The loop never stops — this would freeze your program. Always make sure your loop has an exit!",
+          answer: "enemies++;",
+          explanation: "enemies++ is a fast way to write 'enemies = enemies + 1'. This ensures the count goes up: 1, 2, 3, 4, 5... and eventually breaks the loop.",
         },
         {
-          prompt: "For loops and while loops can both solve the same problems. When is a WHILE loop the better choice?",
-          options: [
-            "When you know exactly how many times to repeat",
-            "When you repeat until something specific happens (like a player winning)",
-            "Only for counting numbers",
-            "While loops are always better",
-          ],
-          answer: "When you repeat until something specific happens (like a player winning)",
-          explanation: "Use a for loop when you know the count (repeat 10 times). Use a while loop when you don't know how many times — like \"keep playing until the player wins\" or \"keep asking for input until it's valid\".",
+          prompt: "Let's put Group A and Group B's code together. How many enemies actually spawn?",
+          code: `// Group A:
+int enemies = 0;
+while (enemies < 5) {
+  spawnEnemy();
+  // Group B:
+  enemies++;
+}`,
+          options: ["4", "5", "6", "Infinite"],
+          answer: "5",
+          explanation: "It runs when enemies is 0, 1, 2, 3, and 4 (five times total). When enemies hits 5, `5 < 5` becomes false, and the loop safely ends.",
         },
       ],
     },
-    successMessage: "Loop Lab closed! Loops are how programs do repetitive tasks in milliseconds — sorting lists, loading content, animating games. They're everywhere.",
+    successMessage: "Loop Labyrinth cleared! Group A built the loop logic, and Group B prevented an infinite crash. Flawless execution.",
   },
 
   // ── MISSION 4: Functions ──────────────────────────────────────────────────
   {
     id: "functions",
     title: "Function Factory",
-    topic: "Functions & Methods",
+    topic: "Functions",
     topicIcon: "⚙️",
     topicColor: "#f59e0b",
-    description: "Group A defines functions with inputs. Group B calls them and uses their outputs. Functions are reusable recipe cards for your code!",
+    description: "Group A creates a custom function machine to bake a pizza. Group B supplies the ingredients (arguments) to run the machine. Build the pipeline!",
     xpReward: 550,
     groupA: {
-      role: "Function Designers",
-      challenge: "Write functions with parameters and return values",
+      role: "Machine Builders",
+      challenge: "Define a function and its parameters",
       questions: [
         {
-          prompt: "Why do we use functions (also called methods) in programming?",
+          prompt: "What is the main reason programmers use functions?",
           options: [
-            "To make code longer and more complicated",
-            "To write code once and reuse it many times (DRY: Don't Repeat Yourself)",
-            "Functions are required in every Java program",
-            "To slow down the program",
+            "To make code run slower",
+            "To group reusable code together so you don't repeat yourself",
+            "To change the color of the app",
+            "To draw graphics on the screen"
           ],
-          answer: "To write code once and reuse it many times (DRY: Don't Repeat Yourself)",
-          explanation: "DRY = Don't Repeat Yourself. Instead of writing the same 5 lines 10 times, write a function once and call it 10 times. If you fix a bug in the function, it's fixed everywhere — like a recipe card you can hand to anyone.",
+          answer: "To group reusable code together so you don't repeat yourself",
+          explanation: "The DRY principle (Don't Repeat Yourself) is key. If you bake pizzas a lot, you build a 'bakePizza()' function rather than typing out the recipe 50 times.",
         },
         {
-          prompt: "What does this function return when called with greet(\"Sam\")?",
-          code: `public static String greet(String name) {
-  return "Hello, " + name + "!";
-}`,
-          options: ["Hello, name!", "Hello, Sam!", "greet", "Sam"],
-          answer: "Hello, Sam!",
-          explanation: "The function takes name as input (\"Sam\"), combines it with \"Hello, \" and \"!\", then returns the result. return sends the answer back to wherever the function was called — like a machine that takes an input and spits out an output.",
+          prompt: "Let's build a function. We want our function to accept an ingredient. What is the variable inside the parentheses called?",
+          code: `void bakePizza(String topping) { ... }`,
+          options: ["Return type", "Modifier", "Parameter", "Class"],
+          answer: "Parameter",
+          explanation: "A parameter (like `String topping`) is an empty slot. It's the machine waiting for someone to drop ingredients in to do its job.",
         },
         {
-          prompt: "What does `void` mean as a return type?",
-          code: `public static void printScore(int score) {
-  System.out.println("Your score: " + score);
-}`,
+          prompt: "Inside the function, how do we use that parameter?",
           options: [
-            "The function returns 0",
-            "The function returns a word",
-            "The function returns nothing — it just does something",
-            "void means the function is broken",
+            "System.out.println(\"Baking a pizza with \" + topping);",
+            "System.out.println(\"Baking a pizza with pepperoni\");",
+            "System.out.println(\"Baking a pizza with \" + String);",
+            "System.out.println(topping + topping);"
           ],
-          answer: "The function returns nothing — it just does something",
-          explanation: "void means 'no return value'. This function prints something — it does a job — but doesn't send back an answer. Compare: greet() returns a String. printScore() just prints. Both are useful for different situations.",
+          answer: "System.out.println(\"Baking a pizza with \" + topping);",
+          explanation: "You use the parameter's name (`topping`). You don't hardcode 'pepperoni', because the whole point of the machine is that it works for ANY topping handed to it.",
         },
       ],
     },
+    handoffMessage: "Group A built the machine: `void bakePizza(String topping) { print... }`. Group B, the machine is useless unless you call it! Send in the ingredients!",
     groupB: {
-      role: "Function Callers",
-      challenge: "Call functions and trace return values",
+      role: "Machine Operators",
+      challenge: "Call Group A's function and pass arguments",
       questions: [
         {
-          prompt: "What does this print?",
-          code: `public static int add(int a, int b) {
-  return a + b;
-}
-
-System.out.println(add(3, 7));`,
-          options: ["3", "7", "10", "a + b"],
-          answer: "10",
-          explanation: "add(3, 7) runs the function with a=3 and b=7, computes 3+7=10, and returns 10. Then println prints 10. Functions take inputs (called parameters or arguments) and produce an output (the return value).",
-        },
-        {
-          prompt: "A function is called from inside another function. What prints?",
-          code: `public static int double(int n) {
-  return n * 2;
-}
-
-System.out.println(double(double(3)));`,
-          options: ["3", "6", "9", "12"],
-          answer: "12",
-          explanation: "Inner call first: double(3) = 6. Then outer call: double(6) = 12. Nesting function calls works like math parentheses — solve the inside first, then use the result for the outside.",
-        },
-        {
-          prompt: "What is a 'parameter' in a function?",
-          code: `// What is 'name' in this function?
-public static void sayHello(String name) {
-  System.out.println("Hi, " + name);
-}`,
+          prompt: "Group A gave you the `bakePizza(String topping)` machine. How do you turn it on and order a Mushroom pizza?",
           options: [
-            "The function's name",
-            "An input the function receives to do its job",
-            "The value the function returns",
-            "A variable defined outside the function",
+            "bakePizza = \"Mushroom\";",
+            "String topping = \"Mushroom\";",
+            "bakePizza(\"Mushroom\");",
+            "call bakePizza;"
           ],
-          answer: "An input the function receives to do its job",
-          explanation: "Parameters are the inputs a function needs. name is a parameter — when you call sayHello(\"Jordan\"), \"Jordan\" is passed in as the value of name. Like a recipe with ingredients: the recipe = function, ingredients = parameters.",
+          answer: "bakePizza(\"Mushroom\");",
+          explanation: "To run a function, you 'call' it by writing its name followed by parentheses, putting the specific data (the 'argument') inside the parentheses.",
+        },
+        {
+          prompt: "What happens if you run this line of code using Group A's machine?",
+          code: `bakePizza(100);`,
+          options: [
+            "It prints 'Baking a pizza with 100'",
+            "It causes an ERROR (type mismatch)",
+            "It bakes 100 pizzas",
+            "It skips the line"
+          ],
+          answer: "It causes an ERROR (type mismatch)",
+          explanation: "Group A strictly designed the parameter as a `String`. If you try to pass an integer `100`, Java throws a type error. Machines only accept what they were built for!",
+        },
+        {
+          prompt: "What is the output of this final sequence?",
+          code: `// Group B calling Group A's machine
+bakePizza("Cheese");
+bakePizza("Pepperoni");`,
+          options: [
+             "Baking a pizza with Cheese (and nothing else)",
+             "Baking a pizza with Pepperoni (and nothing else)",
+             "Baking a pizza with Cheese\nBaking a pizza with Pepperoni",
+             "Error"
+          ],
+          answer: "Baking a pizza with Cheese\nBaking a pizza with Pepperoni",
+          explanation: "Because Group A built a reusable machine, Group B can call it as many times as they want with different data. The code inside runs twice!",
         },
       ],
     },
-    successMessage: "Function Factory running! Every app is built from functions — login(), loadGame(), calculateScore(). Break big problems into small, reusable pieces.",
+    successMessage: "Function Factory running! Group A built the logic, Group B executed it. That's how massive codebases at Google are organized.",
   },
 
   // ── MISSION 5: Debugging ──────────────────────────────────────────────────
@@ -473,6 +443,7 @@ System.out.println(scores[5]); // only 3 items!`,
         },
       ],
     },
+    handoffMessage: "Group A fixed the syntax errors. Now the code runs, but it's giving the wrong answers! Group B, hunt down the logic bugs!",
     groupB: {
       role: "Logic Hunters",
       challenge: "Find bugs that give wrong answers",
@@ -1368,24 +1339,50 @@ export default function SprintPage() {
           </div>
         </div>
 
-        {/* Status footer */}
+        {/* Status footer & Handoff Banner */}
         <div style={{
-          marginTop: "1.5rem", padding: "0.875rem 1.25rem",
-          background: "rgba(255,255,255,0.015)", borderRadius: "var(--radius-sm)",
-          border: "1px solid rgba(255,255,255,0.04)",
-          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem",
+          marginTop: "1.5rem", padding: "1.5rem",
+          background: "rgba(255,255,255,0.02)", borderRadius: "var(--radius-md)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          display: "flex", flexDirection: "column", gap: "1rem"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-            <Flame size={13} color="#f59e0b" />
-            <span>Group A goes first — Group B unlocks when A finishes</span>
-          </div>
-          <div style={{ display: "flex", gap: "1rem", fontSize: "0.78rem", fontFamily: "'JetBrains Mono', monospace" }}>
-            <span style={{ color: groupAResult.completed ? "#10b981" : "var(--text-muted)" }}>
-              A: {groupAResult.completed ? "✓ Done" : `${groupAResult.questionsAnswered}/${mission.groupA.questions.length}`}
-            </span>
-            <span style={{ color: groupBResult.completed ? "#10b981" : groupBUnlocked ? "var(--accent-blue)" : "var(--text-muted)" }}>
-              B: {groupBResult.completed ? "✓ Done" : groupBUnlocked ? `${groupBResult.questionsAnswered}/${mission.groupB.questions.length}` : "Locked"}
-            </span>
+          {/* Handoff Message (Shown only when A is done and B hasn't finished) */}
+          <AnimatePresence>
+            {groupAResult.completed && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                style={{
+                   background: "linear-gradient(to right, rgba(99,102,241,0.1), rgba(59,130,246,0.1))",
+                   borderLeft: "4px solid #6366f1",
+                   padding: "1.25rem",
+                   borderRadius: "var(--radius-sm)",
+                   marginBottom: "0.5rem"
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#818cf8", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
+                  <Zap size={16} /> Baton Pass
+                </div>
+                <div style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  {mission.handoffMessage}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              <Flame size={13} color="#f59e0b" />
+              <span>Group A acts as the foundation — Group B inherits their work.</span>
+            </div>
+            <div style={{ display: "flex", gap: "1rem", fontSize: "0.78rem", fontFamily: "'JetBrains Mono', monospace" }}>
+              <span style={{ color: groupAResult.completed ? "#10b981" : "var(--text-muted)" }}>
+                A: {groupAResult.completed ? "✓ Done" : `${groupAResult.questionsAnswered}/${mission.groupA.questions.length}`}
+              </span>
+              <span style={{ color: groupBResult.completed ? "#10b981" : groupBUnlocked ? "var(--accent-blue)" : "var(--text-muted)" }}>
+                B: {groupBResult.completed ? "✓ Done" : groupBUnlocked ? `${groupBResult.questionsAnswered}/${mission.groupB.questions.length}` : "Locked"}
+              </span>
+            </div>
           </div>
         </div>
       </motion.div>
