@@ -589,6 +589,7 @@ Step 3: Is "Carlos" == "Carlos"? YES — found it!`,
         },
       ],
     },
+    handoffMessage: "Group A laid out the steps of the algorithm. Group B, it's your turn to trace those steps and predict the outcome!",
     successMessage: "Algorithm Academy complete! Every app, game, and website runs on algorithms. Learning to think in steps and solve problems is the heart of Computer Science.",
   },
 ];
