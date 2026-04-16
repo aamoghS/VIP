@@ -8,6 +8,8 @@ import {
   Trophy, Code2, RotateCcw, Crown, Medal, Flame, Zap,
   BookOpen, Terminal, XCircle, Users, ChevronDown,
 } from "lucide-react";
+import { doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HARDCODED SPRINT MISSIONS  (CS-focused, learning-first)
@@ -872,7 +874,7 @@ export default function SprintPage() {
   // Which team the student picked
   const [team, setTeam] = useState<"GroupA" | "GroupB" | null>(null);
 
-  // Local team results (no Firebase, no server)
+  // Local team results (synced with Firebase)
   const [groupAResult, setGroupAResult] = useState<TeamResult>(freshTeam());
   const [groupBResult, setGroupBResult] = useState<TeamResult>(freshTeam());
 
@@ -882,23 +884,59 @@ export default function SprintPage() {
 
   const mission = selectedMission;
 
-  // ── Quiz completion handlers ──────────────────────────────────────────────
-  const handleGroupAComplete = (correct: number, total: number) => {
-    if (!mission) return;
-    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
-    addXp(pts);
-    setXpAmount(pts);
-    setShowXpBurst(true);
-    setGroupAResult({ questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true });
+  // ── Firebase Sync ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const roomRef = doc(db, "sprint_rooms", "default");
+    const unsub = onSnapshot(roomRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.selectedMissionId) {
+          const m = MISSIONS.find(m => m.id === data.selectedMissionId);
+          if (m) setSelectedMission(m);
+        } else {
+          setSelectedMission(null);
+        }
+        if (data.groupAResult) setGroupAResult(data.groupAResult);
+        if (data.groupBResult) setGroupBResult(data.groupBResult);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const selectMissionInDb = async (m: SprintMission) => {
+    const roomRef = doc(db, "sprint_rooms", "default");
+    await setDoc(roomRef, {
+      selectedMissionId: m.id,
+      groupAResult: freshTeam(),
+      groupBResult: freshTeam()
+    });
   };
 
-  const handleGroupBComplete = (correct: number, total: number) => {
+  // ── Quiz completion handlers ──────────────────────────────────────────────
+  const handleGroupAComplete = async (correct: number, total: number) => {
     if (!mission) return;
     const pts = Math.round((correct / total) * mission.xpReward * 0.5);
     addXp(pts);
     setXpAmount(pts);
     setShowXpBurst(true);
-    setGroupBResult({ questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true });
+    const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
+    setGroupAResult(result);
+    // sync to Firebase
+    const roomRef = doc(db, "sprint_rooms", "default");
+    await updateDoc(roomRef, { groupAResult: result });
+  };
+
+  const handleGroupBComplete = async (correct: number, total: number) => {
+    if (!mission) return;
+    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
+    addXp(pts);
+    setXpAmount(pts);
+    setShowXpBurst(true);
+    const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
+    setGroupBResult(result);
+    // sync to Firebase
+    const roomRef = doc(db, "sprint_rooms", "default");
+    await updateDoc(roomRef, { groupBResult: result });
   };
 
   // Auto-show final when both done
@@ -909,19 +947,25 @@ export default function SprintPage() {
     }
   }, [groupAResult.completed, groupBResult.completed, showFinalEnd]);
 
-  const handlePlayAgain = () => {
-    setGroupAResult(freshTeam());
-    setGroupBResult(freshTeam());
-    setShowFinalEnd(false);
+  const handlePlayAgain = async () => {
     setTeam(null);
+    setShowFinalEnd(false);
+    const roomRef = doc(db, "sprint_rooms", "default");
+    await setDoc(roomRef, {
+      groupAResult: freshTeam(),
+      groupBResult: freshTeam()
+    }, { merge: true });
   };
 
-  const handleNewMission = () => {
-    setGroupAResult(freshTeam());
-    setGroupBResult(freshTeam());
-    setShowFinalEnd(false);
+  const handleNewMission = async () => {
     setTeam(null);
-    setSelectedMission(null);
+    setShowFinalEnd(false);
+    const roomRef = doc(db, "sprint_rooms", "default");
+    await setDoc(roomRef, {
+      selectedMissionId: null,
+      groupAResult: freshTeam(),
+      groupBResult: freshTeam()
+    }, { merge: true });
   };
 
   const getWinner = () => {
@@ -970,7 +1014,7 @@ export default function SprintPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.06 }}
               whileHover={{ y: -3, borderColor: m.topicColor }}
-              onClick={() => setSelectedMission(m)}
+              onClick={() => selectMissionInDb(m)}
               style={{
                 background: "rgba(255,255,255,0.02)",
                 border: `1px solid rgba(255,255,255,0.08)`,
@@ -1033,7 +1077,7 @@ export default function SprintPage() {
 
         {/* Back button */}
         <button
-          onClick={() => setSelectedMission(null)}
+          onClick={handleNewMission}
           style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
         >
           ← Back to missions
