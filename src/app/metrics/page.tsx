@@ -1,410 +1,224 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
-import AnimatedNumber from "@/components/AnimatedNumber";
+import { motion } from "framer-motion";
+import { useProgress } from "@/context/ProgressContext";
 import {
-  BarChart3,
-  Users,
-  Target,
-  Zap,
-  TrendingUp,
-  Activity,
-  CheckCircle,
-  XCircle,
-  Trophy,
-  Sparkles,
-  Radio,
-  Clock,
-  Cpu,
+  BarChart3, Target, Zap, TrendingUp, CheckCircle, XCircle,
+  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, FlaskConical,
 } from "lucide-react";
 
-type TopicBreakdown = {
-  topic: string;
-  total: number;
-  correct: number;
-  accuracy: number;
-};
+const TOPICS = [
+  { key: "variables",  label: "Variables",  emoji: "📦", icon: Code2,      color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
+  { key: "logic",      label: "If / Else",  emoji: "🤔", icon: GitBranch,  color: "#3b82f6", glow: "rgba(59,130,246,0.3)"  },
+  { key: "loops",      label: "Loops",      emoji: "🔁", icon: Repeat2,    color: "#10b981", glow: "rgba(16,185,129,0.3)"  },
+  { key: "functions",  label: "Functions",  emoji: "⚙️", icon: FlaskConical, color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
+  { key: "debugging",  label: "Debugging",  emoji: "🐛", icon: Bug,        color: "#ef4444", glow: "rgba(239,68,68,0.3)"   },
+  { key: "algorithms", label: "Algorithms", emoji: "🗺️", icon: BookOpen,   color: "#06b6d4", glow: "rgba(6,182,212,0.3)"   },
+];
 
-type MetricEvent = {
-  id: string;
-  sessionId: string;
-  type: string;
-  payload: Record<string, unknown>;
-  timestamp: number;
-};
-
-type MetricsData = {
-  activeSessionCount: number;
-  totalSessions: number;
-  totalQuestions: number;
-  totalCorrect: number;
-  accuracyRate: number;
-  totalSprintCompletions: number;
-  totalXpEarned: number;
-  topicBreakdown: TopicBreakdown[];
-  recentEvents: MetricEvent[];
-  currentSessionId: string;
-};
-
-const topicColors: Record<string, string> = {
-  variables: "#a855f7",
-  logic: "#3b82f6",
-  loops: "#10b981",
-  math: "#f59e0b",
-  science: "#06b6d4",
-  ela: "#ec4899",
-  history: "#8b5cf6",
-  unknown: "#64748b",
-};
-
-const topicEmoji: Record<string, string> = {
-  variables: "🔧",
-  logic: "🧠",
-  loops: "♾️",
-  math: "📐",
-  science: "🧪",
-  ela: "📝",
-  history: "📚",
-  unknown: "❓",
-};
-
-const eventLabels: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  question_answered: { label: "Question Answered", icon: <Target size={16} />, color: "#3b82f6" },
-  sprint_completed: { label: "Sprint Completed", icon: <Zap size={16} />, color: "#10b981" },
-  xp_earned: { label: "XP Earned", icon: <Sparkles size={16} />, color: "#f59e0b" },
-  page_visited: { label: "Page Visited", icon: <Activity size={16} />, color: "#64748b" },
-  sprint_joined: { label: "Sprint Joined", icon: <Users size={16} />, color: "#8b5cf6" },
-  reward_claimed: { label: "Reward Claimed", icon: <Trophy size={16} />, color: "#ec4899" },
-};
-
-function formatTimeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 5) return "just now";
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  return `${hours}h ago`;
+function accuracyColor(pct: number) {
+  if (pct >= 80) return "#10b981";
+  if (pct >= 60) return "#f59e0b";
+  return "#ef4444";
 }
+
+function grade(pct: number) {
+  if (pct >= 90) return { label: "Mastered ✓", color: "#10b981" };
+  if (pct >= 75) return { label: "Proficient", color: "#3b82f6" };
+  if (pct >= 60) return { label: "Getting there", color: "#f59e0b" };
+  return { label: "Needs practice", color: "#ef4444" };
+}
+
+const card = {
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "var(--radius-md)",
+  padding: "1.5rem",
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const } },
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] as const } },
 };
 
 export default function MetricsPage() {
-  const { data, isLoading, error } = useQuery<MetricsData>({
-    queryKey: ["metrics"],
-    queryFn: async () => {
-      const res = await fetch("/api/metrics");
-      if (!res.ok) throw new Error("Failed to fetch metrics");
-      return res.json();
-    },
-    refetchInterval: 3000,
+  const { xp, questionsSolved, teamMissionsCompleted, topicStats, resetProgress } = useProgress();
+
+  const totalAttempted = Object.values(topicStats).reduce((s, t) => s + t.attempted, 0);
+  const totalCorrect   = Object.values(topicStats).reduce((s, t) => s + t.correct, 0);
+  const overallPct     = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
+  const level          = Math.floor(xp / 500) + 1;
+
+  const topicsWithData = TOPICS.map(t => {
+    const stat = topicStats[t.key] ?? { attempted: 0, correct: 0 };
+    const pct  = stat.attempted > 0 ? Math.round((stat.correct / stat.attempted) * 100) : null;
+    return { ...t, ...stat, pct };
   });
 
-  if (isLoading) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "60vh", gap: "1.5rem" }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-          <BarChart3 size={48} color="var(--accent-indigo)" />
-        </motion.div>
-        <p style={{ color: "var(--text-muted)", fontSize: "1.1rem" }}>Loading metrics...</p>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
-        <div className="glass-card" style={{ padding: "2rem", textAlign: "center" }}>
-          <XCircle size={48} color="#ef4444" style={{ marginBottom: "1rem" }} />
-          <p style={{ color: "var(--text-secondary)" }}>Failed to load metrics. Try refreshing.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const maxTopicTotal = Math.max(...data.topicBreakdown.map((t) => t.total), 1);
+  const weakest  = topicsWithData.filter(t => t.pct !== null && t.pct < 60).sort((a, b) => (a.pct ?? 0) - (b.pct ?? 0));
+  const strongest = topicsWithData.filter(t => t.pct !== null && t.pct >= 80).sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0));
 
   return (
     <motion.div initial="hidden" animate="visible" variants={containerVariants}>
 
-      <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: "2.5rem" }}>
-        <div className="page-header">
-          <h1 className="page-title">Real-Time Metrics</h1>
-          <p className="page-subtitle">Live activity tracking powered by cookie sessions</p>
+      {/* Header */}
+      <motion.div variants={item} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem" }}>
+        <div>
+          <h1 style={{ fontSize: "2.5rem", fontWeight: 800, letterSpacing: "-1px", marginBottom: "0.25rem" }}>
+            My Progress
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>
+            All stats are saved locally — your personal learning snapshot.
+          </p>
         </div>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <div className="badge-premium" style={{ background: "var(--accent-indigo-dim)" }}>
-            <motion.div
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Radio size={14} color="var(--accent-indigo)" />
-            </motion.div>
-            <span style={{ color: "var(--accent-indigo)", fontWeight: 600 }}>Live</span>
+        <button
+          onClick={() => { if (confirm("Reset ALL progress? This cannot be undone.")) resetProgress(); }}
+          style={{
+            display: "flex", alignItems: "center", gap: "0.5rem",
+            padding: "0.6rem 1.1rem", borderRadius: "var(--radius-sm)",
+            background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+            color: "#ef4444", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600,
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.2)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")}
+        >
+          <RotateCcw size={14} />
+          Reset Progress
+        </button>
+      </motion.div>
+
+      {/* Stat tiles */}
+      <motion.div variants={item} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
+        {[
+          { label: "Total XP",        value: xp,                   icon: Sparkles,   color: "#f59e0b" },
+          { label: "Level",            value: level,                icon: TrendingUp, color: "#a855f7" },
+          { label: "Questions Done",   value: questionsSolved,      icon: Target,     color: "#3b82f6" },
+          { label: "Sprints Done",     value: teamMissionsCompleted, icon: Zap,        color: "#10b981" },
+          { label: "Overall Accuracy", value: `${overallPct}%`,    icon: BarChart3,  color: accuracyColor(overallPct) },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <motion.div key={label} style={{ ...card }} whileHover={{ y: -3 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon size={17} color={color} />
+              </div>
+              <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "1px", color: "var(--text-muted)" }}>{label}</span>
+            </div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>{value}</div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Topic breakdown */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
+
+        <motion.div variants={item} style={card}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
+            <BarChart3 size={20} color="var(--accent-indigo)" />
+            <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Topic Accuracy</h2>
           </div>
-          {data.currentSessionId && (
-            <div className="badge-premium" style={{ background: "var(--bg-elevated)", fontFamily: "'JetBrains Mono', monospace", fontSize: "0.75rem" }}>
-              <Cpu size={14} />
-              <span>{data.currentSessionId.slice(0, 12)}…</span>
+
+          {totalAttempted === 0 ? (
+            <p style={{ color: "var(--text-muted)", textAlign: "center", padding: "2rem 0" }}>
+              No questions answered yet. Head to The Toolbox!
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+              {topicsWithData.map((t, i) => (
+                <motion.div key={t.key} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span style={{ fontSize: "1rem" }}>{t.emoji}</span>
+                      <span style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{t.label}</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+                        {t.correct}/{t.attempted}
+                      </span>
+                      {t.pct !== null ? (
+                        <span style={{ fontWeight: 700, fontSize: "0.85rem", color: accuracyColor(t.pct), fontFamily: "'JetBrains Mono', monospace" }}>
+                          {t.pct}%
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>—</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.3)", borderRadius: "3px", overflow: "hidden" }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: t.pct !== null ? `${t.pct}%` : "0%" }}
+                      transition={{ duration: 0.8, delay: i * 0.07, ease: "easeOut" }}
+                      style={{ height: "100%", background: t.pct !== null ? accuracyColor(t.pct) : "transparent", borderRadius: "3px" }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
             </div>
           )}
-        </div>
-      </motion.div>
-
-
-      <motion.div
-        variants={itemVariants}
-        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}
-      >
-
-        <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "50%",
-              background: "rgba(16, 185, 129, 0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 20px rgba(16, 185, 129, 0.3)"
-            }}>
-              <Users size={20} color="#10b981" />
-            </div>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px" }}>Active Sessions</span>
-          </div>
-          <motion.div
-            key={data.activeSessionCount}
-            initial={{ scale: 1.2, color: "#10b981" }}
-            animate={{ scale: 1, color: "var(--text-primary)" }}
-            style={{ fontSize: "2.5rem", fontWeight: 700 }}
-          >
-            <AnimatedNumber value={data.activeSessionCount} />
-          </motion.div>
-          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-            {data.totalSessions} total
-          </div>
         </motion.div>
 
+        {/* Mastery grades + coaching */}
+        <motion.div variants={item} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
-        <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "50%",
-              background: "rgba(59, 130, 246, 0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)"
-            }}>
-              <Target size={20} color="#3b82f6" />
+          <div style={card}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem" }}>
+              <Trophy size={20} color="#f59e0b" />
+              <h2 style={{ fontSize: "1.1rem", fontWeight: 700 }}>Mastery Levels</h2>
             </div>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px" }}>Questions</span>
-          </div>
-          <motion.div
-            key={data.totalQuestions}
-            initial={{ scale: 1.2, color: "#3b82f6" }}
-            animate={{ scale: 1, color: "var(--text-primary)" }}
-            style={{ fontSize: "2.5rem", fontWeight: 700 }}
-          >
-            <AnimatedNumber value={data.totalQuestions} />
-          </motion.div>
-          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-            {data.totalCorrect} correct
-          </div>
-        </motion.div>
-
-
-        <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "50%",
-              background: "rgba(168, 85, 247, 0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 20px rgba(168, 85, 247, 0.3)"
-            }}>
-              <TrendingUp size={20} color="#a855f7" />
-            </div>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px" }}>Accuracy</span>
-          </div>
-          <motion.div
-            key={data.accuracyRate}
-            initial={{ scale: 1.2, color: "#a855f7" }}
-            animate={{ scale: 1, color: "var(--text-primary)" }}
-            style={{ fontSize: "2.5rem", fontWeight: 700 }}
-          >
-            <AnimatedNumber value={data.accuracyRate} />%
-          </motion.div>
-          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-            {data.totalSprintCompletions} sprints done
-          </div>
-        </motion.div>
-
-
-        <motion.div className="glass-card" whileHover={{ y: -4 }} style={{ padding: "1.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "50%",
-              background: "rgba(245, 158, 11, 0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 20px rgba(245, 158, 11, 0.3)"
-            }}>
-              <Sparkles size={20} color="#f59e0b" />
-            </div>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "1px" }}>Total XP</span>
-          </div>
-          <motion.div
-            key={data.totalXpEarned}
-            initial={{ scale: 1.2, color: "#f59e0b" }}
-            animate={{ scale: 1, color: "var(--text-primary)" }}
-            style={{ fontSize: "2.5rem", fontWeight: 700 }}
-          >
-            <AnimatedNumber value={data.totalXpEarned} />
-          </motion.div>
-          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-            across all sessions
-          </div>
-        </motion.div>
-      </motion.div>
-
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-
-        <motion.div variants={itemVariants} className="glass-card">
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-            <BarChart3 size={22} color="var(--accent-indigo)" />
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Topic Breakdown</h2>
-          </div>
-
-          {data.topicBreakdown.length === 0 ? (
-            <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "2rem 0" }}>
-              No questions answered yet. Start solving challenges!
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {data.topicBreakdown.map((topic, i) => {
-                const color = topicColors[topic.topic] || topicColors.unknown;
-                const emoji = topicEmoji[topic.topic] || topicEmoji.unknown;
-                const barWidth = (topic.total / maxTopicTotal) * 100;
-
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              {topicsWithData.map(t => {
+                const g = t.pct !== null ? grade(t.pct) : null;
                 return (
-                  <motion.div
-                    key={topic.topic}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.375rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "1.1rem" }}>{emoji}</span>
-                        <span style={{ color: "var(--text-secondary)", fontSize: "0.9rem", textTransform: "capitalize" }}>{topic.topic}</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                        <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{topic.total} Q</span>
-                        <span style={{
-                          color: topic.accuracy >= 70 ? "#10b981" : topic.accuracy >= 40 ? "#f59e0b" : "#ef4444",
-                          fontWeight: 600, fontSize: "0.85rem", fontFamily: "'JetBrains Mono', monospace"
-                        }}>
-                          {topic.accuracy}%
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.3)", borderRadius: "3px", overflow: "hidden" }}>
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${barWidth}%` }}
-                        transition={{ duration: 0.8, delay: i * 0.1, ease: "easeOut" }}
-                        style={{ height: "100%", background: color, borderRadius: "3px" }}
-                      />
-                    </div>
-                  </motion.div>
+                  <div key={t.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "rgba(0,0,0,0.2)" }}>
+                    <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{t.emoji} {t.label}</span>
+                    {g ? (
+                      <span style={{ fontSize: "0.78rem", fontWeight: 700, color: g.color, fontFamily: "'JetBrains Mono', monospace" }}>{g.label}</span>
+                    ) : (
+                      <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Not started</span>
+                    )}
+                  </div>
                 );
               })}
             </div>
+          </div>
+
+          {/* Coaching callouts */}
+          {(weakest.length > 0 || strongest.length > 0) && (
+            <div style={card}>
+              <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem" }}>💡 Focus Areas</h2>
+              {weakest.length > 0 && (
+                <div style={{ marginBottom: "0.75rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                    <XCircle size={14} color="#ef4444" />
+                    <span style={{ fontSize: "0.8rem", color: "#ef4444", fontWeight: 600 }}>Needs more practice</span>
+                  </div>
+                  {weakest.slice(0, 2).map(t => (
+                    <div key={t.key} style={{ fontSize: "0.85rem", color: "var(--text-secondary)", padding: "0.2rem 0 0.2rem 1.25rem" }}>
+                      {t.emoji} {t.label} — {t.pct}% accuracy
+                    </div>
+                  ))}
+                </div>
+              )}
+              {strongest.length > 0 && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                    <CheckCircle size={14} color="#10b981" />
+                    <span style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: 600 }}>Strongest topics</span>
+                  </div>
+                  {strongest.slice(0, 2).map(t => (
+                    <div key={t.key} style={{ fontSize: "0.85rem", color: "var(--text-secondary)", padding: "0.2rem 0 0.2rem 1.25rem" }}>
+                      {t.emoji} {t.label} — {t.pct}% accuracy
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
-        </motion.div>
-
-
-        <motion.div variants={itemVariants} className="glass-card" style={{ maxHeight: "450px", display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-            <Activity size={22} color="var(--accent-blue)" />
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Live Activity</h2>
-            <motion.div
-              animate={{ opacity: [1, 0.4, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              style={{
-                width: "8px", height: "8px", borderRadius: "50%",
-                background: "#10b981", marginLeft: "auto"
-              }}
-            />
-          </div>
-
-          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {data.recentEvents.length === 0 ? (
-              <div style={{ color: "var(--text-muted)", textAlign: "center", padding: "2rem 0" }}>
-                No activity yet. Start using the platform!
-              </div>
-            ) : (
-              <AnimatePresence mode="popLayout">
-                {data.recentEvents.map((event, i) => {
-                  const info = eventLabels[event.type] || { label: event.type, icon: <Activity size={16} />, color: "#64748b" };
-                  const isCorrect = event.payload?.isCorrect;
-
-                  return (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, x: 20, height: 0 }}
-                      animate={{ opacity: 1, x: 0, height: "auto" }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.3 }}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "0.75rem",
-                        padding: "0.625rem 0.875rem",
-                        background: "rgba(0,0,0,0.2)",
-                        borderRadius: "var(--radius-sm)",
-                        borderLeft: `3px solid ${info.color}`,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      <div style={{ color: info.color, flexShrink: 0 }}>
-                        {info.icon}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <span>{info.label}</span>
-                          {event.type === "question_answered" && (
-                            isCorrect ?
-                              <CheckCircle size={14} color="#10b981" /> :
-                              <XCircle size={14} color="#ef4444" />
-                          )}
-                          {event.type === "xp_earned" && (
-                            <span style={{ color: "#f59e0b", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
-                              +{String(event.payload.amount)}
-                            </span>
-                          )}
-                          {Boolean(event.payload?.topic) && (
-                            <span style={{
-                              color: topicColors[String(event.payload.topic)] || "var(--text-muted)",
-                              textTransform: "capitalize", fontSize: "0.8rem"
-                            }}>
-                              {String(event.payload.topic)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", flexShrink: 0, display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                        <Clock size={12} />
-                        {formatTimeAgo(event.timestamp)}
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            )}
-          </div>
         </motion.div>
       </div>
     </motion.div>

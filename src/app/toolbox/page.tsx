@@ -30,20 +30,18 @@ async function fetchQuestion(): Promise<Question> {
 }
 
 const topicColors: Record<string, { main: string; glow: string; bg: string }> = {
-  variables: { main: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', bg: 'rgba(168, 85, 247, 0.15)' },
-  logic: { main: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', bg: 'rgba(59, 130, 246, 0.15)' },
-  loops: { main: '#10b981', glow: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(16, 185, 129, 0.15)' },
-  math: { main: '#f59e0b', glow: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(245, 158, 11, 0.15)' },
-  science: { main: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)', bg: 'rgba(6, 182, 212, 0.15)' },
-  ela: { main: '#ec4899', glow: 'rgba(236, 72, 153, 0.4)', bg: 'rgba(236, 72, 153, 0.15)' },
-  history: { main: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.4)', bg: 'rgba(139, 92, 246, 0.15)' },
+  variables:  { main: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', bg: 'rgba(168, 85, 247, 0.15)' },
+  logic:      { main: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', bg: 'rgba(59, 130, 246, 0.15)' },
+  loops:      { main: '#10b981', glow: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(16, 185, 129, 0.15)' },
+  functions:  { main: '#f59e0b', glow: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(245, 158, 11, 0.15)' },
+  debugging:  { main: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)',  bg: 'rgba(239, 68, 68, 0.15)'  },
+  algorithms: { main: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)',  bg: 'rgba(6, 182, 212, 0.15)'  },
 };
 
 export default function ToolboxPage() {
   const queryClient = useQueryClient();
-  const { addXp, unlockItem, incrementQuestionsSolved } = useProgress();
+  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer } = useProgress();
   const [attempts, setAttempts] = useState(0);
-  const [userName, setUserName] = useState("");
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [evaluated, setEvaluated] = useState(false);
@@ -75,6 +73,10 @@ export default function ToolboxPage() {
       setEvaluated(true);
       setIsCorrect(data.isCorrect);
 
+      if (question) {
+        recordAnswer(question.topic, data.isCorrect);
+      }
+
       if (data.isCorrect) {
         setEvalMessage(data.message);
         setReasoningText(data.reasoning || "");
@@ -83,11 +85,12 @@ export default function ToolboxPage() {
         incrementQuestionsSolved?.();
 
         const itemMap: Record<string, { id: string; name: string; icon: string }> = {
-          variables: { id: "wrench", name: "Variables Wrench", icon: "🔧" },
-          logic: { id: "brain", name: "Logic Brain", icon: "🧠" },
-          loops: { id: "loop", name: "Infinity Loop", icon: "♾️" },
-          math: { id: "ruler", name: "Golden Ruler", icon: "📐" },
-          science: { id: "flask", name: "Science Flask", icon: "🧪" },
+          variables: { id: "variables", name: "Variables Wrench", icon: "📦" },
+          logic: { id: "logic", name: "Logic Brain", icon: "🧠" },
+          loops: { id: "loops", name: "Infinity Loop", icon: "♾️" },
+          functions: { id: "functions", name: "Functions Flask", icon: "⚙️" },
+          debugging: { id: "debugging", name: "Debugging Bug", icon: "🐛" },
+          algorithms: { id: "algorithms", name: "Algorithms Map", icon: "🗺️" },
         };
 
         const item = itemMap[question?.topic || ""];
@@ -134,8 +137,7 @@ export default function ToolboxPage() {
 
 
   const DraggableVar = ({ id, text }: { id: string; text: string }) => {
-    // If it's a fill in the blank and the option is [name], map it to the user's name
-    const displayText = text === "[name]" && userName ? `"${userName}"` : text;
+    const displayText = text === "[name]" ? `"Student"` : text;
 
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id, disabled: evaluated || evaluateMutation.isPending });
     return (
@@ -335,22 +337,7 @@ export default function ToolboxPage() {
                   // Available Options
                 </p>
 
-                {question.options.includes("[name]") && (
-                  <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: colors.main }}>
-                      <UserIcon size={18} />
-                      <span style={{ fontSize: '0.9rem', fontFamily: "'JetBrains Mono', monospace" }}>let myName =</span>
-                    </div>
-                    <input
-                      type="text"
-                      className="input-premium"
-                      placeholder="Enter your name..."
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      style={{ maxWidth: '200px', padding: '0.5rem 1rem' }}
-                    />
-                  </div>
-                )}
+
 
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                   {question.options.map((opt) => (

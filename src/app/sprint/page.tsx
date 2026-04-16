@@ -1,1505 +1,1394 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
-import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/firebase";
-import { doc, setDoc, onSnapshot, getDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import type { User } from "firebase/auth";
 import {
-  CheckCircle,
-  Lock,
-  Users,
-  ArrowRight,
-  Play,
-  Sparkles,
-  Cpu,
-  User as UserIcon,
-  Trophy,
-  Code2,
-  Hash,
-  X,
-  RotateCcw,
-  Crown,
-  Medal,
-  Flame,
+  CheckCircle, Lock, ArrowRight, Play, Sparkles,
+  Trophy, Code2, RotateCcw, Crown, Medal, Flame, Zap,
+  BookOpen, Terminal, XCircle, Users, ChevronDown,
 } from "lucide-react";
 
-type Mission = {
+// ─────────────────────────────────────────────────────────────────────────────
+// HARDCODED SPRINT MISSIONS  (CS-focused, learning-first)
+// ─────────────────────────────────────────────────────────────────────────────
+type QuizQuestion = {
+  prompt: string;
+  code?: string;
+  options: string[];
+  answer: string;
+  explanation: string;
+};
+
+type SprintMission = {
   id: string;
   title: string;
+  topic: string;
+  topicIcon: string;
+  topicColor: string;
   description: string;
+  xpReward: number;
   groupA: {
     role: string;
-    brief: string;
-    instruction: string;
-    vars: { type: string; name: string; target: string }[];
+    challenge: string;
+    questions: QuizQuestion[];
   };
   groupB: {
     role: string;
-    brief: string;
-    instruction: string;
-    logic: { variable: string; operator: string; target: string; action: string };
+    challenge: string;
+    questions: QuizQuestion[];
   };
-  reward: { icon: string };
   successMessage: string;
 };
 
-type SprintState = {
-  sprint1Completed: boolean;
-  sprint2Completed: boolean;
+const MISSIONS: SprintMission[] = [
+  // ── MISSION 1: Variables ──────────────────────────────────────────────────
+  {
+    id: "variables",
+    title: "Variable Vault",
+    topic: "Variables",
+    topicIcon: "📦",
+    topicColor: "#a855f7",
+    description: "Group A learns what variables are and how to name them. Group B practices storing and changing values. Variables are how programs remember things!",
+    xpReward: 400,
+    groupA: {
+      role: "Namers",
+      challenge: "Understand what variables are and how to name them",
+      questions: [
+        {
+          prompt: "A variable is like a labeled box that stores information. Which of these is the BEST description of a variable?",
+          options: [
+            "A fixed value that can never change",
+            "A named storage location that holds a value",
+            "A type of loop",
+            "A button in an app",
+          ],
+          answer: "A named storage location that holds a value",
+          explanation: "Think of a variable like a sticky note with a label. The label is the name (like 'score'), and you can write any value on it — and change it later. That's exactly what a variable does in code.",
+        },
+        {
+          prompt: "Which variable name follows good naming rules?",
+          code: `// Which is the best name for a variable
+// that stores a student's age?
+A) 1age
+B) student age
+C) studentAge
+D) STUDENTAGE!!`,
+          options: ["1age", "student age", "studentAge", "STUDENTAGE!!"],
+          answer: "studentAge",
+          explanation: "Variable names can't start with a number, can't have spaces, and shouldn't have special characters. studentAge is clear, readable, and follows the camelCase style used in Java.",
+        },
+        {
+          prompt: "What is the value of score after this code runs?",
+          code: `int score = 0;
+score = score + 10;
+score = score + 5;`,
+          options: ["0", "10", "15", "50"],
+          answer: "15",
+          explanation: "score starts at 0. Then we add 10 (score = 10). Then we add 5 (score = 15). Each line updates the variable. This is exactly how a game keeps track of points!",
+        },
+      ],
+    },
+    groupB: {
+      role: "Value Trackers",
+      challenge: "Store and update values in variables",
+      questions: [
+        {
+          prompt: "What data type should you use to store a student's name like \"Maria\"?",
+          options: ["int", "double", "String", "boolean"],
+          answer: "String",
+          explanation: "String stores text (words, names, sentences). int stores whole numbers. double stores decimals. boolean stores true/false. For a name like \"Maria\", you always use String.",
+        },
+        {
+          prompt: "What does this print?",
+          code: `String greeting = "Hello";
+String name = "Alex";
+System.out.println(greeting + " " + name);`,
+          options: ["Hello Alex", "greeting name", "HelloAlex", "Error"],
+          answer: "Hello Alex",
+          explanation: "The + sign with Strings joins (concatenates) them together. \"Hello\" + \" \" + \"Alex\" becomes \"Hello Alex\". The space in the middle is important — without it you'd get \"HelloAlex\".",
+        },
+        {
+          prompt: "You're building a quiz app. Which variable correctly stores a score of 87.5?",
+          options: [
+            "int score = 87.5;",
+            "double score = 87.5;",
+            "String score = 87.5;",
+            "boolean score = 87.5;",
+          ],
+          answer: "double score = 87.5;",
+          explanation: "int only holds whole numbers — 87.5 would cause an error. double holds decimal numbers, making it perfect for scores, prices, temperatures, and averages.",
+        },
+      ],
+    },
+    successMessage: "Variable Vault unlocked! Variables are the building blocks — every app, game, and website uses them to remember information.",
+  },
+
+  // ── MISSION 2: Conditionals ───────────────────────────────────────────────
+  {
+    id: "conditionals",
+    title: "Decision Dome",
+    topic: "If / Else",
+    topicIcon: "🤔",
+    topicColor: "#3b82f6",
+    description: "Group A writes the conditions that check if something is true. Group B handles what happens for each answer. Together you wire up the Decision Dome!",
+    xpReward: 450,
+    groupA: {
+      role: "Condition Checkers",
+      challenge: "Write and read if/else conditions",
+      questions: [
+        {
+          prompt: "Real life: \"If it's raining, bring an umbrella.\" Which code matches this thinking?",
+          code: `boolean isRaining = true;`,
+          options: [
+            "if (isRaining) { bringUmbrella(); }",
+            "while (isRaining) { bringUmbrella(); }",
+            "int isRaining = bringUmbrella;",
+            "for (isRaining) { }",
+          ],
+          answer: "if (isRaining) { bringUmbrella(); }",
+          explanation: "An if statement checks a condition — if it's true, run the code inside. Just like real life decisions: IF it's raining → bring umbrella. IF your score >= 60 → you pass. IF the light is red → stop.",
+        },
+        {
+          prompt: "What does this code print when score = 85?",
+          code: `int score = 85;
+if (score >= 90) {
+  System.out.println("A");
+} else if (score >= 80) {
+  System.out.println("B");
+} else {
+  System.out.println("C");
+}`,
+          options: ["A", "B", "C", "A and B"],
+          answer: "B",
+          explanation: "85 is NOT >= 90, so skip. 85 IS >= 80, so print \"B\" and stop. Once an else if matches, the rest are skipped. Your grade app works just like this!",
+        },
+        {
+          prompt: "What does && mean in a condition?",
+          code: `if (age >= 13 && age <= 17) {
+  System.out.println("You are a teenager!");
+}`,
+          options: [
+            "OR — either condition can be true",
+            "NOT — flips true to false",
+            "AND — both conditions must be true",
+            "EQUALS — they must be the same",
+          ],
+          answer: "AND — both conditions must be true",
+          explanation: "&& means AND. age >= 13 AND age <= 17 must BOTH be true to print the message. A 12-year-old fails the first check. An 18-year-old fails the second. Only 13–17 passes both.",
+        },
+      ],
+    },
+    groupB: {
+      role: "Branch Builders",
+      challenge: "Trace what happens in each branch",
+      questions: [
+        {
+          prompt: "A game gives a badge if your score is over 100. What prints when score = 55?",
+          code: `int score = 55;
+if (score > 100) {
+  System.out.println("Gold Badge!");
+} else {
+  System.out.println("Keep playing!");
+}`,
+          options: ["Gold Badge!", "Keep playing!", "Nothing", "Error"],
+          answer: "Keep playing!",
+          explanation: "55 > 100 is FALSE, so the if block is skipped. The else block runs instead and prints \"Keep playing!\". The else is the fallback — it runs when the condition is not met.",
+        },
+        {
+          prompt: "What is the bug in this code? It should only print one message.",
+          code: `int temp = 75;
+if (temp > 60) System.out.println("Warm");
+if (temp > 50) System.out.println("Not cold");
+if (temp > 40) System.out.println("Above freezing");`,
+          options: [
+            "The numbers are wrong",
+            "All three conditions are true — use else if instead",
+            "It will print nothing",
+            "temp should be a String",
+          ],
+          answer: "All three conditions are true — use else if instead",
+          explanation: "75 > 60 ✓, 75 > 50 ✓, and 75 > 40 ✓ — all three print! Separate if statements each run independently. Change the 2nd and 3rd to else if so only one prints. This is a very common beginner mistake.",
+        },
+        {
+          prompt: "What does ! (the NOT operator) do?",
+          code: `boolean gameOver = false;
+if (!gameOver) {
+  System.out.println("Keep playing!");
+}`,
+          options: [
+            "Does nothing",
+            "Flips the boolean — turns false into true",
+            "Makes it print twice",
+            "Ends the game",
+          ],
+          answer: "Flips the boolean — turns false into true",
+          explanation: "! means NOT. !false = true, so the condition is true and \"Keep playing!\" prints. !true = false. You'll see ! in games: if (!playerDead) — meaning if the player is NOT dead, keep running the game loop.",
+        },
+      ],
+    },
+    successMessage: "Decision Dome complete! Every app makes decisions — login checks, game scoring, weather alerts — they all use if/else logic.",
+  },
+
+  // ── MISSION 3: Loops ──────────────────────────────────────────────────────
+  {
+    id: "loops",
+    title: "Loop Lab",
+    topic: "Loops",
+    topicIcon: "🔁",
+    topicColor: "#10b981",
+    description: "Group A runs for loops that count through numbers. Group B uses while loops to repeat until something changes. Loops are how computers do repetitive work instantly!",
+    xpReward: 500,
+    groupA: {
+      role: "For Loop Operators",
+      challenge: "Count with for loops and predict output",
+      questions: [
+        {
+          prompt: "A for loop has three parts. What does each part do?",
+          code: `for (int i = 1; i <= 5; i++) {
+  System.out.println(i);
+}
+// start; condition; update`,
+          options: [
+            "start at 1; run while i <= 5; add 1 each time",
+            "start at 5; run while i >= 1; subtract 1",
+            "run forever; stop at 5; multiply by 1",
+            "start at 0; run 5 times; reset to 0",
+          ],
+          answer: "start at 1; run while i <= 5; add 1 each time",
+          explanation: "A for loop: (start; condition; update). int i = 1 sets start. i <= 5 means keep going while true. i++ adds 1 each round. This prints 1, 2, 3, 4, 5 — like counting on your fingers.",
+        },
+        {
+          prompt: "How many times does this loop print \"Hello\"?",
+          code: `for (int i = 0; i < 4; i++) {
+  System.out.println("Hello");
+}`,
+          options: ["3 times", "4 times", "5 times", "Infinite"],
+          answer: "4 times",
+          explanation: "i starts at 0 and goes up by 1 each time: 0, 1, 2, 3. When i = 4, the condition i < 4 is false and the loop stops. Count: 0, 1, 2, 3 = 4 times. Starting at 0 instead of 1 is called zero-based counting.",
+        },
+        {
+          prompt: "A teacher wants to print every student number from 1 to 30. What's the output of the LAST line printed?",
+          code: `for (int student = 1; student <= 30; student++) {
+  System.out.println("Student #" + student);
+}`,
+          options: ["Student #0", "Student #29", "Student #30", "Student #31"],
+          answer: "Student #30",
+          explanation: "The loop counts from 1 to 30 (inclusive, because of <=). The last value printed is student = 30. Loops save you from writing System.out.println 30 times!",
+        },
+      ],
+    },
+    groupB: {
+      role: "While Loop Watchers",
+      challenge: "Trace while loops and spot infinite loops",
+      questions: [
+        {
+          prompt: "A while loop runs as long as its condition is true. What does this print?",
+          code: `int lives = 3;
+while (lives > 0) {
+  System.out.println("Lives left: " + lives);
+  lives--;
+}`,
+          options: [
+            "Lives left: 3, 2, 1",
+            "Lives left: 3, 2, 1, 0",
+            "Lives left: 0",
+            "Runs forever",
+          ],
+          answer: "Lives left: 3, 2, 1",
+          explanation: "lives starts at 3. Each loop prints lives then subtracts 1. When lives = 0, the condition 0 > 0 is false and we stop. Just like a game: keeps running while you have lives remaining.",
+        },
+        {
+          prompt: "What is WRONG with this code?",
+          code: `int count = 1;
+while (count > 0) {
+  System.out.println(count);
+  count++;
+}`,
+          options: [
+            "count should start at 0",
+            "It's an infinite loop — count grows forever",
+            "The condition should use >=",
+            "Nothing is wrong",
+          ],
+          answer: "It's an infinite loop — count grows forever",
+          explanation: "count starts at 1 and increases each time. count > 0 is ALWAYS true because it keeps getting bigger. The loop never stops — this would freeze your program. Always make sure your loop has an exit!",
+        },
+        {
+          prompt: "For loops and while loops can both solve the same problems. When is a WHILE loop the better choice?",
+          options: [
+            "When you know exactly how many times to repeat",
+            "When you repeat until something specific happens (like a player winning)",
+            "Only for counting numbers",
+            "While loops are always better",
+          ],
+          answer: "When you repeat until something specific happens (like a player winning)",
+          explanation: "Use a for loop when you know the count (repeat 10 times). Use a while loop when you don't know how many times — like \"keep playing until the player wins\" or \"keep asking for input until it's valid\".",
+        },
+      ],
+    },
+    successMessage: "Loop Lab closed! Loops are how programs do repetitive tasks in milliseconds — sorting lists, loading content, animating games. They're everywhere.",
+  },
+
+  // ── MISSION 4: Functions ──────────────────────────────────────────────────
+  {
+    id: "functions",
+    title: "Function Factory",
+    topic: "Functions & Methods",
+    topicIcon: "⚙️",
+    topicColor: "#f59e0b",
+    description: "Group A defines functions with inputs. Group B calls them and uses their outputs. Functions are reusable recipe cards for your code!",
+    xpReward: 550,
+    groupA: {
+      role: "Function Designers",
+      challenge: "Write functions with parameters and return values",
+      questions: [
+        {
+          prompt: "Why do we use functions (also called methods) in programming?",
+          options: [
+            "To make code longer and more complicated",
+            "To write code once and reuse it many times (DRY: Don't Repeat Yourself)",
+            "Functions are required in every Java program",
+            "To slow down the program",
+          ],
+          answer: "To write code once and reuse it many times (DRY: Don't Repeat Yourself)",
+          explanation: "DRY = Don't Repeat Yourself. Instead of writing the same 5 lines 10 times, write a function once and call it 10 times. If you fix a bug in the function, it's fixed everywhere — like a recipe card you can hand to anyone.",
+        },
+        {
+          prompt: "What does this function return when called with greet(\"Sam\")?",
+          code: `public static String greet(String name) {
+  return "Hello, " + name + "!";
+}`,
+          options: ["Hello, name!", "Hello, Sam!", "greet", "Sam"],
+          answer: "Hello, Sam!",
+          explanation: "The function takes name as input (\"Sam\"), combines it with \"Hello, \" and \"!\", then returns the result. return sends the answer back to wherever the function was called — like a machine that takes an input and spits out an output.",
+        },
+        {
+          prompt: "What does `void` mean as a return type?",
+          code: `public static void printScore(int score) {
+  System.out.println("Your score: " + score);
+}`,
+          options: [
+            "The function returns 0",
+            "The function returns a word",
+            "The function returns nothing — it just does something",
+            "void means the function is broken",
+          ],
+          answer: "The function returns nothing — it just does something",
+          explanation: "void means 'no return value'. This function prints something — it does a job — but doesn't send back an answer. Compare: greet() returns a String. printScore() just prints. Both are useful for different situations.",
+        },
+      ],
+    },
+    groupB: {
+      role: "Function Callers",
+      challenge: "Call functions and trace return values",
+      questions: [
+        {
+          prompt: "What does this print?",
+          code: `public static int add(int a, int b) {
+  return a + b;
+}
+
+System.out.println(add(3, 7));`,
+          options: ["3", "7", "10", "a + b"],
+          answer: "10",
+          explanation: "add(3, 7) runs the function with a=3 and b=7, computes 3+7=10, and returns 10. Then println prints 10. Functions take inputs (called parameters or arguments) and produce an output (the return value).",
+        },
+        {
+          prompt: "A function is called from inside another function. What prints?",
+          code: `public static int double(int n) {
+  return n * 2;
+}
+
+System.out.println(double(double(3)));`,
+          options: ["3", "6", "9", "12"],
+          answer: "12",
+          explanation: "Inner call first: double(3) = 6. Then outer call: double(6) = 12. Nesting function calls works like math parentheses — solve the inside first, then use the result for the outside.",
+        },
+        {
+          prompt: "What is a 'parameter' in a function?",
+          code: `// What is 'name' in this function?
+public static void sayHello(String name) {
+  System.out.println("Hi, " + name);
+}`,
+          options: [
+            "The function's name",
+            "An input the function receives to do its job",
+            "The value the function returns",
+            "A variable defined outside the function",
+          ],
+          answer: "An input the function receives to do its job",
+          explanation: "Parameters are the inputs a function needs. name is a parameter — when you call sayHello(\"Jordan\"), \"Jordan\" is passed in as the value of name. Like a recipe with ingredients: the recipe = function, ingredients = parameters.",
+        },
+      ],
+    },
+    successMessage: "Function Factory running! Every app is built from functions — login(), loadGame(), calculateScore(). Break big problems into small, reusable pieces.",
+  },
+
+  // ── MISSION 5: Debugging ──────────────────────────────────────────────────
+  {
+    id: "debugging",
+    title: "Bug Bounty",
+    topic: "Debugging",
+    topicIcon: "🐛",
+    topicColor: "#ef4444",
+    description: "Group A hunts syntax errors (typos in code). Group B tracks logic bugs (code that runs but gives wrong answers). Debugging is one of the most important real-world CS skills!",
+    xpReward: 500,
+    groupA: {
+      role: "Syntax Detectives",
+      challenge: "Spot errors that stop the code from running",
+      questions: [
+        {
+          prompt: "This code won't compile. What's the error?",
+          code: `int age = 14
+System.out.println(age);`,
+          options: [
+            "age should be a String",
+            "Missing semicolon after line 1",
+            "println is spelled wrong",
+            "14 is too small a number",
+          ],
+          answer: "Missing semicolon after line 1",
+          explanation: "Java requires a semicolon (;) at the end of every statement — it's like a period at the end of a sentence. Missing one causes a compile error before the program even runs. This is the single most common beginner mistake!",
+        },
+        {
+          prompt: "What TYPE of error happens when code runs but crashes mid-way?",
+          code: `// This compiles fine but crashes:
+int[] scores = {90, 85, 70};
+System.out.println(scores[5]); // only 3 items!`,
+          options: ["Syntax error", "Runtime error", "Logic error", "No error"],
+          answer: "Runtime error",
+          explanation: "Runtime errors happen WHILE the program is running — not before. There's no index 5 in a 3-item array (valid: 0, 1, 2), so Java crashes with \"ArrayIndexOutOfBoundsException\". The code looked fine to the compiler but failed at runtime.",
+        },
+        {
+          prompt: "Which tool is most useful for finding a syntax error?",
+          options: [
+            "Running the program and testing it",
+            "The compiler / IDE error messages (they point to the line)",
+            "Asking a friend to read it",
+            "Deleting the code and starting over",
+          ],
+          answer: "The compiler / IDE error messages (they point to the line)",
+          explanation: "The compiler catches syntax errors BEFORE running — it tells you the exact line number and what's wrong. Read the error message carefully. It often says \"expected ';'\" or \"cannot find symbol\" right next to the line with the problem.",
+        },
+      ],
+    },
+    groupB: {
+      role: "Logic Hunters",
+      challenge: "Find bugs that give wrong answers",
+      questions: [
+        {
+          prompt: "This code should print the AVERAGE of 3 scores. What's wrong?",
+          code: `int a = 80, b = 90, c = 70;
+int average = a + b + c / 3;
+System.out.println(average);`,
+          options: [
+            "The variables are wrong",
+            "Division happens before addition — needs parentheses",
+            "You can't average 3 numbers",
+            "Nothing — it's correct",
+          ],
+          answer: "Division happens before addition — needs parentheses",
+          explanation: "Order of operations! Java does c / 3 first (70/3 = 23), then adds 80 + 90 + 23 = 193. The fix: (a + b + c) / 3 = 240 / 3 = 80. Logic errors are silent — code runs but produces the wrong answer.",
+        },
+        {
+          prompt: "What type of error is this? The program runs but the output is wrong.",
+          code: `// Should check if a student is passing (>= 60):
+int grade = 55;
+if (grade > 60) {
+  System.out.println("Passing");
+}`,
+          options: ["Syntax error", "Runtime error", "Logic error", "No error"],
+          answer: "Logic error",
+          explanation: "The condition uses > instead of >=. A grade of 60 should pass, but 60 > 60 is false. The code runs without crashing — but produces the wrong result. Logic errors are the hardest bugs to find because the computer doesn't know your intent.",
+        },
+        {
+          prompt: "What's the fastest way to trace a logic error in your code?",
+          options: [
+            "Delete everything and start over",
+            "Submit it anyway and hope it's right",
+            "Add print statements to show variable values at each step",
+            "Wait — logic errors fix themselves",
+          ],
+          answer: "Add print statements to show variable values at each step",
+          explanation: "Print-debugging: add System.out.println() at key points to see what values your variables actually hold. It's like adding checkpoints to see where your program \"goes wrong\". Real professional developers do this every day.",
+        },
+      ],
+    },
+    successMessage: "Bug Bounty claimed! Professional developers spend up to 50% of their time debugging. Finding bugs is a superpower — not a sign you're bad at coding.",
+  },
+
+  // ── MISSION 6: Algorithms & Problem Solving ───────────────────────────────
+  {
+    id: "algorithms",
+    title: "Algorithm Academy",
+    topic: "Algorithms",
+    topicIcon: "🗺️",
+    topicColor: "#06b6d4",
+    description: "Group A breaks down problems step by step (like writing a recipe). Group B traces through algorithms to predict what they do. Algorithms are just clear instructions!",
+    xpReward: 550,
+    groupA: {
+      role: "Step Writers",
+      challenge: "Write clear step-by-step algorithms",
+      questions: [
+        {
+          prompt: "An algorithm is a step-by-step set of instructions to solve a problem. Which of these is the BEST algorithm for making a peanut butter sandwich?",
+          options: [
+            "Make sandwich, enjoy",
+            "1. Get bread 2. Open peanut butter 3. Spread peanut butter 4. Close sandwich",
+            "Put peanut butter somewhere on something",
+            "Think about the sandwich",
+          ],
+          answer: "1. Get bread 2. Open peanut butter 3. Spread peanut butter 4. Close sandwich",
+          explanation: "Algorithms must be specific, ordered, and complete. \"Make sandwich\" is too vague — a computer needs exact steps. In CS, we write algorithms before we write code to make sure our logic is correct first.",
+        },
+        {
+          prompt: "Order matters in algorithms! What's wrong with this sequence?",
+          code: `// Making hot chocolate:
+1. Drink the hot chocolate
+2. Boil water
+3. Add cocoa powder
+4. Pour water into cup`,
+          options: [
+            "Nothing — order doesn't matter",
+            "Step 1 (drinking) happens before the drink is even made",
+            "Cocoa powder is wrong",
+            "You shouldn't boil water",
+          ],
+          answer: "Step 1 (drinking) happens before the drink is even made",
+          explanation: "Sequence — the ORDER of steps — is one of the three core ideas in CS (along with selection/if-else and repetition/loops). If steps are out of order, the algorithm fails. Code runs exactly in the order you write it.",
+        },
+        {
+          prompt: "This algorithm finds the highest score. What is the KEY step that makes it work?",
+          code: `// Find highest score in a list:
+1. Start: highest = first score
+2. Look at each remaining score
+3. IF this score > highest:
+     highest = this score  ← KEY STEP
+4. After all scores: print highest`,
+          options: [
+            "Step 1 — starting the algorithm",
+            "Step 3 — updating highest when a bigger score is found",
+            "Step 4 — printing the result",
+            "Step 2 — looking at scores",
+          ],
+          answer: "Step 3 — updating highest when a bigger score is found",
+          explanation: "The comparison and update — if current > highest, then highest = current — is what makes this work. Without it, you'd never find a number bigger than your starting value. This pattern (tracking a running max/min) appears in almost every app.",
+        },
+      ],
+    },
+    groupB: {
+      role: "Algorithm Tracers",
+      challenge: "Follow algorithms step by step and predict results",
+      questions: [
+        {
+          prompt: "Trace this algorithm. What is the final value of total?",
+          code: `// Algorithm: sum a list of numbers
+int[] numbers = {5, 10, 3, 8};
+int total = 0;
+
+for each number in the list:
+  total = total + number`,
+          options: ["5", "16", "26", "8"],
+          answer: "26",
+          explanation: "Trace it: total = 0+5=5, then 5+10=15, then 15+3=18, then 18+8=26. This pattern — accumulating a running total — is used everywhere: adding up a shopping cart, totaling test scores, calculating average temperature.",
+        },
+        {
+          prompt: "This algorithm searches for a name. How many steps does it take to find \"Carlos\" in the list?",
+          code: `// List: ["Alice", "Bob", "Carlos", "Diana"]
+// Linear Search: check each item in order
+
+Step 1: Is "Alice" == "Carlos"? No
+Step 2: Is "Bob" == "Carlos"? No
+Step 3: Is "Carlos" == "Carlos"? YES — found it!`,
+          options: ["1 step", "2 steps", "3 steps", "4 steps"],
+          answer: "3 steps",
+          explanation: "Linear search checks items one by one from the start. For a 4-item list, worst case is 4 steps (item is last or not there at all). This is fine for small lists, but for 1,000,000 items it would be very slow — that's why smarter search algorithms matter.",
+        },
+        {
+          prompt: "Decomposition means breaking a big problem into smaller pieces. Which approach shows decomposition for building a game?",
+          options: [
+            "Write all the game code in one giant block",
+            "Don't plan — just start coding",
+            "Break it into: Player, Enemies, Score, Controls — then solve each part",
+            "Only work on the part you enjoy",
+          ],
+          answer: "Break it into: Player, Enemies, Score, Controls — then solve each part",
+          explanation: "Decomposition is a core computational thinking skill. Big problems (\"build a game\") become manageable when split into smaller pieces (Player movement, Enemy AI, Score tracking). Each piece is easier to code, test, and fix independently.",
+        },
+      ],
+    },
+    successMessage: "Algorithm Academy complete! Every app, game, and website runs on algorithms. Learning to think in steps and solve problems is the heart of Computer Science.",
+  },
+];
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+type TeamResult = {
+  questionsAnswered: number;
+  questionsCorrect: number;
   points: number;
+  completed: boolean;
 };
 
-type RoundResult = {
-  missionId: string;
-  winner: 'GroupA' | 'GroupB' | 'tie' | null;
-  groupAPoints: number;
-  groupBPoints: number;
-};
-
-type RoomData = {
-  missionId: string;
-  currentRound: number;
-  totalRounds: number;
-  createdBy: string;
-  createdByName: string;
-  createdAt: number;
-  GroupA: SprintState;
-  GroupB: SprintState;
-  roundHistory: RoundResult[];
-};
-
-const defaultRoomData = (missionId: string, user: User): RoomData => ({
-  missionId,
-  currentRound: 1,
-  totalRounds: 3,
-  createdBy: user.uid,
-  createdByName: user.displayName || user.email || "Unknown",
-  createdAt: Date.now(),
-  GroupA: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-  GroupB: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-  roundHistory: [],
+const freshTeam = (): TeamResult => ({
+  questionsAnswered: 0,
+  questionsCorrect: 0,
+  points: 0,
+  completed: false,
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// XP BURST
+// ─────────────────────────────────────────────────────────────────────────────
+function XpBurst({ amount, onDone }: { amount: number; onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 1800);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0, y: 0 }}
+      animate={{ scale: 1.4, opacity: 1, y: -60 }}
+      exit={{ opacity: 0, y: -100 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      style={{
+        position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+        zIndex: 999, pointerEvents: "none", textAlign: "center",
+      }}
+    >
+      <div style={{
+        fontSize: "3rem", fontWeight: 900, fontFamily: "'JetBrains Mono', monospace",
+        background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        filter: "drop-shadow(0 0 20px rgba(245,158,11,0.8))",
+      }}>
+        +{amount} XP ⚡
+      </div>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUIZ COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+function QuizChallenge({
+  questions, onComplete, teamColor, teamName, isActive, isCompleted,
+}: {
+  questions: QuizQuestion[];
+  onComplete: (correct: number, total: number) => void;
+  teamColor: string;
+  teamName: string;
+  isActive: boolean;
+  isCompleted: boolean;
+}) {
+  const [qIndex, setQIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const q = questions[qIndex];
+  const isCorrect = selected === q?.answer;
+
+  const handleSelect = (opt: string) => {
+    if (revealed || !isActive) return;
+    setSelected(opt);
+    setRevealed(true);
+    if (opt === q.answer) setCorrectCount(c => c + 1);
+  };
+
+  const handleNext = useCallback(() => {
+    if (qIndex + 1 < questions.length) {
+      setQIndex(i => i + 1);
+      setSelected(null);
+      setRevealed(false);
+    } else {
+      setDone(true);
+      const finalCorrect = isCorrect ? correctCount + 1 : correctCount;
+      onComplete(finalCorrect, questions.length);
+    }
+  }, [qIndex, questions.length, isCorrect, correctCount, onComplete]);
+
+  if (isCompleted) {
+    return (
+      <div style={{
+        padding: "1.5rem", background: `${teamColor}15`,
+        border: `2px solid ${teamColor}40`, borderRadius: "var(--radius-md)",
+        textAlign: "center",
+      }}>
+        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>✅</div>
+        <div style={{ color: teamColor, fontWeight: 700, fontSize: "1.1rem" }}>Challenge Complete!</div>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+          {teamName} finished their round
+        </div>
+      </div>
+    );
+  }
+
+  if (!isActive) {
+    return (
+      <div style={{
+        padding: "1.5rem", background: "rgba(255,255,255,0.02)",
+        border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "var(--radius-md)",
+        textAlign: "center", opacity: 0.6,
+      }}>
+        <Lock size={24} color="var(--text-muted)" style={{ marginBottom: "0.5rem" }} />
+        <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
+          Waiting for Group A to finish first...
+        </div>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div style={{
+        padding: "1.5rem", background: `${teamColor}10`,
+        border: `1px solid ${teamColor}30`, borderRadius: "var(--radius-md)",
+        textAlign: "center",
+      }}>
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}
+          style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🎯</motion.div>
+        <div style={{ color: teamColor, fontWeight: 700, fontSize: "1rem" }}>Answers submitted!</div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Progress bar */}
+      <div style={{ display: "flex", gap: "0.375rem", marginBottom: "1.25rem" }}>
+        {questions.map((_, i) => (
+          <div key={i} style={{
+            flex: 1, height: "4px", borderRadius: "2px",
+            background: i < qIndex ? teamColor : i === qIndex ? `${teamColor}60` : "rgba(255,255,255,0.1)",
+            transition: "background 0.3s",
+          }} />
+        ))}
+      </div>
+
+      {/* Question counter */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: "0.5rem",
+        marginBottom: "1rem", fontSize: "0.75rem", color: "var(--text-muted)",
+        fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1px",
+      }}>
+        <BookOpen size={13} />
+        Question {qIndex + 1} of {questions.length}
+      </div>
+
+      {/* Prompt */}
+      <p style={{ color: "var(--text-primary)", fontSize: "1rem", lineHeight: 1.65, marginBottom: "1rem", fontWeight: 500 }}>
+        {q.prompt}
+      </p>
+
+      {/* Code block */}
+      {q.code && (
+        <div style={{
+          background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "var(--radius-sm)", padding: "1rem 1.25rem",
+          fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem",
+          color: "#e2e8f0", marginBottom: "1.25rem",
+          whiteSpace: "pre", overflowX: "auto",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem", opacity: 0.5 }}>
+            <Terminal size={12} />
+            <span style={{ fontSize: "0.7rem", letterSpacing: "1px", textTransform: "uppercase" }}>Java</span>
+          </div>
+          {q.code}
+        </div>
+      )}
+
+      {/* Options */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "1rem" }}>
+        {q.options.map((opt, i) => {
+          const isSelected = selected === opt;
+          const correct = opt === q.answer;
+          let bg = "rgba(255,255,255,0.03)";
+          let border = "1px solid rgba(255,255,255,0.08)";
+          let color = "var(--text-primary)";
+          if (revealed) {
+            if (correct) { bg = "rgba(16,185,129,0.12)"; border = "1px solid #10b981"; color = "#10b981"; }
+            else if (isSelected) { bg = "rgba(239,68,68,0.1)"; border = "1px solid #ef4444"; color = "#ef4444"; }
+          } else if (isSelected) {
+            bg = `${teamColor}15`; border = `1px solid ${teamColor}`;
+          }
+          return (
+            <motion.button
+              key={opt}
+              whileHover={!revealed ? { x: 3 } : {}}
+              whileTap={!revealed ? { scale: 0.99 } : {}}
+              onClick={() => handleSelect(opt)}
+              disabled={revealed}
+              style={{
+                padding: "0.875rem 1rem", background: bg, border, borderRadius: "var(--radius-sm)",
+                cursor: revealed ? "default" : "pointer", textAlign: "left",
+                color, fontFamily: "'JetBrains Mono', monospace", fontSize: "0.88rem",
+                display: "flex", alignItems: "center", gap: "0.875rem", transition: "all 0.2s",
+              }}
+            >
+              <span style={{
+                width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: revealed && correct ? "#10b981" : revealed && isSelected ? "#ef4444" : "rgba(255,255,255,0.06)",
+                fontSize: "0.75rem", fontWeight: 700,
+              }}>
+                {revealed && correct ? "✓" : revealed && isSelected ? "✕" : String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Explanation */}
+      <AnimatePresence>
+        {revealed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              overflow: "hidden", padding: "1rem", marginBottom: "1rem",
+              background: isCorrect ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.06)",
+              border: `1px solid ${isCorrect ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.2)"}`,
+              borderRadius: "var(--radius-sm)",
+            }}
+          >
+            <div style={{ display: "flex", gap: "0.625rem", alignItems: "flex-start" }}>
+              {isCorrect
+                ? <CheckCircle size={16} color="#10b981" style={{ flexShrink: 0, marginTop: "2px" }} />
+                : <XCircle size={16} color="#ef4444" style={{ flexShrink: 0, marginTop: "2px" }} />}
+              <div>
+                <div style={{ fontWeight: 700, fontSize: "0.85rem", color: isCorrect ? "#10b981" : "#ef4444", marginBottom: "0.25rem" }}>
+                  {isCorrect ? "Correct! 🔥" : `Incorrect — Answer: ${q.answer}`}
+                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", lineHeight: 1.6 }}>
+                  {q.explanation}
+                </div>
+              </div>
+            </div>
+            <motion.button
+              onClick={handleNext}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+              style={{
+                marginTop: "0.875rem", width: "100%", padding: "0.625rem",
+                background: teamColor, border: "none", borderRadius: "var(--radius-sm)",
+                color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.875rem",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem",
+              }}
+            >
+              {qIndex + 1 < questions.length ? <><ArrowRight size={15} /> Next Question</> : <><Trophy size={15} /> Finish Challenge</>}
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────────────────────────────────────
 export default function SprintPage() {
   const { addXp, incrementTeamMissions } = useProgress();
-  const { user, signIn, signUp, logout } = useAuth();
 
-  const [missions, setMissions] = useState<Mission[]>([]);
-
-  const [sessionCodeInput, setSessionCodeInput] = useState("");
-  const [sessionCode, setSessionCode] = useState<string | null>(null);
-  const [roomMode, setRoomMode] = useState<"choose" | "join">("choose");
+  // Which mission the teacher selected
+  const [selectedMission, setSelectedMission] = useState<SprintMission | null>(null);
+  // Which team the student picked
   const [team, setTeam] = useState<"GroupA" | "GroupB" | null>(null);
 
-  const [var1, setVar1] = useState("");
-  const [var2, setVar2] = useState("");
-  const [temp, setTemp] = useState("");
+  // Local team results (no Firebase, no server)
+  const [groupAResult, setGroupAResult] = useState<TeamResult>(freshTeam());
+  const [groupBResult, setGroupBResult] = useState<TeamResult>(freshTeam());
 
-  const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [roomData, setRoomData] = useState<RoomData | null>(null);
-  const [roomError, setRoomError] = useState<string | null>(null);
-  const [showRoundResults, setShowRoundResults] = useState(false);
-  const [showFinalResults, setShowFinalResults] = useState(false);
-  const [roundWinner, setRoundWinner] = useState<'GroupA' | 'GroupB' | 'tie' | null>(null);
+  const [showFinalEnd, setShowFinalEnd] = useState(false);
+  const [showXpBurst, setShowXpBurst] = useState(false);
+  const [xpAmount, setXpAmount] = useState(0);
 
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<"create" | null>(null);
+  const mission = selectedMission;
 
+  // ── Quiz completion handlers ──────────────────────────────────────────────
+  const handleGroupAComplete = (correct: number, total: number) => {
+    if (!mission) return;
+    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
+    addXp(pts);
+    setXpAmount(pts);
+    setShowXpBurst(true);
+    setGroupAResult({ questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true });
+  };
+
+  const handleGroupBComplete = (correct: number, total: number) => {
+    if (!mission) return;
+    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
+    addXp(pts);
+    setXpAmount(pts);
+    setShowXpBurst(true);
+    setGroupBResult({ questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true });
+  };
+
+  // Auto-show final when both done
   useEffect(() => {
-    if (!sessionCode) return;
-    const roomRef = doc(db, "sprint_rooms", sessionCode);
-    const unsubscribe = onSnapshot(roomRef, (snap) => {
-      if (snap.exists()) {
-        setRoomData(snap.data() as RoomData);
-        setRoomError(null);
-      }
-    });
-    return () => unsubscribe();
-  }, [sessionCode]);
-
-  // Load missions from Firestore
-  useEffect(() => {
-    let mounted = true;
-    async function loadMissions() {
-      try {
-        const { getDocs, collection } = await import('firebase/firestore');
-        const qSnap = await getDocs(collection(db, 'missions'));
-        const loaded = qSnap.docs.map(d => ({ id: d.id, ...d.data() } as Mission));
-        if (mounted) setMissions(loaded);
-      } catch {
-      }
+    if (groupAResult.completed && groupBResult.completed && !showFinalEnd) {
+      const t = setTimeout(() => setShowFinalEnd(true), 600);
+      return () => clearTimeout(t);
     }
-    loadMissions();
-    return () => { mounted = false; };
-  }, []);
+  }, [groupAResult.completed, groupBResult.completed, showFinalEnd]);
 
-  // client-side session handling: ensure cookie exists and prompt for display name once
-  useEffect(() => {
-    // client-only cookie handling and first-time displayName prompt
-    if (typeof window === 'undefined') return;
-    const getClientSessionIdLocal = () => {
-      const match = document.cookie.match(new RegExp(`vip_session=([^;]+)`));
-      return match ? decodeURIComponent(match[1]) : null;
-    };
-    const setClientSessionIdLocal = (id: string) => {
-      const maxAge = 60 * 60 * 24 * 30;
-      document.cookie = `vip_session=${id}; path=/; max-age=${maxAge}; samesite=lax`;
-    };
-
-    const existing = getClientSessionIdLocal();
-    if (!existing) {
-      const gen = () => 'sess_' + Math.random().toString(36).substring(2, 14);
-      const newId = gen();
-      setClientSessionIdLocal(newId);
-      const name = window.prompt('Welcome to codedash! Enter a display name to use:');
-      if (name && name.trim()) {
-        setDoc(doc(db, 'sessions', newId), { sessionId: newId, displayName: name.trim(), createdAt: Date.now(), lastActiveAt: Date.now() }, { merge: true });
-      } else {
-        setDoc(doc(db, 'sessions', newId), { sessionId: newId, createdAt: Date.now(), lastActiveAt: Date.now() }, { merge: true });
-      }
-    }
-  }, []);
-
-
-  const mission = roomData ? missions.find((m) => m.id === roomData.missionId) : null;
-
-  const handleCreateRoom = async () => {
-    let currentUser = user;
-    if (!currentUser) {
-      setAuthModalOpen(true);
-      setPendingAction("create");
-      return;
-    }
-
-    createRoomWithUser(currentUser);
-  };
-
-  const createRoomWithUser = async (currentUser: User) => {
-    const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const randomMission = missions.length ? missions[Math.floor(Math.random() * missions.length)] : null;
-
-    if (!randomMission) {
-      setRoomError('Cannot create room – no missions available');
-      return;
-    }
-
-    const newRoom = defaultRoomData(randomMission.id, currentUser);
-    await setDoc(doc(db, "sprint_rooms", randomCode), newRoom);
-    setSessionCode(randomCode);
-  };
-
-  const handleAuthSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setAuthError(null);
-    try {
-      if (isLoginMode) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password);
-      }
-
-      const authInstance = getAuth();
-      await new Promise(r => setTimeout(r, 500));
-
-      const currentUser = authInstance.currentUser;
-
-      if (currentUser && pendingAction === "create") {
-         await createRoomWithUser(currentUser);
-      }
-
-      setAuthModalOpen(false);
-      setPendingAction(null);
-      setEmail("");
-      setPassword("");
-    } catch (err: unknown) {
-      setAuthError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials.");
-    }
-  };
-
-  const handleJoinSession = async () => {
-    const code = sessionCodeInput.trim().toUpperCase();
-    if (!code) return;
-    const roomRef = doc(db, "sprint_rooms", code);
-    const snap = await getDoc(roomRef);
-    if (!snap.exists()) {
-      setRoomError("Room not found. Check the code and try again.");
-      return;
-    }
-    setSessionCode(code);
-    setRoomError(null);
-  };
-
-  const handleSprint1Submit = async () => {
-    if (!mission || !sessionCode || !roomData) return;
-    if (var1 === mission.groupA.vars[0].target && var2 === mission.groupA.vars[1].target) {
-      addXp(200);
-      incrementTeamMissions?.();
-      const newPoints = (roomData.GroupA.points || 0) + 200;
-      const roomRef = doc(db, "sprint_rooms", sessionCode);
-      await setDoc(roomRef, {
-        GroupA: { sprint1Completed: true, sprint2Completed: false, points: newPoints }
-      }, { merge: true });
-    }
-  };
-
-  const handleSprint2Submit = async () => {
-    if (!mission || !sessionCode || !roomData) return;
-    let isCorrect = false;
-    const val = parseInt(temp);
-    const target = parseInt(mission.groupB.logic.target);
-    const op = mission.groupB.logic.operator;
-    if (op === ">" && val > target) isCorrect = true;
-    if (op === "<" && val < target) isCorrect = true;
-    if (op === "==" && val === target) isCorrect = true;
-    if (isCorrect) {
-      addXp(300);
-      incrementTeamMissions?.();
-      const newPoints = (roomData.GroupB.points || 0) + 300;
-      const roomRef = doc(db, "sprint_rooms", sessionCode);
-      await setDoc(roomRef, {
-        GroupB: { sprint1Completed: true, sprint2Completed: true, points: newPoints }
-      }, { merge: true });
-    }
-  };
-
-  const handleCompleteRound = async () => {
-    if (!sessionCode || !roomData) return;
-
-    const groupAPoints = roomData.GroupA.points || 0;
-    const groupBPoints = roomData.GroupB.points || 0;
-
-    let winner: 'GroupA' | 'GroupB' | 'tie' | null = null;
-    if (groupAPoints > groupBPoints) winner = 'GroupA';
-    else if (groupBPoints > groupAPoints) winner = 'GroupB';
-    else winner = 'tie';
-
-    setRoundWinner(winner);
-    setShowRoundResults(true);
-
-    addXp(500);
-    incrementTeamMissions?.();
-
-    const roundResult: RoundResult = {
-      missionId: roomData.missionId,
-      winner,
-      groupAPoints,
-      groupBPoints
-    };
-
-    const newRoundHistory = [...(roomData.roundHistory || []), roundResult];
-
-    // Check if this is the final round
-    if (roomData.currentRound >= roomData.totalRounds) {
-      setShowFinalResults(true);
-      return;
-    }
-
-    // Get next mission
-    const availableMissions = missions.filter(m => m.id !== roomData.missionId);
-    const nextMission = availableMissions[Math.floor(Math.random() * availableMissions.length)] || missions[0];
-
-    const roomRef = doc(db, "sprint_rooms", sessionCode);
-    await setDoc(roomRef, {
-      currentRound: roomData.currentRound + 1,
-      missionId: nextMission.id,
-      roundHistory: newRoundHistory,
-      GroupA: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-      GroupB: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-    }, { merge: true });
-  };
-
-  const handleNextRound = () => {
-    setShowRoundResults(false);
-    setRoundWinner(null);
-    setVar1("");
-    setVar2("");
-    setTemp("");
-    setRewardClaimed(false);
-  };
-
-  const handlePlayAgain = async () => {
-    if (!sessionCode) return;
-
-    const randomMission = missions[Math.floor(Math.random() * missions.length)];
-    const roomRef = doc(db, "sprint_rooms", sessionCode);
-
-    await setDoc(roomRef, {
-      missionId: randomMission.id,
-      currentRound: 1,
-      roundHistory: [],
-      GroupA: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-      GroupB: { sprint1Completed: false, sprint2Completed: false, points: 0 },
-    }, { merge: true });
-
-    setShowFinalResults(false);
-    setShowRoundResults(false);
-    setRoundWinner(null);
-    setVar1("");
-    setVar2("");
-    setTemp("");
-    setRewardClaimed(false);
+  const handlePlayAgain = () => {
+    setGroupAResult(freshTeam());
+    setGroupBResult(freshTeam());
+    setShowFinalEnd(false);
     setTeam(null);
   };
 
-  let sprintStage = 1;
-  if (roomData) {
-    if (roomData.GroupA.sprint1Completed) sprintStage = 2;
-    if (roomData.GroupA.sprint1Completed && roomData.GroupB.sprint2Completed) sprintStage = 3;
+  const handleNewMission = () => {
+    setGroupAResult(freshTeam());
+    setGroupBResult(freshTeam());
+    setShowFinalEnd(false);
+    setTeam(null);
+    setSelectedMission(null);
+  };
+
+  const getWinner = () => {
+    const a = groupAResult.points, b = groupBResult.points;
+    return a > b ? "GroupA" : b > a ? "GroupB" : "tie";
+  };
+
+  // Group B unlocks after Group A is done
+  const groupBUnlocked = groupAResult.completed;
+  const isMyTurnActive = team === "GroupA"
+    ? !groupAResult.completed
+    : (groupBUnlocked && !groupBResult.completed);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER: Mission Selector
+  // ─────────────────────────────────────────────────────────────────────────
+  if (!selectedMission) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        style={{ maxWidth: "760px", margin: "0 auto" }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1rem" }}>
+            <Sparkles size={18} color="var(--accent-blue)" />
+            <span style={{
+              color: "var(--accent-blue)", fontSize: "0.75rem",
+              fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase",
+              letterSpacing: "1.5px", fontWeight: 600,
+            }}>CS Sprint</span>
+          </div>
+          <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1.5px", marginBottom: "0.5rem" }}>
+            Choose a Mission
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.7 }}>
+            Pick a CS topic to sprint on. Group A and Group B each get different questions on the same concept.
+          </p>
+        </div>
+
+        {/* Mission grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1rem" }}>
+          {MISSIONS.map((m, idx) => (
+            <motion.div
+              key={m.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.06 }}
+              whileHover={{ y: -3, borderColor: m.topicColor }}
+              onClick={() => setSelectedMission(m)}
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: `1px solid rgba(255,255,255,0.08)`,
+                borderRadius: "var(--radius-md)", padding: "1.5rem",
+                cursor: "pointer", transition: "all 0.2s",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <span style={{ fontSize: "2rem" }}>{m.topicIcon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1rem", marginBottom: "0.125rem" }}>
+                      {m.title}
+                    </div>
+                    <span style={{
+                      fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace",
+                      color: m.topicColor, background: `${m.topicColor}15`,
+                      padding: "0.125rem 0.5rem", borderRadius: "999px",
+                    }}>{m.topic}</span>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace",
+                  color: "#f59e0b", background: "rgba(245,158,11,0.1)",
+                  padding: "0.25rem 0.625rem", borderRadius: "999px", flexShrink: 0,
+                }}>+{m.xpReward} XP</span>
+              </div>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.83rem", lineHeight: 1.6, marginBottom: "1rem" }}>
+                {m.description}
+              </p>
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <div style={{ flex: 1, padding: "0.5rem 0.75rem", background: "rgba(99,102,241,0.06)", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <div style={{ color: "#818cf8", fontWeight: 600, marginBottom: "0.125rem" }}>Group A</div>
+                  {m.groupA.role}
+                </div>
+                <div style={{ flex: 1, padding: "0.5rem 0.75rem", background: "rgba(59,130,246,0.06)", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
+                  <div style={{ color: "#60a5fa", fontWeight: 600, marginBottom: "0.125rem" }}>Group B</div>
+                  {m.groupB.role}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", marginTop: "1rem", color: m.topicColor, fontSize: "0.8rem", fontWeight: 600 }}>
+                <Play size={13} /> Start Sprint <ArrowRight size={13} />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    );
   }
 
-  // Calculate cumulative scores from round history
-  const getTeamTotalScore = (teamId: 'GroupA' | 'GroupB') => {
-    if (!roomData) return 0;
-    let total = 0;
-    for (const round of roomData.roundHistory || []) {
-      total += teamId === 'GroupA' ? round.groupAPoints : round.groupBPoints;
-    }
-    total += roomData[teamId].points || 0;
-    return total;
-  };
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER: Team picker
+  // ─────────────────────────────────────────────────────────────────────────
+  if (!mission) return null;
 
-  // Determine overall winner
-  const getOverallWinner = () => {
-    if (!roomData) return null;
-    const groupATotal = getTeamTotalScore('GroupA');
-    const groupBTotal = getTeamTotalScore('GroupB');
-    if (groupATotal > groupBTotal) return 'GroupA';
-    if (groupBTotal > groupATotal) return 'GroupB';
-    return 'tie';
-  };
-
-  if (!sessionCode) {
+  if (!team) {
     return (
-      <>
-        <div className="lobby-split">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        style={{ maxWidth: "600px", margin: "0 auto", paddingTop: "1.5rem" }}>
 
-        <motion.div
-          className="lobby-hero"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+        {/* Back button */}
+        <button
+          onClick={() => setSelectedMission(null)}
+          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.5rem" }}>
-            <span className="status-dot live" />
-            <span style={{ color: "var(--accent-emerald)", fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 600 }}>Live Sprint</span>
+          ← Back to missions
+        </button>
+
+        {/* Mission header */}
+        <div style={{ marginBottom: "2rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <span style={{ fontSize: "2.5rem" }}>{mission.topicIcon}</span>
+            <div>
+              <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px" }}>
+                {mission.title}
+              </h1>
+              <span style={{
+                fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace",
+                color: mission.topicColor, background: `${mission.topicColor}15`,
+                padding: "0.125rem 0.625rem", borderRadius: "999px",
+              }}>{mission.topic}</span>
+            </div>
           </div>
+          <p style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>{mission.description}</p>
+        </div>
 
-          <h1 style={{
-            fontSize: "3.5rem",
-            fontWeight: 700,
-            lineHeight: 1.1,
-            letterSpacing: "-1.5px",
-            color: "var(--text-primary)",
-            marginBottom: "1rem",
-          }}>
-            Team up.<br />
-            <span style={{ color: "var(--text-muted)" }}>Solve missions.</span>
-          </h1>
+        <div style={{ marginBottom: "0.75rem" }}>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+            Which group are you in?
+          </span>
+        </div>
 
-          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.7, maxWidth: "360px" }}>
-            Create a room and share the code with your teammate, or join one that&apos;s already running.
-          </p>
-
-
-          {user && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "2rem" }}
-            >
-              <div style={{
-                display: "flex", alignItems: "center", gap: "0.5rem",
-                padding: "0.375rem 0.75rem", borderRadius: "999px",
-                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                fontSize: "0.8rem", color: "var(--text-secondary)"
-              }}>
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" style={{ width: 18, height: 18, borderRadius: "50%" }} />
-                ) : (
-                  <UserIcon size={14} />
-                )}
-                {user.displayName || user.email}
-              </div>
-              <button
-                onClick={logout}
-                style={{
-                  background: "none", border: "none", color: "var(--text-muted)",
-                  cursor: "pointer", fontSize: "0.75rem", textDecoration: "underline",
-                  textUnderlineOffset: "3px"
-                }}
-              >
-                sign out
-              </button>
-            </motion.div>
-          )}
-        </motion.div>
-
-
-        <motion.div
-          className="lobby-action"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-        >
-          <AnimatePresence mode="wait">
-            {roomMode === "choose" ? (
-              <motion.div
-                key="choose"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-              >
-                <motion.button
-                  onClick={handleCreateRoom}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  style={{
-                    background: "linear-gradient(135deg, #6366f1, #3b82f6)",
-                    border: "none",
-                    borderRadius: "var(--radius-md)",
-                    padding: "1.5rem",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                    <Sparkles size={18} color="rgba(255,255,255,0.9)" />
-                    <span style={{ color: "white", fontSize: "1.1rem", fontWeight: 600 }}>Create Room</span>
-                  </div>
-                  <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.85rem" }}>
-                    Start a new mission and get a code to share
-                  </span>
-                </motion.button>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "0 0.5rem" }}>
-                  <div style={{ height: "1px", flex: 1, background: "rgba(255,255,255,0.06)" }} />
-                  <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace" }}>or</span>
-                  <div style={{ height: "1px", flex: 1, background: "rgba(255,255,255,0.06)" }} />
-                </div>
-
-                <motion.button
-                  onClick={() => setRoomMode("join")}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "1.5rem",
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                    <Hash size={18} color="var(--accent-blue)" />
-                    <span style={{ color: "var(--text-primary)", fontSize: "1.1rem", fontWeight: 600 }}>Join Room</span>
-                  </div>
-                  <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    Enter a room code from your teammate
-                  </span>
-                </motion.button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="join"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
-              >
-
-                <div className="terminal-chrome">
-                  <div className="terminal-titlebar">
-                    <div className="terminal-dots">
-                      <span /><span /><span />
-                    </div>
-                    <span>enter code</span>
-                  </div>
-                  <div style={{ padding: "1.5rem", display: "flex", justifyContent: "center" }}>
-                    <input
-                      type="text"
-                      placeholder="_ _ _ _"
-                      value={sessionCodeInput}
-                      onChange={(e) => { setSessionCodeInput(e.target.value); setRoomError(null); }}
-                      className="room-code-input"
-                      maxLength={6}
-                      autoFocus
-                    />
-                  </div>
-                </div>
-
-                {roomError && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{
-                      color: "#ef4444", background: "rgba(239,68,68,0.08)",
-                      padding: "0.625rem 1rem", borderRadius: "var(--radius-sm)",
-                      fontSize: "0.8rem", fontFamily: "'JetBrains Mono', monospace"
-                    }}
-                  >
-                    {roomError}
-                  </motion.div>
-                )}
-
-                <motion.button
-                  className="btn-primary"
-                  onClick={handleJoinSession}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  style={{ width: "100%", padding: "1rem", fontSize: "1rem" }}
-                >
-                  <ArrowRight size={18} style={{ marginRight: "0.5rem" }} />
-                  Go
-                </motion.button>
-
-                <button
-                  onClick={() => { setRoomMode("choose"); setRoomError(null); }}
-                  style={{
-                    background: "none", border: "none", color: "var(--text-muted)",
-                    cursor: "pointer", fontSize: "0.8rem", textAlign: "center",
-                  }}
-                >
-                  ← back
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-
-      <AnimatePresence>
-        {authModalOpen && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+          {/* Group A */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            onClick={() => setTeam("GroupA")}
+            whileHover={{ scale: 1.005, x: 2 }} whileTap={{ scale: 0.995 }}
             style={{
-              position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-              background: "rgba(0,0,0,0.8)", backdropFilter: "blur(5px)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              zIndex: 100
+              padding: "1.25rem 1.5rem", background: "rgba(99,102,241,0.05)",
+              border: "1px solid rgba(99,102,241,0.2)", borderRadius: "var(--radius-md)",
+              cursor: "pointer",
             }}
           >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="terminal-chrome"
-              style={{ width: "100%", maxWidth: "400px", background: "var(--bg-secondary)" }}
-            >
-              <div className="terminal-titlebar" style={{ justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                   <div className="terminal-dots"><span /><span /><span /></div>
-                   <span>{isLoginMode ? "authenticate.sh" : "register.sh"}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Code2 size={22} color="var(--accent-indigo)" />
                 </div>
-                <button onClick={() => setAuthModalOpen(false)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}>
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div style={{ padding: "2rem" }}>
-                <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem", color: "var(--text-primary)" }}>
-                  {isLoginMode ? "Sign In" : "Create Account"}
-                </h2>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
-                  You need an account to create a room.
-                </p>
-
-                {authError && (
-                  <div style={{
-                    background: "rgba(239, 68, 68, 0.1)", color: "#ef4444",
-                    padding: "0.75rem", borderRadius: "var(--radius-sm)",
-                    fontSize: "0.85rem", marginBottom: "1.5rem", border: "1px solid rgba(239, 68, 68, 0.2)"
-                  }}>
-                    {authError}
-                  </div>
-                )}
-
-                <form onSubmit={handleAuthSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>Email</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="input-premium"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>Password</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input-premium"
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn-primary" style={{ marginTop: "0.5rem" }}>
-                    {isLoginMode ? "Sign In" : "Sign Up"}
-                  </button>
-                </form>
-
-                <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-                  <button
-                    onClick={() => {
-                        setIsLoginMode(!isLoginMode);
-                        setAuthError(null);
-                    }}
-                    style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: "0.85rem", cursor: "pointer", textDecoration: "underline" }}
-                  >
-                    {isLoginMode ? "Need an account? Sign up" : "Already have an account? Sign in"}
-                  </button>
+                <div>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.25rem" }}>
+                    Group A — {mission.groupA.role}
+                  </h3>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {mission.groupA.challenge}
+                  </p>
                 </div>
               </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{mission.groupA.questions.length} Qs</span>
+                <ArrowRight size={18} color="var(--text-muted)" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Group B */}
+          <motion.div
+            onClick={() => setTeam("GroupB")}
+            whileHover={{ scale: 1.005, x: 2 }} whileTap={{ scale: 0.995 }}
+            style={{
+              padding: "1.25rem 1.5rem", background: "rgba(59,130,246,0.05)",
+              border: "1px solid rgba(59,130,246,0.2)", borderRadius: "var(--radius-md)",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(59,130,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Users size={22} color="var(--accent-blue)" />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.25rem" }}>
+                    Group B — {mission.groupB.role}
+                  </h3>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {mission.groupB.challenge}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{mission.groupB.questions.length} Qs</span>
+                <ArrowRight size={18} color="var(--text-muted)" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "rgba(255,255,255,0.015)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(255,255,255,0.05)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+          <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "#f59e0b" }} />
+          Group A goes first — Group B unlocks after Group A finishes.
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER: Game view
+  // ─────────────────────────────────────────────────────────────────────────
+  const teamColor = team === "GroupA" ? "#6366f1" : "#3b82f6";
+  const myLabel = team === "GroupA" ? "Group A" : "Group B";
+
+  return (
+    <>
+      {/* XP Burst */}
+      <AnimatePresence>
+        {showXpBurst && (
+          <XpBurst amount={xpAmount} onDone={() => setShowXpBurst(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Final Results Modal */}
+      <AnimatePresence>
+        {showFinalEnd && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1rem" }}>
+            <motion.div initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }}
+              style={{ background: "var(--bg-secondary)", borderRadius: "var(--radius-lg)", padding: "3rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+              {(() => {
+                const winner = getWinner();
+                return (
+                  <>
+                    <motion.div initial={{ scale: 0, rotate: -15 }} animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", delay: 0.15 }} style={{ marginBottom: "1.5rem" }}>
+                      {winner === "tie"
+                        ? <span style={{ fontSize: "4rem" }}>🤝</span>
+                        : <Crown size={72} color="#f59e0b" style={{ filter: "drop-shadow(0 0 20px rgba(245,158,11,0.5))" }} />}
+                    </motion.div>
+                    <h2 style={{ fontSize: "2.25rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
+                      Sprint Complete!
+                    </h2>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: "0.5rem" }}>
+                      {mission.successMessage}
+                    </p>
+                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: "2rem" }}>
+                      {winner === "tie" ? "Both teams tied — great effort!" : `${winner === "GroupA" ? "Group A" : "Group B"} wins this round! 🏆`}
+                    </p>
+
+                    {/* Scores */}
+                    <div style={{ display: "flex", gap: "1.25rem", marginBottom: "2rem", justifyContent: "center" }}>
+                      {(["GroupA", "GroupB"] as const).map(t => {
+                        const result = t === "GroupA" ? groupAResult : groupBResult;
+                        const isWin = winner === t;
+                        return (
+                          <div key={t} style={{
+                            flex: 1, padding: "1.5rem", borderRadius: "var(--radius-md)",
+                            background: isWin ? (t === "GroupA" ? "rgba(99,102,241,0.15)" : "rgba(59,130,246,0.15)") : "rgba(255,255,255,0.03)",
+                            border: isWin ? `2px solid ${t === "GroupA" ? "#6366f1" : "#3b82f6"}` : "1px solid rgba(255,255,255,0.08)",
+                          }}>
+                            {isWin && <Crown size={20} color="#f59e0b" style={{ marginBottom: "0.5rem" }} />}
+                            <div style={{ color: t === "GroupA" ? "var(--accent-indigo)" : "var(--accent-blue)", fontWeight: 700, marginBottom: "0.5rem" }}>
+                              {t === "GroupA" ? "Group A" : "Group B"}
+                            </div>
+                            <div style={{ fontSize: "2.5rem", fontWeight: 900, color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
+                              {result.points}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                              {result.questionsCorrect}/{result.questionsAnswered} correct
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+                      <motion.button onClick={() => { incrementTeamMissions(); handlePlayAgain(); }}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                        style={{ background: "linear-gradient(135deg, #6366f1, #3b82f6)", border: "none", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "white", fontWeight: 700, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                        <RotateCcw size={16} /> Play Again
+                      </motion.button>
+                      <motion.button onClick={() => { incrementTeamMissions(); handleNewMission(); }}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                        <ChevronDown size={16} /> New Mission
+                      </motion.button>
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-      </>
-    );
-  }
 
-  // Round Results Modal
-  const RoundResultsModal = () => {
-    if (!showRoundResults || !roomData) return null;
+      {/* ── GAME UI ── */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ maxWidth: "820px", margin: "0 auto" }}>
 
-    const isLastRound = roomData.currentRound >= roomData.totalRounds;
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 200, padding: "1rem"
-        }}
-      >
-        <motion.div
-          initial={{ scale: 0.9, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          style={{
-            background: "var(--bg-secondary)",
-            borderRadius: "var(--radius-lg)",
-            padding: "2.5rem",
-            maxWidth: "480px",
-            width: "100%",
-            textAlign: "center",
-            border: "1px solid rgba(255,255,255,0.08)"
-          }}
-        >
-          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-            {roundWinner === 'tie' ? '🤝' : roundWinner === 'GroupA' ? '🏆' : '⭐'}
-          </div>
-          <h2 style={{
-            fontSize: "1.75rem", fontWeight: 700, color: "var(--text-primary)",
-            marginBottom: "0.5rem"
-          }}>
-            Round {roomData.currentRound} Complete!
-          </h2>
-
-          <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-            {roundWinner === 'tie'
-              ? "It's a tie! Both teams performed equally well!"
-              : `${roundWinner === 'GroupA' ? 'Group A' : 'Group B'} won this round!`
-            }
-          </p>
-
-          <div style={{
-            display: "flex", justifyContent: "center", gap: "2rem",
-            marginBottom: "2rem",
-          }}>
-            <div style={{
-              background: "rgba(99,102,241,0.1)", borderRadius: "var(--radius-md)",
-              padding: "1rem 1.5rem", minWidth: "120px",
-              border: roundWinner === 'GroupA' ? "2px solid var(--accent-indigo)" : "1px solid rgba(99,102,241,0.2)"
-            }}>
-              <div style={{ color: "var(--accent-indigo)", fontSize: "0.8rem", marginBottom: "0.25rem" }}>Group A</div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                {roomData.GroupA.points}
-              </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>points</div>
-            </div>
-            <div style={{
-              background: "rgba(59,130,246,0.1)", borderRadius: "var(--radius-md)",
-              padding: "1rem 1.5rem", minWidth: "120px",
-              border: roundWinner === 'GroupB' ? "2px solid var(--accent-blue)" : "1px solid rgba(59,130,246,0.2)"
-            }}>
-              <div style={{ color: "var(--accent-blue)", fontSize: "0.8rem", marginBottom: "0.25rem" }}>Group B</div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                {roomData.GroupB.points}
-              </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>points</div>
-            </div>
-          </div>
-
-          {!isLastRound ? (
-            <motion.button
-              onClick={handleNextRound}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                background: "linear-gradient(135deg, #6366f1, #3b82f6)",
-                border: "none", borderRadius: "var(--radius-md)",
-                padding: "0.875rem 2rem", cursor: "pointer",
-                color: "white", fontWeight: 600, fontSize: "1rem",
-                display: "inline-flex", alignItems: "center", gap: "0.5rem"
-              }}
-            >
-              Next Round <ArrowRight size={18} />
-            </motion.button>
-          ) : (
-            <motion.button
-              onClick={() => { setShowRoundResults(false); setShowFinalResults(true); }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                border: "none", borderRadius: "var(--radius-md)",
-                padding: "0.875rem 2rem", cursor: "pointer",
-                color: "#0a0c10", fontWeight: 600, fontSize: "1rem",
-                display: "inline-flex", alignItems: "center", gap: "0.5rem"
-              }}
-            >
-              <Trophy size={18} /> See Final Results
-            </motion.button>
-          )}
-        </motion.div>
-      </motion.div>
-    );
-  };
-
-  // Final Results Modal
-  const FinalResultsModal = () => {
-    if (!showFinalResults || !roomData) return null;
-
-    const overallWinner = getOverallWinner();
-    const groupATotal = getTeamTotalScore('GroupA');
-    const groupBTotal = getTeamTotalScore('GroupB');
-
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(0,0,0,0.9)", backdropFilter: "blur(15px)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          zIndex: 200, padding: "1rem"
-        }}
-      >
-        <motion.div
-          initial={{ scale: 0.9, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          style={{
-            background: "var(--bg-secondary)",
-            borderRadius: "var(--radius-lg)",
-            padding: "3rem",
-            maxWidth: "560px",
-            width: "100%",
-            textAlign: "center",
-            border: "1px solid rgba(255,255,255,0.08)"
-          }}
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
-            transition={{ delay: 0.2, type: "spring" }}
-            style={{ fontSize: "4rem", marginBottom: "1.5rem" }}
-          >
-            {overallWinner === 'tie' ? '🤝' : <Crown size={64} color="#f59e0b" />}
-          </motion.div>
-
-          <h2 style={{
-            fontSize: "2.25rem", fontWeight: 700, color: "var(--text-primary)",
-            marginBottom: "0.5rem"
-          }}>
-            Game Complete!
-          </h2>
-
-          <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem", marginBottom: "2rem" }}>
-            {overallWinner === 'tie'
-              ? "Both teams showed incredible teamwork!"
-              : `${overallWinner === 'GroupA' ? 'Group A' : 'Group B'} is the champion!`
-            }
-          </p>
-
-          {/* Score Summary */}
-          <div style={{
-            display: "flex", justifyContent: "center", gap: "1.5rem",
-            marginBottom: "2rem", flexWrap: "wrap"
-          }}>
-            <motion.div
-              initial={{ x: -30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              style={{
-                background: overallWinner === 'GroupA'
-                  ? "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.05))"
-                  : "rgba(99,102,241,0.05)",
-                borderRadius: "var(--radius-lg)",
-                padding: "1.5rem", minWidth: "160px",
-                border: overallWinner === 'GroupA'
-                  ? "2px solid var(--accent-indigo)"
-                  : "1px solid rgba(99,102,241,0.2)"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                {overallWinner === 'GroupA' && <Crown size={16} color="#f59e0b" />}
-                <span style={{ color: "var(--accent-indigo)", fontWeight: 600 }}>Group A</span>
-              </div>
-              <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                {groupATotal}
-              </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>total points</div>
-            </motion.div>
-
-            <motion.div
-              initial={{ x: 30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              style={{
-                background: overallWinner === 'GroupB'
-                  ? "linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05))"
-                  : "rgba(59,130,246,0.05)",
-                borderRadius: "var(--radius-lg)",
-                padding: "1.5rem", minWidth: "160px",
-                border: overallWinner === 'GroupB'
-                  ? "2px solid var(--accent-blue)"
-                  : "1px solid rgba(59,130,246,0.2)"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                {overallWinner === 'GroupB' && <Crown size={16} color="#f59e0b" />}
-                <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>Group B</span>
-              </div>
-              <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                {groupBTotal}
-              </div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>total points</div>
-            </motion.div>
-          </div>
-
-          {/* Round History */}
-          <div style={{ marginBottom: "2rem" }}>
-            <h3 style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "1rem", textTransform: "uppercase", letterSpacing: "1px" }}>
-              Round History
-            </h3>
-            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-              {(roomData.roundHistory || []).map((round, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    borderRadius: "var(--radius-sm)",
-                    padding: "0.625rem 1rem",
-                    fontSize: "0.85rem",
-                    border: "1px solid rgba(255,255,255,0.08)"
-                  }}
-                >
-                  <span style={{ color: "var(--text-muted)" }}>R{idx + 1}</span>
-                  <span style={{
-                    marginLeft: "0.5rem",
-                    fontWeight: 600,
-                    color: round.winner === 'GroupA' ? "var(--accent-indigo)"
-                      : round.winner === 'GroupB' ? "var(--accent-blue)"
-                      : "var(--text-secondary)"
-                  }}>
-                    {round.winner === 'GroupA' ? 'A' : round.winner === 'GroupB' ? 'B' : 'Tie'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <motion.button
-              onClick={handlePlayAgain}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                background: "linear-gradient(135deg, #6366f1, #3b82f6)",
-                border: "none", borderRadius: "var(--radius-md)",
-                padding: "0.875rem 2rem", cursor: "pointer",
-                color: "white", fontWeight: 600, fontSize: "1rem",
-                display: "inline-flex", alignItems: "center", gap: "0.5rem"
-              }}
-            >
-              <RotateCcw size={18} /> Play Again
-            </motion.button>
-            <motion.button
-              onClick={() => { setSessionCode(null); setShowFinalResults(false); }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "var(--radius-md)",
-                padding: "0.875rem 2rem", cursor: "pointer",
-                color: "var(--text-secondary)", fontWeight: 600, fontSize: "1rem",
-                display: "inline-flex", alignItems: "center", gap: "0.5rem"
-              }}
-            >
-              Exit Room
-            </motion.button>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  };
-
-
-  if (!team) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        style={{ maxWidth: "720px", margin: "0 auto", paddingTop: "2rem" }}
-      >
-
-        <div style={{ marginBottom: "2.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div className="status-chip live">
-              <span className="status-dot live" />
-              Room {sessionCode}
-            </div>
-          </div>
-
-          {/* Round Progress */}
-          {roomData && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: "0.5rem",
-              marginBottom: "1rem",
-              background: "rgba(255,255,255,0.03)",
-              padding: "0.5rem 1rem",
-              borderRadius: "var(--radius-sm)",
-              width: "fit-content"
-            }}>
-              <Flame size={14} color="#f59e0b" />
-              <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
-                Round <strong>{roomData.currentRound}</strong> of {roomData.totalRounds}
-              </span>
-            </div>
-          )}
-
-          <h1 style={{
-            fontSize: "2.5rem", fontWeight: 700, letterSpacing: "-1px",
-            color: "var(--text-primary)", marginBottom: "0.625rem", lineHeight: 1.15
-          }}>
-            {mission?.title}
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.7, maxWidth: "560px" }}>
-            {mission?.description}
-          </p>
-        </div>
-
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: "0.25rem" }}>
-            Pick your team
-          </span>
-
-          {/* Team Cards with Current Scores */}
-          {roomData && roomData.roundHistory && roomData.roundHistory.length > 0 && (
-            <div style={{
-              display: "flex", gap: "1rem", marginBottom: "1rem",
-              background: "rgba(255,255,255,0.02)",
-              padding: "0.75rem 1rem",
-              borderRadius: "var(--radius-sm)",
-              border: "1px solid rgba(255,255,255,0.06)"
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "var(--accent-indigo)", fontWeight: 600, fontSize: "0.85rem" }}>A:</span>
-                <span style={{ color: "var(--text-primary)", fontWeight: 700 }}>{getTeamTotalScore('GroupA')}</span>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>pts</span>
-              </div>
-              <div style={{ width: "1px", background: "rgba(255,255,255,0.1)" }} />
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "var(--accent-blue)", fontWeight: 600, fontSize: "0.85rem" }}>B:</span>
-                <span style={{ color: "var(--text-primary)", fontWeight: 700 }}>{getTeamTotalScore('GroupB')}</span>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>pts</span>
-              </div>
-            </div>
-          )}
-
-          <motion.div
-            className="team-card"
-            data-team="a"
-            onClick={() => setTeam("GroupA")}
-            whileHover={{ scale: 1.005 }}
-            whileTap={{ scale: 0.995 }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <div style={{
-                  width: "40px", height: "40px", borderRadius: "10px",
-                  background: "rgba(99, 102, 241, 0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Code2 size={20} color="var(--accent-indigo)" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.125rem" }}>
-                    Group A — {mission?.groupA.role}
-                  </h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{mission?.groupA.brief}</p>
-                </div>
-              </div>
-              <ArrowRight size={18} color="var(--text-muted)" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="team-card"
-            data-team="b"
-            onClick={() => setTeam("GroupB")}
-            whileHover={{ scale: 1.005 }}
-            whileTap={{ scale: 0.995 }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <div style={{
-                  width: "40px", height: "40px", borderRadius: "10px",
-                  background: "rgba(59, 130, 246, 0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <Cpu size={20} color="var(--accent-blue)" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.125rem" }}>
-                    Group B — {mission?.groupB.role}
-                  </h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>{mission?.groupB.brief}</p>
-                </div>
-              </div>
-              <ArrowRight size={18} color="var(--text-muted)" />
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
-    );
-  }
-
-
-  return (
-    <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ maxWidth: "760px", margin: "0 auto" }}>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2rem" }}>
+        {/* Top bar */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
-            <h1 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px", marginBottom: "0.25rem" }}>
-              {mission?.title}
-            </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-              Round {roomData?.currentRound}/{roomData?.totalRounds} · {team === "GroupA" ? mission?.groupA.role : mission?.groupB.role}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>{mission.topicIcon}</span>
+              <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
+                {mission.title}
+              </h1>
+            </div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
+              {myLabel} — {team === "GroupA" ? mission.groupA.role : mission.groupB.role}
+            </div>
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <div className={`status-chip ${sprintStage < 3 ? "live" : "done"}`}>
-              <span className={`status-dot ${sprintStage < 3 ? "live" : "idle"}`} />
-              {sessionCode}
-            </div>
-            <div className="status-chip" style={{
-              background: team === "GroupA" ? "rgba(99,102,241,0.1)" : "rgba(59,130,246,0.1)",
-              color: team === "GroupA" ? "var(--accent-indigo)" : "var(--accent-blue)",
-              border: `1px solid ${team === "GroupA" ? "rgba(99,102,241,0.2)" : "rgba(59,130,246,0.2)"}`,
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.75rem",
+              borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600,
+              background: teamColor + "15", color: teamColor, border: `1px solid ${teamColor}30`,
             }}>
-              <Users size={12} /> {team === "GroupA" ? "A" : "B"}
+              <Users size={12} /> {myLabel}
             </div>
+            <button
+              onClick={() => setTeam(null)}
+              style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.75rem", padding: "0.375rem 0.75rem" }}
+            >
+              Switch
+            </button>
           </div>
         </div>
 
-        {/* Team Scores Bar */}
+        {/* Score strip */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem",
-          background: "rgba(255,255,255,0.02)",
-          padding: "1rem 1.5rem",
-          borderRadius: "var(--radius-md)",
-          marginBottom: "2rem",
-          border: "1px solid rgba(255,255,255,0.06)"
+          background: "rgba(255,255,255,0.02)", padding: "0.875rem 1.5rem",
+          borderRadius: "var(--radius-md)", marginBottom: "1.75rem",
+          border: "1px solid rgba(255,255,255,0.05)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{
-              width: "32px", height: "32px", borderRadius: "8px",
-              background: "rgba(99,102,241,0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Code2 size={16} color="var(--accent-indigo)" />
-            </div>
-            <div>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", textTransform: "uppercase" }}>Group A</div>
-              <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.25rem" }}>
-                {getTeamTotalScore('GroupA')}
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            display: "flex", alignItems: "center", gap: "0.25rem",
-            fontSize: "1.25rem", color: "var(--text-muted)"
-          }}>
-            <span>vs</span>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", textTransform: "uppercase" }}>Group B</div>
-              <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.25rem" }}>
-                {getTeamTotalScore('GroupB')}
-              </div>
-            </div>
-            <div style={{
-              width: "32px", height: "32px", borderRadius: "8px",
-              background: "rgba(59,130,246,0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Cpu size={16} color="var(--accent-blue)" />
-            </div>
-          </div>
-        </div>
-
-        {/* Round Progress Pills */}
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "2rem", justifyContent: "center" }}>
-          {Array.from({ length: roomData?.totalRounds || 3 }).map((_, idx) => {
-            const roundNum = idx + 1;
-            const isComplete = roomData && idx < (roomData.roundHistory?.length || 0);
-            const isCurrent = roomData && roundNum === roomData.currentRound;
-            const roundWinner = roomData?.roundHistory?.[idx]?.winner;
-
+          {(["GroupA", "GroupB"] as const).map((t, i) => {
+            const result = t === "GroupA" ? groupAResult : groupBResult;
+            const tColor = t === "GroupA" ? "#6366f1" : "#3b82f6";
             return (
-              <div
-                key={idx}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "999px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  background: isComplete
-                    ? roundWinner === 'GroupA' ? "rgba(99,102,241,0.2)"
-                      : roundWinner === 'GroupB' ? "rgba(59,130,246,0.2)"
-                      : "rgba(245,158,11,0.2)"
-                    : isCurrent ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)",
-                  border: isCurrent ? "2px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.06)",
-                  color: isComplete
-                    ? roundWinner === 'GroupA' ? "var(--accent-indigo)"
-                      : roundWinner === 'GroupB' ? "var(--accent-blue)"
-                      : "var(--accent-amber)"
-                    : isCurrent ? "var(--text-primary)" : "var(--text-muted)"
-                }}
-              >
-                {isComplete ? (
-                  roundWinner === 'GroupA' ? <Medal size={14} />
-                  : roundWinner === 'GroupB' ? <Medal size={14} />
-                  : <span>🤝</span>
-                ) : (
-                  <span>{roundNum}</span>
-                )}
-                {isComplete && (
-                  <span>{roundWinner === 'GroupA' ? 'A' : roundWinner === 'GroupB' ? 'B' : '='}</span>
-                )}
+              <div key={t} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                {i === 1 && <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>vs</div>}
+                <div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.65rem", textTransform: "uppercase" }}>
+                    {t === "GroupA" ? "Group A" : "Group B"}
+                  </div>
+                  <div style={{ color: result.completed ? tColor : "var(--text-primary)", fontWeight: 800, fontSize: "1.25rem", fontFamily: "'JetBrains Mono', monospace" }}>
+                    {result.completed ? `${result.points} pts` : "—"}
+                  </div>
+                  <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
+                    {result.completed ? `${result.questionsCorrect}/${result.questionsAnswered} correct` : "In progress"}
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
 
-
-        <div className="sprint-timeline">
-
-
-          <div className="timeline-node">
-            <div className={`timeline-marker ${sprintStage > 1 ? "completed" : sprintStage === 1 ? "active" : "locked"}`}>
-              {sprintStage > 1 ? <CheckCircle size={20} /> : "1"}
-            </div>
-            <div className="timeline-content">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--text-primary)" }}>Data Collection</h2>
-                {sprintStage === 1 && team === "GroupA" && (
-                  <div className="status-chip live"><span className="status-dot live" />Your turn</div>
-                )}
-                {sprintStage === 1 && team === "GroupB" && (
-                  <div className="status-chip waiting"><span className="status-dot waiting" />Waiting</div>
-                )}
-                {sprintStage > 1 && (
-                  <div className="status-chip done"><CheckCircle size={12} />+200</div>
-                )}
-              </div>
-
-              <div className={`sprint-stage-card ${sprintStage === 1 ? "active" : ""}`}>
-                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.25rem" }}>
-                  {mission?.groupA.instruction}
-                </p>
-
-                {/* Terminal code editor */}
-                <div className="terminal-chrome">
-                  <div className="terminal-titlebar">
-                    <div className="terminal-dots"><span /><span /><span /></div>
-                    <span>variables.java</span>
-                  </div>
-                  <div className="terminal-body">
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                      <span style={{ color: "var(--accent-indigo)", fontWeight: 600 }}>{mission?.groupA.vars[0].type}</span>
-                      <span>{mission?.groupA.vars[0].name}</span>
-                      <span style={{ color: "var(--text-muted)" }}>=</span>
-                      <input
-                        type="text" value={var1} onChange={(e) => setVar1(e.target.value)}
-                        disabled={sprintStage > 1 || team !== "GroupA"}
-                        placeholder={mission?.groupA.vars[0].target}
-                        style={{
-                          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                          borderRadius: "4px", padding: "0.25rem 0.5rem", width: "80px",
-                          color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: "0.9rem", textAlign: "center",
-                        }}
-                      />
-                      <span style={{ color: "var(--text-muted)" }}>;</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ color: "var(--accent-indigo)", fontWeight: 600 }}>{mission?.groupA.vars[1].type}</span>
-                      <span>{mission?.groupA.vars[1].name}</span>
-                      <span style={{ color: "var(--text-muted)" }}>=</span>
-                      <input
-                        type="text" value={var2} onChange={(e) => setVar2(e.target.value)}
-                        disabled={sprintStage > 1 || team !== "GroupA"}
-                        placeholder={mission?.groupA.vars[1].target}
-                        style={{
-                          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                          borderRadius: "4px", padding: "0.25rem 0.5rem", width: "80px",
-                          color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: "0.9rem", textAlign: "center",
-                        }}
-                      />
-                      <span style={{ color: "var(--text-muted)" }}>;</span>
-                    </div>
-                  </div>
+        {/* Two-column quiz layout */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+          {/* Group A panel */}
+          <div style={{
+            background: team === "GroupA" ? "rgba(99,102,241,0.04)" : "rgba(255,255,255,0.01)",
+            border: team === "GroupA" ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(255,255,255,0.06)",
+            borderRadius: "var(--radius-md)", padding: "1.5rem",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
+              <Code2 size={16} color="#6366f1" />
+              <span style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group A</span>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupA.role}</span>
+              {groupAResult.completed && (
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
+                  <Zap size={12} />+{groupAResult.points} XP
                 </div>
-
-                {sprintStage === 1 && team === "GroupA" && (
-                  <motion.button
-                    className="btn-primary"
-                    onClick={handleSprint1Submit}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    style={{ marginTop: "1.25rem", width: "100%" }}
-                  >
-                    <Play size={16} style={{ marginRight: "0.375rem" }} /> Submit
-                  </motion.button>
-                )}
-                {sprintStage === 1 && team === "GroupB" && (
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: "0.5rem",
-                    color: "var(--text-muted)", fontSize: "0.85rem",
-                    marginTop: "1.25rem", fontFamily: "'JetBrains Mono', monospace",
-                  }}>
-                    <span className="status-dot waiting" />
-                    Waiting for Group A...
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+            <QuizChallenge
+              questions={mission.groupA.questions}
+              onComplete={handleGroupAComplete}
+              teamColor="#6366f1"
+              teamName="Group A"
+              isActive={team === "GroupA" && !groupAResult.completed}
+              isCompleted={groupAResult.completed}
+            />
           </div>
 
-          {/* ─── Stage 2: Logic Processing ─── */}
-          <div className="timeline-node">
-            <div className={`timeline-marker ${sprintStage > 2 ? "completed" : sprintStage === 2 ? "active" : "locked"}`}>
-              {sprintStage > 2 ? <CheckCircle size={20} /> : sprintStage >= 2 ? "2" : <Lock size={16} />}
-            </div>
-            <div className="timeline-content">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                <h2 style={{ fontSize: "1.1rem", fontWeight: 600, color: sprintStage >= 2 ? "var(--text-primary)" : "var(--text-muted)" }}>Logic Processing</h2>
-                {sprintStage === 2 && team === "GroupB" && (
-                  <div className="status-chip live"><span className="status-dot live" />Your turn</div>
-                )}
-                {sprintStage === 2 && team === "GroupA" && (
-                  <div className="status-chip waiting"><span className="status-dot waiting" />Waiting</div>
-                )}
-                {sprintStage > 2 && (
-                  <div className="status-chip done"><CheckCircle size={12} />+300</div>
-                )}
-              </div>
-
-              <div className={`sprint-stage-card ${sprintStage === 2 ? "active" : ""}`} style={{ opacity: sprintStage >= 2 ? 1 : 0.4 }}>
-                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1.25rem" }}>
-                  {mission?.groupB.instruction}
-                </p>
-
-                <div className="terminal-chrome">
-                  <div className="terminal-titlebar">
-                    <div className="terminal-dots"><span /><span /><span /></div>
-                    <span>logic.java</span>
-                  </div>
-                  <div className="terminal-body">
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", flexWrap: "wrap" }}>
-                      <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>if</span>
-                      <span>(</span>
-                      <span>{mission?.groupB.logic.variable}</span>
-                      <span style={{ color: "var(--accent-blue)", fontWeight: 600 }}>{mission?.groupB.logic.operator}</span>
-                      <input
-                        type="text" value={temp} onChange={(e) => setTemp(e.target.value)}
-                        disabled={sprintStage !== 2 || team !== "GroupB"}
-                        placeholder="?"
-                        style={{
-                          background: sprintStage === 2 && team === "GroupB" ? "rgba(59,130,246,0.08)" : "rgba(255,255,255,0.04)",
-                          border: `1px solid ${sprintStage === 2 && team === "GroupB" ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.08)"}`,
-                          borderRadius: "4px", padding: "0.25rem 0.375rem", width: "60px",
-                          color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace",
-                          fontSize: "0.9rem", textAlign: "center",
-                        }}
-                      />
-                      <span>{")"} {"{"}</span>
-                    </div>
-                    <div style={{ paddingLeft: "1.5rem", color: "var(--text-secondary)" }}>
-                      {mission?.groupB.logic.action}
-                    </div>
-                    <div>{"}"}</div>
-                  </div>
+          {/* Group B panel */}
+          <div style={{
+            background: team === "GroupB" ? "rgba(59,130,246,0.04)" : "rgba(255,255,255,0.01)",
+            border: team === "GroupB" ? "1px solid rgba(59,130,246,0.2)" : "1px solid rgba(255,255,255,0.06)",
+            borderRadius: "var(--radius-md)", padding: "1.5rem",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
+              <Users size={16} color="#3b82f6" />
+              <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group B</span>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupB.role}</span>
+              {groupBResult.completed && (
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
+                  <Zap size={12} />+{groupBResult.points} XP
                 </div>
-
-                {sprintStage === 2 && team === "GroupB" && (
-                  <motion.button
-                    className="btn-primary"
-                    onClick={handleSprint2Submit}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    style={{ marginTop: "1.25rem", width: "100%" }}
-                  >
-                    <Cpu size={16} style={{ marginRight: "0.375rem" }} /> Execute
-                  </motion.button>
-                )}
-                {sprintStage === 2 && team === "GroupA" && (
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: "0.5rem",
-                    color: "var(--text-muted)", fontSize: "0.85rem",
-                    marginTop: "1.25rem", fontFamily: "'JetBrains Mono', monospace",
-                  }}>
-                    <CheckCircle size={14} color="var(--accent-emerald)" />
-                    Data sent — waiting for Group B...
-                  </div>
-                )}
-              </div>
+              )}
             </div>
+            <QuizChallenge
+              questions={mission.groupB.questions}
+              onComplete={handleGroupBComplete}
+              teamColor="#3b82f6"
+              teamName="Group B"
+              isActive={team === "GroupB" && groupBUnlocked && !groupBResult.completed}
+              isCompleted={groupBResult.completed}
+            />
           </div>
+        </div>
 
-          {/* ─── Stage 3: Mission Complete ─── */}
-          <AnimatePresence>
-            {sprintStage === 3 && (
-              <motion.div
-                className="timeline-node"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="timeline-marker completed">
-                  <Trophy size={20} />
-                </div>
-                <div className="timeline-content">
-                  <div className="victory-section">
-                    <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-                      {mission?.reward.icon}
-                    </div>
-                    <h2 style={{
-                      fontSize: "1.75rem", fontWeight: 700,
-                      color: "var(--accent-amber)", marginBottom: "0.75rem",
-                      letterSpacing: "-0.5px"
-                    }}>
-                      Round Complete!
-                    </h2>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", lineHeight: 1.7, maxWidth: "480px", margin: "0 auto 1.5rem" }}>
-                      {mission?.successMessage}
-                    </p>
-
-                    {/* Round Score Summary */}
-                    <div style={{
-                      display: "flex", justifyContent: "center", gap: "1.5rem",
-                      marginBottom: "1.5rem"
-                    }}>
-                      <div style={{
-                        background: "rgba(99,102,241,0.1)",
-                        padding: "0.75rem 1.25rem",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid rgba(99,102,241,0.2)"
-                      }}>
-                        <div style={{ color: "var(--accent-indigo)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>Group A</div>
-                        <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                          {roomData?.GroupA.points || 0}
-                        </div>
-                      </div>
-                      <div style={{
-                        background: "rgba(59,130,246,0.1)",
-                        padding: "0.75rem 1.25rem",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid rgba(59,130,246,0.2)"
-                      }}>
-                        <div style={{ color: "var(--accent-blue)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>Group B</div>
-                        <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                          {roomData?.GroupB.points || 0}
-                        </div>
-                      </div>
-                    </div>
-
-                    {!rewardClaimed ? (
-                      <motion.button
-                        onClick={handleCompleteRound}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        style={{
-                          background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                          border: "none", borderRadius: "var(--radius-md)",
-                          padding: "0.875rem 2rem", cursor: "pointer",
-                          color: "#0a0c10", fontWeight: 700, fontSize: "0.95rem",
-                          display: "inline-flex", alignItems: "center", gap: "0.5rem"
-                        }}
-                      >
-                        {roomData && roomData.currentRound >= roomData.totalRounds
-                          ? <> <Trophy size={16} /> Finish Game</>
-                          : <> <ArrowRight size={16} /> Next Round</>
-                        }
-                      </motion.button>
-                    ) : (
-                      <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: "0.5rem",
-                          padding: "0.75rem 1.5rem", borderRadius: "var(--radius-md)",
-                          background: "rgba(245,158,11,0.1)", color: "var(--accent-amber)",
-                          fontWeight: 600, fontSize: "0.9rem", border: "1px solid rgba(245,158,11,0.2)"
-                        }}
-                      >
-                        <CheckCircle size={16} /> Claimed
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Status footer */}
+        <div style={{
+          marginTop: "1.5rem", padding: "0.875rem 1.25rem",
+          background: "rgba(255,255,255,0.015)", borderRadius: "var(--radius-sm)",
+          border: "1px solid rgba(255,255,255,0.04)",
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+            <Flame size={13} color="#f59e0b" />
+            <span>Group A goes first — Group B unlocks when A finishes</span>
+          </div>
+          <div style={{ display: "flex", gap: "1rem", fontSize: "0.78rem", fontFamily: "'JetBrains Mono', monospace" }}>
+            <span style={{ color: groupAResult.completed ? "#10b981" : "var(--text-muted)" }}>
+              A: {groupAResult.completed ? "✓ Done" : `${groupAResult.questionsAnswered}/${mission.groupA.questions.length}`}
+            </span>
+            <span style={{ color: groupBResult.completed ? "#10b981" : groupBUnlocked ? "var(--accent-blue)" : "var(--text-muted)" }}>
+              B: {groupBResult.completed ? "✓ Done" : groupBUnlocked ? `${groupBResult.questionsAnswered}/${mission.groupB.questions.length}` : "Locked"}
+            </span>
+          </div>
         </div>
       </motion.div>
-
-      <AnimatePresence>
-        <RoundResultsModal />
-        <FinalResultsModal />
-      </AnimatePresence>
     </>
   );
 }

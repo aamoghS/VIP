@@ -5,12 +5,12 @@ import { useProgress } from "@/context/ProgressContext";
 import { Star, Sparkles, Crown, Trophy, Gem, Code2, Users } from "lucide-react";
 
 const allTrophies = [
-  { id: "wrench", name: "Variables Wrench", icon: "🔧", desc: "Master variables", color: "#a855f7" },
-  { id: "brain", name: "Logic Brain", icon: "🧠", desc: "Master logic", color: "#3b82f6" },
-  { id: "loop", name: "Infinity Loop", icon: "♾️", desc: "Master loops", color: "#10b981" },
-  { id: "ruler", name: "Golden Ruler", icon: "📐", desc: "Master math", color: "#f59e0b" },
-  { id: "flask", name: "Science Flask", icon: "🧪", desc: "Master science", color: "#06b6d4" },
-  { id: "book", name: "History Tome", icon: "📚", desc: "Master history", color: "#ec4899" },
+  { id: "variables", name: "Variables Wrench", icon: "📦", desc: "Master variables and data types", color: "#a855f7" },
+  { id: "logic", name: "Logic Brain", icon: "🧠", desc: "Master if/else conditionals", color: "#3b82f6" },
+  { id: "loops", name: "Infinity Loop", icon: "♾️", desc: "Master repeating actions", color: "#10b981" },
+  { id: "functions", name: "Functions Flask", icon: "⚙️", desc: "Master reusable code blocks", color: "#f59e0b" },
+  { id: "debugging", name: "Debugging Bug", icon: "🐛", desc: "Master finding and fixing errors", color: "#ef4444" },
+  { id: "algorithms", name: "Algorithms Map", icon: "🗺️", desc: "Master step-by-step problem solving", color: "#06b6d4" },
 ];
 
 const containerVariants = {
@@ -32,7 +32,7 @@ const itemVariants = {
 };
 
 export default function RoomPage() {
-  const { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted } = useProgress();
+  const { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats } = useProgress();
   const level = Math.floor(xp / 100) + 1;
 
 
@@ -231,29 +231,34 @@ export default function RoomPage() {
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Skills Progress</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {[
-                { name: 'Variables', icon: '🔧', progress: 80, color: '#a855f7' },
-                { name: 'Logic', icon: '🧠', progress: 65, color: '#3b82f6' },
-                { name: 'Loops', icon: '♾️', progress: 45, color: '#10b981' },
-                { name: 'Math', icon: '📐', progress: 70, color: '#f59e0b' },
-              ].map(skill => (
+                { key: 'variables', name: 'Variables', icon: '📦', color: '#a855f7' },
+                { key: 'logic', name: 'If / Else', icon: '🤔', color: '#3b82f6' },
+                { key: 'loops', name: 'Loops', icon: '🔁', color: '#10b981' },
+                { key: 'functions', name: 'Functions', icon: '⚙️', color: '#f59e0b' },
+                { key: 'debugging', name: 'Debugging', icon: '🐛', color: '#ef4444' },
+                { key: 'algorithms', name: 'Algorithms', icon: '🗺️', color: '#06b6d4' },
+              ].map(skill => {
+                const stat = topicStats[skill.key];
+                const progress = stat && stat.attempted > 0 ? Math.round((stat.correct / stat.attempted) * 100) : 0;
+                return (
                 <div key={skill.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <span style={{ fontSize: '1.25rem', width: '24px', textAlign: 'center' }}>{skill.icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace" }}>
                       <span style={{ color: 'var(--text-secondary)' }}>{skill.name.toUpperCase()}</span>
-                      <span style={{ color: skill.color, fontWeight: 700 }}>{skill.progress}%</span>
+                      <span style={{ color: skill.color, fontWeight: 700 }}>{progress}%</span>
                     </div>
                     <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${skill.progress}%` }}
+                        animate={{ width: `${progress}%` }}
                         transition={{ duration: 1, delay: 0.2 }}
                         style={{ height: '100%', background: skill.color }}
                       />
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
 

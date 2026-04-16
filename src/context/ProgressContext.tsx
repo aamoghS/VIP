@@ -8,6 +8,14 @@ type UnlockedItem = {
   icon: string;
 };
 
+// Per-topic accuracy tracking
+export type TopicStat = {
+  attempted: number;
+  correct: number;
+};
+
+export type TopicStats = Record<string, TopicStat>;
+
 type ProgressContextType = {
   xp: number;
   addXp: (amount: number) => void;
@@ -19,26 +27,46 @@ type ProgressContextType = {
   incrementQuestionsSolved: () => void;
   teamMissionsCompleted: number;
   incrementTeamMissions: () => void;
+  topicStats: TopicStats;
+  recordAnswer: (topic: string, correct: boolean) => void;
+  resetProgress: () => void;
 };
 
-const PROGRESS_COOKIE_NAME = "codedash_progress";
+const STORAGE_KEY = "vip_progress";
 
-function readProgressFromCookie(): { xp: number; unlockedItems: UnlockedItem[]; sprintStage: number; questionsSolved: number; teamMissionsCompleted: number } | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`${PROGRESS_COOKIE_NAME}=([^;]+)`));
-  if (!match) return null;
+type SavedProgress = {
+  xp: number;
+  unlockedItems: UnlockedItem[];
+  sprintStage: number;
+  questionsSolved: number;
+  teamMissionsCompleted: number;
+  topicStats: TopicStats;
+};
+
+const defaultProgress = (): SavedProgress => ({
+  xp: 0,
+  unlockedItems: [],
+  sprintStage: 1,
+  questionsSolved: 0,
+  teamMissionsCompleted: 0,
+  topicStats: {},
+});
+
+function readProgress(): SavedProgress | null {
+  if (typeof window === "undefined") return null;
   try {
-    return JSON.parse(decodeURIComponent(match[1]));
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as SavedProgress) : null;
   } catch {
     return null;
   }
 }
 
-function writeProgressToCookie(data: { xp: number; unlockedItems: UnlockedItem[]; sprintStage: number; questionsSolved: number; teamMissionsCompleted: number }) {
-  if (typeof document === "undefined") return;
-  const maxAge = 60 * 60 * 24 * 30;
-  const json = encodeURIComponent(JSON.stringify(data));
-  document.cookie = `${PROGRESS_COOKIE_NAME}=${json}; path=/; max-age=${maxAge}; samesite=lax`;
+function writeProgress(data: SavedProgress) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {}
 }
 
 const ProgressContext = createContext<ProgressContextType | undefined>(undefined);
@@ -49,55 +77,69 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [sprintStage, setSprintStage] = useState(1);
   const [questionsSolved, setQuestionsSolved] = useState(0);
   const [teamMissionsCompleted, setTeamMissionsCompleted] = useState(0);
+  const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [hydrated, setHydrated] = useState(false);
 
-
   useEffect(() => {
-    const saved = readProgressFromCookie();
-    if (saved) {
-      setXp(saved.xp);
-      setUnlockedItems(saved.unlockedItems || []);
-      setSprintStage(saved.sprintStage || 1);
-      setQuestionsSolved(saved.questionsSolved || 0);
-      setTeamMissionsCompleted(saved.teamMissionsCompleted || 0);
-    }
+    const saved = readProgress() ?? defaultProgress();
+    setXp(saved.xp);
+    setUnlockedItems(saved.unlockedItems || []);
+    setSprintStage(saved.sprintStage || 1);
+    setQuestionsSolved(saved.questionsSolved || 0);
+    setTeamMissionsCompleted(saved.teamMissionsCompleted || 0);
+    setTopicStats(saved.topicStats || {});
     setHydrated(true);
   }, []);
 
-
   useEffect(() => {
     if (hydrated) {
-      writeProgressToCookie({ xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted });
+      writeProgress({ xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats });
     }
-  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, hydrated]);
+  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, hydrated]);
 
-  const addXp = (amount: number) => {
-    setXp((prev) => prev + amount);
-  };
+  const addXp = (amount: number) => setXp(prev => prev + amount);
 
   const unlockItem = (item: UnlockedItem) => {
-    setUnlockedItems((prev) => {
-      if (prev.find((i) => i.id === item.id)) return prev;
+    setUnlockedItems(prev => {
+      if (prev.find(i => i.id === item.id)) return prev;
       return [...prev, item];
     });
   };
 
-  const advanceSprint = () => {
-    setSprintStage((prev) => Math.min(prev + 1, 3));
+  const advanceSprint = () => setSprintStage(prev => Math.min(prev + 1, 3));
+
+  const incrementQuestionsSolved = () => setQuestionsSolved(prev => prev + 1);
+
+  const incrementTeamMissions = () => setTeamMissionsCompleted(prev => prev + 1);
+
+  const recordAnswer = (topic: string, correct: boolean) => {
+    setTopicStats(prev => {
+      const existing = prev[topic] ?? { attempted: 0, correct: 0 };
+      return {
+        ...prev,
+        [topic]: {
+          attempted: existing.attempted + 1,
+          correct: existing.correct + (correct ? 1 : 0),
+        },
+      };
+    });
   };
 
-  const incrementQuestionsSolved = () => {
-    setQuestionsSolved((prev) => prev + 1);
-  };
-
-  const incrementTeamMissions = () => {
-    setTeamMissionsCompleted((prev) => prev + 1);
+  const resetProgress = () => {
+    const fresh = defaultProgress();
+    setXp(fresh.xp);
+    setUnlockedItems(fresh.unlockedItems);
+    setSprintStage(fresh.sprintStage);
+    setQuestionsSolved(fresh.questionsSolved);
+    setTeamMissionsCompleted(fresh.teamMissionsCompleted);
+    setTopicStats(fresh.topicStats);
   };
 
   return (
     <ProgressContext.Provider value={{
       xp, addXp, unlockedItems, unlockItem, sprintStage, advanceSprint,
-      questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions
+      questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions,
+      topicStats, recordAnswer, resetProgress,
     }}>
       {children}
     </ProgressContext.Provider>
@@ -106,8 +148,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
 export function useProgress() {
   const context = useContext(ProgressContext);
-  if (context === undefined) {
-    throw new Error("useProgress must be used within a ProgressProvider");
-  }
+  if (context === undefined) throw new Error("useProgress must be used within a ProgressProvider");
   return context;
 }

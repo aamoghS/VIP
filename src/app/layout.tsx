@@ -4,7 +4,6 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import MouseSpotlight from "@/components/MouseSpotlight";
 import { ProgressProvider } from "@/context/ProgressContext";
-import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/components/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,17 +22,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <AuthProvider>
-            <ProgressProvider>
-              <div className="app-container">
-                <MouseSpotlight />
-                <Navigation />
-                <main className="main-content">
-                  {children}
-                </main>
-              </div>
-            </ProgressProvider>
-          </AuthProvider>
+          <ProgressProvider>
+            <div className="app-container">
+              <MouseSpotlight />
+              <Navigation />
+              <main className="main-content">
+                {children}
+              </main>
+            </div>
+          </ProgressProvider>
         </QueryProvider>
       </body>
     </html>
