@@ -1,554 +1,342 @@
 import { SprintMission } from "./types";
 
 export const MISSIONS: SprintMission[] = [
-  // ── MISSION 1: Variables ──────────────────────────────────────────────────
+  // ── MISSION 1: Real-World Scenario: Space Solar Salvage ───────────────────────
   {
     id: "variables",
-    title: "Variable Vault",
+    title: "Space Solar Salvage",
     topic: "Variables",
-    topicIcon: "📦",
+    topicIcon: "🛸",
     topicColor: "#a855f7",
-    description: "Group A sets up the game's core variable. Group B takes that exact variable and updates it when the player scores. You must pass the baton!",
+    description: "A satellite's energy is low! Group A sets the base power level. Group B must calculate the boost needed to save the mission.",
     xpReward: 400,
     groupA: {
-      role: "Architects",
-      challenge: "Define the score variable to start the game",
+      role: "Mission Control",
+      challenge: "Initialize the satellite's power core",
       questions: [
         {
-          prompt: "We need a variable to track the player's score. Which of these is the BEST description of a variable?",
+          prompt: "We need a way to 'remember' the current power level throughout the flight. Why do programmers use variables instead of just writing the number 100 everywhere?",
           options: [
-            "A fixed value that never changes",
-            "A named storage box that holds a value",
-            "A type of loop for counting",
-            "A visual button in the game",
+            "It looks cooler",
+            "To make the code longer",
+            "So we can easily update the value in one place if it changes",
+            "Variables are required by law"
           ],
-          answer: "A named storage box that holds a value",
-          explanation: "A variable is like a labeled box. The label is the name ('score'), and you can store values inside it and change them later.",
+          answer: "So we can easily update the value in one place if it changes",
+          explanation: "Coding is about logical efficiency! Variables allow one name ('power') to represent a changing value, keeping our logic consistent.",
         },
         {
-          prompt: "What is the best way to name a variable storing a game score?",
-          options: ["Score!", "game score", "score", "1score"],
-          answer: "score",
-          explanation: "Variable names in Python should be single words (or use underscores like 'game_score'), and cannot start with numbers or have spaces.",
+          prompt: "Which variable name is most logical for 'Current Oxygen Level'?",
+          options: ["COL", "oxygen_level", "x", "blue_stuff"],
+          answer: "oxygen_level",
+          explanation: "Logical thinking starts with clear names! Someone else should be able to read your 'Logic Cube' and understand what it does.",
         },
         {
-          prompt: "Write the Python code to create the score variable and set it to zero for the start of the game.",
-          code: `# Set up the start of the game`,
+          prompt: "Code the power core startup. Setting the power level variable to 100.",
+          code: `# Initialize Power Core`,
           options: [
-            "int score = 0;",
-            "score = 0",
-            "set score = 0",
-            "score == 0",
+            "power = 100",
+            "100 = power",
+            "set core to 100",
+            "power == 100"
           ],
-          answer: "score = 0",
-          explanation: "In Python, you just type the name and set it equal to its value. No 'int' or semicolons needed!",
+          answer: "power = 100",
+          explanation: "In Python logic, the variable on the left takes on the value on the right.",
         },
       ],
     },
-    handoffMessage: "Group A successfully created: `score = 0`. Group B, you must use this variable to give the player points!",
+    handoffMessage: "Mission Control (A) successfully initialized: `power = 100`. Engineers (B), the satellite is entering shadow! You must recalculate the power.",
     groupB: {
-      role: "Gameplay Engineers",
-      challenge: "Update the score variable Group A created",
+      role: "Satellite Engineers",
+      challenge: "Modify the variables as the environment changes",
       questions: [
         {
-          prompt: "Group A handed you the 'score' variable. The player just grabbed a coin! How do you add 10 points to their score in Python?",
-          code: `# Group A code:
-score = 0
-# Your code:`,
+          prompt: "The satellite entered a shadow. Power dropped by 40%. How do you mathematically update the power variable in Python?",
+          code: `# Current: power = 100
+# Update:`,
           options: [
-            "int score = 10",
-            "score = score + 10",
-            "score = 10",
-            "score + 10"
+            "power - 40",
+            "power = 60",
+            "power = power - 40",
+            "minus 40"
           ],
-          answer: "score = score + 10",
-          explanation: "To update it, we calculate 'score + 10' and save it back into the 'score' box using the equals sign.",
+          answer: "power = power - 40",
+          explanation: "This is a logic bridge: Take the OLD power, subtract 40, and store it back into the NEW power level.",
         },
         {
-          prompt: "Now the player grabbed a rare gem worth 50 points! Update the score again.",
-          code: `# Group A code: score = 0
-# Your previous code: score = score + 10
-# What is the NEW score if you add 50?`,
-          options: ["50", "60", "0", "1050"],
-          answer: "60",
-          explanation: "Variables remember things! The score was 10. Adding 50 makes it 60.",
+          prompt: "Critical Thinking: If you run `power = power - 40` three times, and you started at 100, what happens?",
+          options: [
+            "Power stays at 60",
+            "Power becomes -20",
+            "Program crashes",
+            "Nothing"
+          ],
+          answer: "Power becomes -20",
+          explanation: "Variables have memory! Each line of code changes the state of your system. 100 -> 60 -> 20 -> -20.",
         },
         {
-          prompt: "Game over! How do you print the final score to the screen for the player to see?",
+          prompt: "You found a solar flare! Triple the remaining power instantly.",
           options: [
-            "System.out.println(score)",
-            "print('score')",
-            "print score",
-            "print(score)"
+            "power = power * 3",
+            "power = 3",
+            "power + power + power",
+            "power = power + 3"
           ],
-          answer: "print(score)",
-          explanation: "Use Python's print() function! No quotes around score means it prints the NUMBER inside, not the word.",
+          answer: "power = power * 3",
+          explanation: "Multiplying variables is how we scale logic quickly in a real-world system.",
         },
       ],
     },
-    successMessage: "Variable Vault unlocked! Group A built the memory, and Group B manipulated it. That's teamwork!",
+    successMessage: "Satellite Saved! You used dynamic memory to navigate a changing environment. That's real coding logic!",
   },
 
-  // ── MISSION 2: Conditionals ───────────────────────────────────────────────
+  // ── MISSION 2: Real-World Scenario: Cyber-Greenhouse ──────────────────────────
   {
     id: "conditionals",
-    title: "Decision Dome",
-    topic: "If / Else",
-    topicIcon: "🤔",
+    title: "The Smart Greenhouse",
+    topic: "If / Else Logic",
+    topicIcon: "🌿",
     topicColor: "#3b82f6",
-    description: "Group A sets the entry criteria using 'if' statements. Group B wires up what happens next. Make the right choice!",
+    description: "Build the logic to keep rare plants alive! Group A sets the safety rules. Group B builds the emergency systems.",
     xpReward: 450,
     groupA: {
-      role: "Gatekeepers",
-      challenge: "Write the boolean condition for a VIP club",
+      role: "Logic Architects",
+      challenge: "Define the rules for temperature control",
       questions: [
         {
-          prompt: "We are programming a VIP club. People must be 18 or older to enter. Which operator means 'greater than or equal to'?",
-          options: [">=", "=>", "==", ">"],
-          answer: ">=",
-          explanation: "In Python, >= checks if the left side is bigger than or exactly the same as the right side.",
-        },
-        {
-          prompt: "Write the Python if statement that checks if 'age' is 18 or older.",
+          prompt: "Logical Question: If we want to turn on the fan only when it is 'Too Hot', which comparison check do we need?",
           options: [
-            "if age > 18:",
-            "if age == 18:",
-            "if age >= 18:",
-            "if (age >= 18)"
+            "temp < 30",
+            "temp > 30",
+            "temp == 30",
+            "temp != 30"
           ],
-          answer: "if age >= 18:",
-          explanation: "Python 'if' statements always end with a colon (:).",
+          answer: "temp > 30",
+          explanation: "Coding is about making decisions based on data. '>' checks if our limit has been exceeded.",
         },
         {
-          prompt: "Wait! We also need them to have a VIP pass. Which keyword means 'AND' to combine conditions?",
-          options: ["plus", "and", "&&", "also"],
+          prompt: "We need both HEAT and WATER. Which keyword ensures BOTH logical cubes are True?",
+          options: ["or", "and", "plus", "also"],
           answer: "and",
-          explanation: "In Python, you simply write the word 'and' to ensure both things are true. `if age >= 18 and has_pass:`",
+          explanation: "The 'and' operator creates a stricter logical gate. Both conditions must pass to move forward.",
+        },
+        {
+          prompt: "Write a check for 'If humidity is less than 20% OR it is Sunday'.",
+          options: [
+            "if humidity < 20 and day == 'Sunday':",
+            "if humidity < 20 or day == 'Sunday':",
+            "if humidity < 20:",
+            "if humidity < 20 || day == 'Sunday':"
+          ],
+          answer: "if humidity < 20 or day == 'Sunday':",
+          explanation: "'or' is an inclusive logic gate. If either one is true, the plants get water!",
         },
       ],
     },
-    handoffMessage: "Group A built the condition: `if age >= 18 and has_pass:`. Group B, use this check to let them into the club or reject them!",
+    handoffMessage: "Logic set: `if temp > 30 or humidity < 10:`. Emergency Response (B), you must define the hardware actions!",
     groupB: {
-      role: "Consequence Coders",
-      challenge: "Write the action blocks for Group A's condition",
+      role: "Hardware Engineers",
+      challenge: "Connect actions to the Logic Architect's rules",
       questions: [
         {
-          prompt: "Group A gave you the check. If the condition is TRUE, print 'Welcome VIP!'. How do you write this inside the block?",
-          code: `# Group A:
-if age >= 18 and has_pass:
-# Your action:`,
+          prompt: "Architects gave you the trigger. If it's too hot, we must open the vents. Why is the indentation (4 spaces) required here?",
+          code: `if temp > 30:
+    open_vents()`,
           options: [
-            "{ print(\"Welcome VIP!\") }",
-            "( print(\"Welcome VIP!\") )",
-            "    print(\"Welcome VIP!\")",
-            "print(\"Welcome VIP!\")"
+            "To make it look like steps",
+            "It tells Python that open_vents() ONLY happens if the 'if' is True",
+            "It's just for style",
+            "It makes the code run faster"
           ],
-          answer: "    print(\"Welcome VIP!\")",
-          explanation: "INDENTATION is everything in Python! The 4 spaces mean this code belongs inside the 'if' statement.",
+          answer: "It tells Python that open_vents() ONLY happens if the 'if' is True",
+          explanation: "Indentation IS logic in Python. It defines the 'scope'—what code belongs to which decision.",
         },
         {
-          prompt: "What if the condition is FALSE? Which keyword acts as the backup plan?",
-          options: ["otherwise:", "elif:", "else:", "catch()"],
+          prompt: "Critical Thinking: What happens if `temp` is exactly 30 and our logic is `if temp > 30:`?",
+          options: [
+            "Vents open",
+            "Vents stay closed",
+            "Error",
+            "Vents open halfway"
+          ],
+          answer: "Vents stay closed",
+          explanation: "In strict logic, 30 is NOT greater than 30. It is equal! To include 30, we'd need >=.",
+        },
+        {
+          prompt: "The rule changed: If it's > 30, vents open. OTHERWISE, turn on the heater. What's the keyword for 'Otherwise'?",
+          options: ["expect:", "else:", "otherwise:", "stop:"],
           answer: "else:",
-          explanation: "The 'else:' block catches everything that fails the 'if'.",
-        },
-        {
-          prompt: "What happens if a 19-year-old shows up but DOES NOT have a pass (has_pass is False)?",
-          code: `if age >= 18 and has_pass:
-    print("Welcome VIP!")
-else:
-    print("Go home.")`,
-          options: ["Welcome VIP!", "Go home.", "Error", "Nothing prints"],
-          answer: "Go home.",
-          explanation: "Because 'and' requires BOTH to be True, the lack of a VIP pass makes it False, triggering the else block.",
+          explanation: "Else is our logical default. It handles everything that didn't pass the first check.",
         },
       ],
     },
-    successMessage: "Decision Dome complete! Seamless logic pipeline!",
+    successMessage: "Greenhouse Optimized! You built a self-thinking system using conditional logic.",
   },
 
-  // ── MISSION 3: Loops ──────────────────────────────────────────────────────
+  // ── MISSION 3: Real-World Scenario: Automated Supply Chain ───────────────────
   {
     id: "loops",
-    title: "Loop Labyrinth",
-    topic: "Loops",
-    topicIcon: "🔁",
+    title: "Droid Delivery Loop",
+    topic: "Loops & Iteration",
+    topicIcon: "🤖",
     topicColor: "#10b981",
-    description: "Group A sets up a 'while' loop. Group B is trapped inside and must escape!",
+    description: "A delivery droid has 100 packages! Group A starts the delivery engine. Group B ensures the droid doesn't loop forever.",
     xpReward: 500,
     groupA: {
-      role: "Loop Starters",
-      challenge: "Set up the condition that makes a loop run",
+      role: "System Planners",
+      challenge: "Start the repetitive delivery process",
       questions: [
         {
-          prompt: "A 'while' loop keeps repeating AS LONG AS... what?",
+          prompt: "Loops are about dealing with patterns. Why use a 'while' loop instead of writing 'deliver()' 100 times?",
           options: [
-            "The program is open",
-            "Its condition remains True",
-            "It runs exactly 10 times",
-            "The user presses Enter"
+            "Typing is hard",
+            "It is more efficient and handles any number of packages",
+            "Computers prefer loops",
+            "It uses less battery"
           ],
-          answer: "Its condition remains True",
-          explanation: "A while loop is just an 'if' statement that repeats.",
+          answer: "It is more efficient and handles any number of packages",
+          explanation: "Logic scales! A loop can handle 5 packages or 5 million with the same two lines of code.",
         },
         {
-          prompt: "We want an enemy spawner to run while we have fewer than 5 enemies. How do we start this in Python?",
-          options: [
-            "while enemies < 5:",
-            "while (enemies < 5) {",
-            "loop enemies < 5:",
-            "for enemies in 5:"
-          ],
-          answer: "while enemies < 5:",
-          explanation: "Use the 'while' keyword, the condition, and always end with a colon (:).",
+          prompt: "What marks the start of a loop block in Python?",
+          options: [")", ";", ":", "{"],
+          answer: ":",
+          explanation: "The colon (:) is common in all Python structures. It says 'Logical block begins now!'",
         },
         {
-          prompt: "What happens if Group B never writes the code to increase the 'enemies' count?",
+          prompt: "Critical Thinking: `while battery > 0:` means the droid works until...",
           options: [
-            "Game crashes instantly",
-            "It stops by itself",
-            "Infinite loop freezes the game",
-            "It skips the loop"
+            "It hits a wall",
+            "It finishes all boxes",
+            "The battery variable hits 0",
+            "Never stops"
           ],
-          answer: "Infinite loop freezes the game",
-          explanation: "If the condition stays True forever, the computer will span enemies forever and crash!",
+          answer: "The battery variable hits 0",
+          explanation: "The condition is a gatekeeper. Once it becomes False, the loop breaks.",
         },
       ],
     },
-    handoffMessage: "Group A wrote: `enemies = 0` and `while enemies < 5:`. Group B, you are trapped! Write the escape code!",
+    handoffMessage: "Droid Engine started: `while packages > 0:`. Loop Breakers (B), you must ensure the droid actually delivers them!",
     groupB: {
       role: "Loop Breakers",
-      challenge: "Update the loop variable to prevent a crash",
+      challenge: "Prevent infinite loops and manage state",
       questions: [
         {
-          prompt: "You are stuck! You must eventually break out. What must you do inside the loop?",
+          prompt: "Group A set the loop to run while `packages > 0`. If you don't subtract from `packages` inside the loop, what happens?",
           options: [
-            "Change the 'enemies' variable",
-            "Press ESC",
-            "Write 'stop'",
-            "Use an if statement"
+            "Droid stops instantly",
+            "Infinite loop (The computer gets stuck forever)",
+            "It works fine",
+            "Packages disappear"
           ],
-          answer: "Change the 'enemies' variable",
-          explanation: "To stop a while loop, the condition must eventually become False.",
+          answer: "Infinite loop (The computer gets stuck forever)",
+          explanation: "Infinite loops are logic errors. The computer blindly follows instructions—if the condition stays True, it never leaves!",
         },
         {
-          prompt: "How do you increase the `enemies` variable by 1 in Python?",
+          prompt: "Deliver one package and update the count properly in Python logic.",
           options: [
-            "enemies + 1",
-            "enemies++",
-            "enemies += 1",
-            "enemies == 1"
+            "packages = 1",
+            "packages - 1",
+            "packages -= 1",
+            "del packages"
           ],
-          answer: "enemies += 1",
-          explanation: "enemies += 1 is the Python shortcut for enemies = enemies + 1.",
+          answer: "packages -= 1",
+          explanation: "This is the 'Escape Route'. Every delivery brings us one step closer to finishing the loop.",
         },
         {
-          prompt: "How many enemies actually spawn?",
-          code: `# Group A:
-enemies = 0
-while enemies < 5:
-    spawn_enemy()
-    # Group B:
-    enemies += 1`,
-          options: ["4", "5", "6", "Infinite"],
-          answer: "5",
-          explanation: "It runs when enemies is 0, 1, 2, 3, and 4. When it hits 5, the loop ends safely.",
+          prompt: "Trace the Logic: If `packages = 3`, how many times does `print('Delivered!')` run in a `while packages > 0:` loop?",
+          options: ["2", "3", "4", "Infinite"],
+          answer: "3",
+          explanation: "Pass 1: count is 3 (Deliver). Pass 2: count is 2 (Deliver). Pass 3: count is 1 (Deliver). Then it hits 0 and stops.",
         },
       ],
     },
-    successMessage: "Loop Labyrinth cleared! Flawless execution.",
+    successMessage: "Logistics Mastered! You controlled repetitive chaos with structured iteration.",
   },
 
-  // ── MISSION 4: Functions ──────────────────────────────────────────────────
-  {
-    id: "functions",
-    title: "Function Factory",
-    topic: "Functions",
-    topicIcon: "⚙️",
-    topicColor: "#f59e0b",
-    description: "Group A builds a machine to bake pizzas. Group B sends ingredients into the machine.",
-    xpReward: 550,
-    groupA: {
-      role: "Machine Builders",
-      challenge: "Define a function in Python",
-      questions: [
-        {
-          prompt: "What keyword defines a function in Python?",
-          options: ["function", "def", "create", "void"],
-          answer: "def",
-          explanation: "Python uses 'def' (short for define) to create a reusable function.",
-        },
-        {
-          prompt: "We want our function to accept an ingredient. What goes in the parentheses?",
-          code: `def bake_pizza( _______ ):`,
-          options: ["def", "print", "topping", "true"],
-          answer: "topping",
-          explanation: "This is a parameter — an empty slot waiting for an ingredient.",
-        },
-        {
-          prompt: "Inside the function, how do we use that parameter?",
-          options: [
-            "print('Baking... ' + topping)",
-            "print('Baking... pepperoni')",
-            "print('Baking... ' + 'topping')",
-            "print(topping + topping)"
-          ],
-          answer: "print('Baking... ' + topping)",
-          explanation: "Use the variable exactly as it's named without quotes around it.",
-        },
-      ],
-    },
-    handoffMessage: "Group A built the machine: `def bake_pizza(topping):`. Group B, the machine is useless unless you call it!",
-    groupB: {
-      role: "Machine Operators",
-      challenge: "Call the function and use arguments",
-      questions: [
-        {
-          prompt: "How do you run the `bake_pizza` function to request 'Mushroom'?",
-          options: [
-            "bake_pizza = 'Mushroom'",
-            "topping = 'Mushroom'",
-            "bake_pizza('Mushroom')",
-            "call bake_pizza"
-          ],
-          answer: "bake_pizza('Mushroom')",
-          explanation: "To run it, 'call' it by writing its name followed by the data inside parentheses.",
-        },
-        {
-          prompt: "What happens if you ask for \"Cheese\" and then \"Pepperoni\"?",
-          code: `bake_pizza("Cheese")
-bake_pizza("Pepperoni")`,
-          options: [
-             "Bakes Cheese only",
-             "Bakes Pepperoni only",
-             "Bakes Cheese, then Pepperoni",
-             "Error"
-          ],
-          answer: "Bakes Cheese, then Pepperoni",
-          explanation: "Reusable machines can be called as many times as you want!",
-        },
-        {
-          prompt: "What must you remember about indentation when calling a function?",
-          options: [
-            "It must be indented 4 spaces",
-            "It needs curly braces",
-            "It must *not* be indented so Python knows it is outside the function definition",
-            "Indentation doesn't matter"
-          ],
-          answer: "It must *not* be indented so Python knows it is outside the function definition",
-          explanation: "Calling a function happens outside the 'def' block, so it goes back to the left edge.",
-        },
-      ],
-    },
-    successMessage: "Function Factory running! That's how big codebases stay organized.",
-  },
-
-  // ── MISSION 5: Debugging ──────────────────────────────────────────────────
+  // ── MISSION 4: Real-World Scenario: The Logic Dungeon ────────────────────────
   {
     id: "debugging",
-    title: "Bug Bounty",
-    topic: "Debugging",
-    topicIcon: "🐛",
+    title: "The Logic Dungeon",
+    topic: "Debugging & Tracing",
+    topicIcon: "🕵️‍♂️",
     topicColor: "#ef4444",
-    description: "Group A hunts syntax errors. Group B tracks logic bugs. Time to debug!",
-    xpReward: 500,
-    groupA: {
-      role: "Syntax Detectives",
-      challenge: "Spot errors that break Python",
-      questions: [
-        {
-          prompt: "This code won't run. What's the error?",
-          code: `if score > 10
-    print("Winner!")`,
-          options: [
-            "Missing parentheses",
-            "Missing colon after the if condition",
-            "print is spelled wrong",
-            "score needs quotes",
-          ],
-          answer: "Missing colon after the if condition",
-          explanation: "Every if statement, loop, or function in Python must end with a colon (:).",
-        },
-        {
-          prompt: "What is wrong with the indentation here?",
-          code: `def say_hello():
-print("Hi there!")`,
-          options: [
-            "Nothing is wrong",
-            "The print statement must be indented 4 spaces because it belongs to the function",
-            "def should be capitalized",
-            "say_hello shouldn't have parentheses",
-          ],
-          answer: "The print statement must be indented 4 spaces because it belongs to the function",
-          explanation: "If you don't indent, Python thinks the function is completely empty and will crash.",
-        },
-        {
-          prompt: "Which tool is most useful for finding a syntax error?",
-          options: [
-            "Guessing",
-            "Python's error messages (they point to the line number)",
-            "Deleting everything",
-            "Closing the app",
-          ],
-          answer: "Python's error messages (they point to the line number)",
-          explanation: "The compiler will literally tell you 'SyntaxError: invalid syntax' and point to exactly where the colon or parenthesis is missing.",
-        },
-      ],
-    },
-    handoffMessage: "Syntax fixed! But it's giving wrong answers! Group B, fix the logic!",
-    groupB: {
-      role: "Logic Hunters",
-      challenge: "Find bugs that give wrong answers",
-      questions: [
-        {
-          prompt: "My game calculates score = 10 + 5, but I wanted it to be 10 minus 5. The program doesn't crash, but the score is wrong. What kind of bug is this?",
-          options: [
-            "Indentation Error",
-            "Syntax Error",
-            "Logic Bug (Code runs, but does the wrong math)",
-            "Speed Bug"
-          ],
-          answer: "Logic Bug (Code runs, but does the wrong math)",
-          explanation: "If the code runs but produces the wrong result, it's a logic bug. You used a '+' where you needed a '-'!",
-        },
-        {
-          prompt: "This should average 3 numbers. What's mathematically wrong?",
-          code: `a = 80
-b = 90
-c = 70
-average = a + b + c / 3
-print(average)`,
-          options: [
-            "Division happens before addition — needs parentheses: (a+b+c)/3",
-            "Variables are wrong",
-            "Can't average in Python",
-            "It's correct",
-          ],
-          answer: "Division happens before addition — needs parentheses: (a+b+c)/3",
-          explanation: "Order of operations! Python divides c/3 first. Use parentheses () to force addition first.",
-        },
-        {
-          prompt: "The code runs but prints the wrong thing. Why?",
-          code: `# Kids under 12 eat free
-age = 12
-if age < 12:
-    print("Free meal")
-else:
-    print("Pay up")`,
-          options: [
-            "Syntax error",
-            "Logic error: A 12-year-old should pay, but wait, 'under 12' means < 12 strictly.",
-            "Logic error: age < 12 shouldn't be used",
-            "Nothing is wrong — but if you wanted 12-year-olds to eat free, it should be <="
-          ],
-          answer: "Nothing is wrong — but if you wanted 12-year-olds to eat free, it should be <=",
-          explanation: "If the rules say \"12 and under\", < 12 is a logic error. It should be age <= 12.",
-        },
-        {
-          prompt: "Fastest way to trace a logic bug?",
-          options: [
-            "Delete code",
-            "Add print statements inside the code to see what the variables are doing",
-            "Wait for an update",
-            "Nothing",
-          ],
-          answer: "Add print statements inside the code to see what the variables are doing",
-          explanation: "Professional coders use 'print-debugging' every day to trace exactly what value is inside a variable right before it breaks.",
-        },
-      ],
-    },
-    successMessage: "Bugs squashed! Finding bugs is a superpower.",
-  },
-
-  // ── MISSION 6: Algorithms & Problem Solving ───────────────────────────────
-  {
-    id: "algorithms",
-    title: "Algorithm Academy",
-    topic: "Algorithms",
-    topicIcon: "🗺️",
-    topicColor: "#06b6d4",
-    description: "Group A breaks down problems step by step. Group B traces through to find answers.",
+    description: "The code isn't crashing, but the robot is going the wrong way! Trace the error and fix the logic.",
     xpReward: 550,
     groupA: {
-      role: "Step Writers",
-      challenge: "Write clear algorithms",
+      role: "Bug Hunters",
+      challenge: "Spot errors that break the logic",
       questions: [
         {
-          prompt: "An algorithm is just a step-by-step set of instructions. Which is the BEST algorithm for writing a computer program?",
+          prompt: "A 'Logic Bug' is when code runs perfectly but gives the wrong answer. Which is a logic bug?",
           options: [
-            "Make code, done",
-            "1. Plan logic 2. Write code 3. Test code 4. Fix bugs",
-            "Type super fast",
-            "Look at screen",
+            "Missing a colon",
+            "Spelling 'print' as 'prnt'",
+            "Adding two numbers instead of multiplying them",
+            "Forgetting to indent"
           ],
-          answer: "1. Plan logic 2. Write code 3. Test code 4. Fix bugs",
-          explanation: "Algorithms must be explicit, ordered, and structured.",
+          answer: "Adding two numbers instead of multiplying them",
+          explanation: "The computer did exactly what you said, but your 'plan' was wrong. This is the hardest bug to find!",
         },
         {
-          prompt: "Why does the sequence of an algorithm matter?",
+          prompt: "Trace the bug: You want to check if a player is ELIGIBLE (Age 13+). Why is `if age > 13:` a bug for a 13-year-old?",
           options: [
-            "It doesn't",
-            "The computer executes lines strictly from top to bottom",
-            "Because algorithms are long",
-            "You can execute backwards",
+            "It's not a bug",
+            "Because '>' doesn't include 13. It should be '>='.",
+            "Age needs to be a string",
+            "13 is an unlucky number"
           ],
-          answer: "The computer executes lines strictly from top to bottom",
-          explanation: "You can't eat a sandwich before you make it. The order of instructions handles how the state of your application changes.",
+          answer: "Because '>' doesn't include 13. It should be '>='.",
+          explanation: "Precision is everything. Logical operators define the boundaries of your digital world.",
         },
         {
-          prompt: "This algorithm finds the biggest number in a list. What's the key step?",
-          code: `biggest = 0
-for number in list:
-    if number > biggest:
-        biggest = number`,
+          prompt: "What is the best way to find a logic bug while the code is running?",
           options: [
-            "biggest = 0",
-            "if number > biggest",
-            "biggest = number",
-            "Both checking the condition and updating the biggest variable"
+            "Restart the computer",
+            "Stare at the screen really hard",
+            "Use print() statements to see what's happening to variables",
+            "Delete the code and start over"
           ],
-          answer: "Both checking the condition and updating the biggest variable",
-          explanation: "This allows the program to constantly compare and 'save' the best result so far.",
+          answer: "Use print() statements to see what's happening to variables",
+          explanation: "Print debugging lets you 'see' into the computer's brain. If the variable says 5 but you expected 10, you found your bug!",
         },
       ],
     },
+    handoffMessage: "Syntax clear! But the navigation math is off. Group B, trace the algorithm!",
     groupB: {
-      role: "Algorithm Tracers",
-      challenge: "Follow steps manually and predict",
+      role: "Code Tracers",
+      challenge: "Walk through the code like a computer",
       questions: [
         {
-          prompt: "Trace this loop. What is the final total?",
-          code: `total = 0
-numbers = [5, 10, 3]
-
-for number in numbers:
-    total = total + number`,
-          options: ["5", "15", "18", "0"],
-          answer: "18",
-          explanation: "0+5 = 5. Then 5+10 = 15. Then 15+3 = 18.",
-        },
-        {
-          prompt: "How many steps to find 'Carlos' linearly?",
-          code: `names = ["Alice", "Bob", "Carlos", "Diana"]`,
-          options: ["1", "2", "3", "4"],
-          answer: "3",
-          explanation: "Linear search checks item 1, then item 2, then item 3...",
-        },
-        {
-          prompt: "What does decomposition mean?",
+          prompt: "Why do we call it 'Tracing'?",
           options: [
-            "Breaking large problems into smaller chunks",
-            "Deleting old code",
-            "Letting code rot over time",
-            "Combining small apps into huge ones",
+            "Because we draw pictures",
+            "Following the execution line-by-line to find where logic deviates",
+            "Looking for missing colons",
+            "Searching for old abandoned code"
           ],
-          answer: "Breaking large problems into smaller chunks",
-          explanation: "It's how we build big games: break it up into movement, drawing, scoring, AI, etc.",
+          answer: "Following the execution line-by-line to find where logic deviates",
+          explanation: "Tracing is a critical thinking skill. It trains your brain to think as strictly as a processor.",
+        },
+        {
+          prompt: "Mental Trace: `x = 10`, `x = x + 5`, `if x > 12: x = 0`. What is `x` now?",
+          options: ["15", "0", "10", "12"],
+          answer: "0",
+          explanation: "Walkthrough: x=10. Then x becomes 15. 15 is > 12, so x becomes 0. Logical sequence matters!",
+        },
+        {
+          prompt: "You are given a huge block of messy code. What is 'Decomposition' in logic?",
+          options: [
+            "Deleting the code until it works",
+            "Breaking a big, scary problem into small, manageable 'Cubes'",
+            "Renaming all variables to letters",
+            "Adding more loops"
+          ],
+          answer: "Breaking a big, scary problem into small, manageable 'Cubes'",
+          explanation: "This is the secret of pro coders. Don't solve the whole app at once—solve the movement, then the score, then the graphics.",
         },
       ],
     },
-    handoffMessage: "Group A laid out the logic. Group B traced it. Nice execution!",
-    successMessage: "Algorithm Academy complete! The heart of computer science.",
+    successMessage: "Logic Dungeon Cleared! You've learned to think like a debugger.",
   },
 ];
-

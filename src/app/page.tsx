@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code2, Users, ArrowRight } from "lucide-react";
+import { Code2, Users, ArrowRight, Sparkles } from "lucide-react";
 import { useProgress } from "@/context/ProgressContext";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -186,6 +186,71 @@ export default function Home() {
                 </span>
               </div>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Philosophy / Why Code Section */}
+        <motion.div variants={itemVariants} style={{
+          marginTop: '3rem',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '2rem',
+          paddingBottom: '4rem'
+        }}>
+          <div style={{
+            background: 'var(--glass-surface)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '24px',
+            padding: '2.5rem',
+            boxShadow: 'var(--glass-glow)'
+          }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'black', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Sparkles size={24} color="var(--accent-amber)" />
+              Why Logic Matters
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '1rem' }}>
+              Coding isn&apos;t just about building websites. It&apos;s about <strong>Logic Blocks</strong>. When you learn to code, you&apos;re teaching your brain to break down scary, complex problems into small, manageable cubes.
+            </p>
+            <ul style={{ marginTop: '1.5rem', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {[
+                { icon: '🧩', title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
+                { icon: '⚖️', title: 'Better Decisions', text: 'Use "if/else" logic to weigh your options in the real world.' },
+                { icon: '🚀', title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
+              ].map((item, i) => (
+                <li key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'black', fontSize: '0.9rem' }}>{item.title}</div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.text}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div style={{
+            background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
+            borderRadius: '24px',
+            padding: '2.5rem',
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 20px 40px rgba(37, 99, 235, 0.3)'
+          }}>
+            <h3 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>
+              Your Superpower.
+            </h3>
+            <p style={{ fontSize: '1.1rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '2rem' }}>
+              We don&apos;t just teach you the &quot;web route.&quot; We teach you how to think like an engineer. Logical thinking is the foundation of every great invention in history.
+            </p>
+            <div style={{ background: 'rgba(255,255,255,0.15)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <div style={{ fontFamily: 'var(--font-vt323)', fontSize: '1.75rem', marginBottom: '0.5rem' }}>The Mission:</div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                To transform 6th-8th graders from consumers of technology into the <strong>Architects</strong> of the future through pure logical grit.
+              </div>
+            </div>
           </div>
         </motion.div>
 

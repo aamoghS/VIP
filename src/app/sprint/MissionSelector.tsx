@@ -23,10 +23,10 @@ export function MissionSelector({
           }}>CS Sprint</span>
         </div>
         <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1.5px", marginBottom: "0.5rem" }}>
-          Choose a Mission
+          Active Scenarios
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.7 }}>
-          Pick a CS topic to sprint on. Group A and Group B each get different questions on the same concept.
+          Select a <strong>Logic Scenario</strong> to solve with your team. Each mission requires critical thinking and seamless handoffs.
         </p>
       </div>
 

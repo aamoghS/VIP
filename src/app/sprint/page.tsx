@@ -271,6 +271,38 @@ export default function SprintPage() {
           </div>
         </div>
 
+        {/* Mission Briefing / Context */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: "linear-gradient(135deg, var(--glass-surface), rgba(255,255,255,0.4))",
+            border: "1px solid var(--glass-border)",
+            borderRadius: "var(--radius-md)",
+            padding: "1.25rem 1.75rem",
+            marginBottom: "1.75rem",
+            display: "flex",
+            gap: "1.25rem",
+            alignItems: "center",
+            boxShadow: "var(--glass-glow)"
+          }}
+        >
+          <div style={{ 
+            width: "50px", height: "50px", borderRadius: "12px", background: mission.topicColor + "20",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem"
+          }}>
+            {mission.topicIcon}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "0.7rem", color: mission.topicColor, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.25rem" }}>
+              Mission Scenario
+            </div>
+            <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6, fontWeight: 500 }}>
+              {mission.description}
+            </p>
+          </div>
+        </motion.div>
+
         {/* Score strip */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem",
