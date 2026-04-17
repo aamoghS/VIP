@@ -30,10 +30,11 @@ function grade(pct: number) {
 }
 
 const card = {
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "var(--glass-surface)",
+  border: "1px solid var(--glass-border)",
   borderRadius: "var(--radius-md)",
   padding: "1.5rem",
+  backdropFilter: "blur(12px)",
 };
 
 const containerVariants = {
@@ -148,7 +149,7 @@ export default function MetricsPage() {
                       )}
                     </div>
                   </div>
-                  <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.3)", borderRadius: "3px", overflow: "hidden" }}>
+                  <div style={{ width: "100%", height: "6px", background: "rgba(0,0,0,0.08)", borderRadius: "3px", overflow: "hidden" }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: t.pct !== null ? `${t.pct}%` : "0%" }}
@@ -174,7 +175,7 @@ export default function MetricsPage() {
               {topicsWithData.map(t => {
                 const g = t.pct !== null ? grade(t.pct) : null;
                 return (
-                  <div key={t.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "rgba(0,0,0,0.2)" }}>
+                  <div key={t.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)", background: "rgba(255,255,255,0.4)" }}>
                     <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{t.emoji} {t.label}</span>
                     {g ? (
                       <span style={{ fontSize: "0.78rem", fontWeight: 700, color: g.color, fontFamily: "'JetBrains Mono', monospace" }}>{g.label}</span>

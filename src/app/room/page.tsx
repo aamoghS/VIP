@@ -67,9 +67,10 @@ export default function RoomPage() {
             style={{
               padding: '1.25rem 1.5rem',
               minWidth: '180px',
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 'var(--radius-md)'
+              background: 'var(--glass-surface)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: 'var(--radius-md)',
+              backdropFilter: 'blur(10px)'
             }}
             whileHover={{ y: -2 }}
           >
@@ -100,7 +101,7 @@ export default function RoomPage() {
                 <span>{currentLevelXp} XP</span>
                 <span>{xpToNextLevel} XP</span>
               </div>
-              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '0', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.08)', borderRadius: '0', overflow: 'hidden' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${progressPercent}%` }}
@@ -116,9 +117,10 @@ export default function RoomPage() {
             style={{
               padding: '1.25rem 1.5rem',
               minWidth: '140px',
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--glass-surface)',
+              border: '1px solid var(--glass-border)',
               borderRadius: 'var(--radius-md)',
+              backdropFilter: 'blur(10px)',
               display: 'flex', flexDirection: 'column', justifyContent: 'center'
             }}
             whileHover={{ y: -2 }}
@@ -135,11 +137,11 @@ export default function RoomPage() {
           <Trophy size={16} color="var(--accent-purple)" />
           <span>{unlockedCount} / {totalTrophies} Achievements</span>
         </div>
-        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+        <div className="status-chip" style={{ background: 'var(--glass-surface)', borderColor: 'var(--glass-border)' }}>
           <Star size={14} color="var(--text-secondary)" />
           <span style={{ color: 'var(--text-secondary)' }}>ROLE: {level >= 5 ? 'EXPERT' : level >= 3 ? 'ADVANCED' : 'NOVICE'}</span>
         </div>
-        <div className="status-chip" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)' }}>
+        <div className="status-chip" style={{ background: 'var(--glass-surface)', borderColor: 'var(--glass-border)' }}>
           <Gem size={14} color="var(--text-secondary)" />
           <span style={{ color: 'var(--text-secondary)' }}>TIER: {level <= 2 ? 'BRONZE' : level <= 4 ? 'SILVER' : level <= 6 ? 'GOLD' : 'PLATINUM'}</span>
         </div>
@@ -167,9 +169,10 @@ export default function RoomPage() {
                 variants={itemVariants}
                 whileHover={isUnlocked ? { y: -2 } : {}}
                 style={{
-                  background: isUnlocked ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.2)',
-                  border: isUnlocked ? `1px solid ${trophy.color}` : '1px dashed rgba(255,255,255,0.1)',
+                  background: isUnlocked ? 'var(--glass-surface)' : 'rgba(255, 255, 255, 0.2)',
+                  border: isUnlocked ? `1px solid ${trophy.color}` : '1px dashed rgba(0,0,0,0.15)',
                   borderRadius: 'var(--radius-sm)',
+                  backdropFilter: 'blur(8px)',
                   padding: '1.5rem',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative',
                   opacity: isUnlocked ? 1 : 0.4
@@ -227,7 +230,7 @@ export default function RoomPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
 
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
+          <div style={{ background: 'var(--glass-surface)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', backdropFilter: 'blur(12px)' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Skills Progress</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {[
@@ -248,7 +251,7 @@ export default function RoomPage() {
                       <span style={{ color: 'var(--text-secondary)' }}>{skill.name.toUpperCase()}</span>
                       <span style={{ color: skill.color, fontWeight: 700 }}>{progress}%</span>
                     </div>
-                    <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
@@ -263,7 +266,7 @@ export default function RoomPage() {
           </div>
 
 
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
+          <div style={{ background: 'var(--glass-surface)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', padding: '1.5rem', backdropFilter: 'blur(12px)' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', color: 'var(--text-secondary)', fontFamily: "'JetBrains Mono', monospace", textTransform: 'uppercase', letterSpacing: '1px' }}>Milestones</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {[
@@ -281,7 +284,7 @@ export default function RoomPage() {
                     gap: '0.75rem',
                     padding: '0.5rem',
                     borderRadius: 'var(--radius-sm)',
-                    background: milestone.achieved ? 'var(--accent-purple-dim)' : 'rgba(0,0,0,0.2)',
+                    background: milestone.achieved ? 'var(--accent-purple-dim)' : 'rgba(255, 255, 255, 0.3)',
                     opacity: milestone.achieved ? 1 : 0.5
                   }}
                 >

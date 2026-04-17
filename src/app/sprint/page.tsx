@@ -169,9 +169,9 @@ export default function SprintPage() {
       <AnimatePresence>
         {showFinalEnd && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1rem" }}>
+            style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1rem" }}>
             <motion.div initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }}
-              style={{ background: "var(--bg-secondary)", borderRadius: "var(--radius-lg)", padding: "3rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+              style={{ background: "var(--glass-surface)", borderRadius: "var(--radius-lg)", padding: "3rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "1px solid var(--glass-border)", boxShadow: "var(--glass-glow)" }}>
               {(() => {
                 const winner = getWinner();
                 return (
@@ -200,8 +200,8 @@ export default function SprintPage() {
                         return (
                           <div key={t} style={{
                             flex: 1, padding: "1.5rem", borderRadius: "var(--radius-md)",
-                            background: isWin ? (t === "GroupA" ? "rgba(99,102,241,0.15)" : "rgba(59,130,246,0.15)") : "rgba(255,255,255,0.03)",
-                            border: isWin ? `2px solid ${t === "GroupA" ? "#6366f1" : "#3b82f6"}` : "1px solid rgba(255,255,255,0.08)",
+                            background: isWin ? (t === "GroupA" ? "rgba(99,102,241,0.15)" : "rgba(59,130,246,0.15)") : "var(--glass-surface)",
+                            border: isWin ? `2px solid ${t === "GroupA" ? "#6366f1" : "#3b82f6"}` : "1px solid var(--glass-border)",
                           }}>
                             {isWin && <Crown size={20} color="#f59e0b" style={{ marginBottom: "0.5rem" }} />}
                             <div style={{ color: t === "GroupA" ? "var(--accent-indigo)" : "var(--accent-blue)", fontWeight: 700, marginBottom: "0.5rem" }}>
@@ -226,7 +226,7 @@ export default function SprintPage() {
                       </motion.button>
                       <motion.button onClick={() => { incrementTeamMissions(); handleNewMission(); }}
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                        style={{ background: "var(--glass-surface)", border: "1px solid var(--glass-border)", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
                         <ChevronDown size={16} /> New Mission
                       </motion.button>
                     </div>
@@ -274,9 +274,9 @@ export default function SprintPage() {
         {/* Score strip */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem",
-          background: "rgba(255,255,255,0.02)", padding: "0.875rem 1.5rem",
+          background: "var(--glass-surface)", padding: "0.875rem 1.5rem",
           borderRadius: "var(--radius-md)", marginBottom: "1.75rem",
-          border: "1px solid rgba(255,255,255,0.05)",
+          border: "1px solid var(--glass-border)",
         }}>
           {(["GroupA", "GroupB"] as const).map((t, i) => {
             const result = t === "GroupA" ? groupAResult : groupBResult;
@@ -304,8 +304,8 @@ export default function SprintPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
           {/* Group A panel */}
           <div style={{
-            background: team === "GroupA" ? "rgba(99,102,241,0.04)" : "rgba(255,255,255,0.01)",
-            border: team === "GroupA" ? "1px solid rgba(99,102,241,0.2)" : "1px solid rgba(255,255,255,0.06)",
+            background: team === "GroupA" ? "var(--bg-elevated)" : "var(--glass-surface)",
+            border: team === "GroupA" ? "2px solid #6366f1" : "1px solid var(--glass-border)",
             borderRadius: "var(--radius-md)", padding: "1.5rem",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
@@ -330,8 +330,8 @@ export default function SprintPage() {
 
           {/* Group B panel */}
           <div style={{
-            background: team === "GroupB" ? "rgba(59,130,246,0.04)" : "rgba(255,255,255,0.01)",
-            border: team === "GroupB" ? "1px solid rgba(59,130,246,0.2)" : "1px solid rgba(255,255,255,0.06)",
+            background: team === "GroupB" ? "var(--bg-elevated)" : "var(--glass-surface)",
+            border: team === "GroupB" ? "2px solid #3b82f6" : "1px solid var(--glass-border)",
             borderRadius: "var(--radius-md)", padding: "1.5rem",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
@@ -358,8 +358,8 @@ export default function SprintPage() {
         {/* Status footer & Handoff Banner */}
         <div style={{
           marginTop: "1.5rem", padding: "1.5rem",
-          background: "rgba(255,255,255,0.02)", borderRadius: "var(--radius-md)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--glass-surface)", borderRadius: "var(--radius-md)",
+          border: "1px solid var(--glass-border)",
           display: "flex", flexDirection: "column", gap: "1rem"
         }}>
           {/* Handoff Message (Shown only when A is done and B hasn't finished) */}

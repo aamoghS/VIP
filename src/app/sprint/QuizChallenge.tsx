@@ -84,12 +84,12 @@ export function QuizChallenge({
           animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
           transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
           style={{
-            background: "rgba(255,255,255,0.03)", width: "64px", height: "64px",
+            background: "rgba(0,0,0,0.05)", width: "64px", height: "64px",
             borderRadius: "50%", display: "flex", alignItems: "center",
             justifyContent: "center", marginBottom: "1rem"
           }}
         >
-          <Lock size={28} color="rgba(255,255,255,0.5)" />
+          <Lock size={28} color="#94a3b8" />
         </motion.div>
         <h3 style={{ color: "var(--text-primary)", fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>
           Group B is Locked
@@ -136,7 +136,7 @@ export function QuizChallenge({
         {questions.map((_, i) => (
           <div key={i} style={{
             flex: 1, height: "4px", borderRadius: "2px",
-            background: i < qIndex ? teamColor : i === qIndex ? `${teamColor}60` : "rgba(255,255,255,0.1)",
+            background: i < qIndex ? teamColor : i === qIndex ? `${teamColor}60` : "rgba(0,0,0,0.1)",
             transition: "background 0.3s",
           }} />
         ))}
@@ -160,10 +160,10 @@ export function QuizChallenge({
       {/* Code block */}
       {q.code && (
         <div style={{
-          background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255, 255, 255, 0.8)", border: "1px solid var(--glass-border)",
           borderRadius: "var(--radius-sm)", padding: "1rem 1.25rem",
           fontFamily: "'JetBrains Mono', monospace", fontSize: "0.82rem",
-          color: "#e2e8f0", marginBottom: "1.25rem",
+          color: "var(--text-primary)", marginBottom: "1.25rem",
           whiteSpace: "pre", overflowX: "auto",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem", opacity: 0.5 }}>
@@ -179,8 +179,8 @@ export function QuizChallenge({
         {q.options.map((opt, i) => {
           const isSelected = selected === opt;
           const correct = opt === q.answer;
-          let bg = "rgba(255,255,255,0.03)";
-          let border = "1px solid rgba(255,255,255,0.08)";
+          let bg = "var(--glass-surface)";
+          let border = "1px solid var(--glass-border)";
           let color = "var(--text-primary)";
           if (revealed) {
             if (correct) { bg = "rgba(16,185,129,0.12)"; border = "1px solid #10b981"; color = "#10b981"; }
@@ -205,8 +205,9 @@ export function QuizChallenge({
               <span style={{
                 width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                background: revealed && correct ? "#10b981" : revealed && isSelected ? "#ef4444" : "rgba(255,255,255,0.06)",
+                background: revealed && correct ? "#10b981" : revealed && isSelected ? "#ef4444" : "rgba(0,0,0,0.06)",
                 fontSize: "0.75rem", fontWeight: 700,
+                color: revealed && (correct || isSelected) ? "white" : "var(--text-muted)",
               }}>
                 {revealed && correct ? "✓" : revealed && isSelected ? "✕" : String.fromCharCode(65 + i)}
               </span>

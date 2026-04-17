@@ -52,8 +52,8 @@ export function TeamPicker({
           whileHover={{ scale: 1.01, x: 4, boxShadow: "0 10px 25px -10px rgba(99,102,241,0.3)" }} 
           whileTap={{ scale: 0.99 }}
           style={{
-            padding: "1.5rem", background: "linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0.01) 100%)",
-            border: "1px solid rgba(99,102,241,0.25)", borderRadius: "var(--radius-lg)",
+            padding: "1.5rem", background: "var(--glass-surface)", backdropFilter: "blur(12px)",
+            border: "2px solid rgba(99,102,241,0.4)", borderRadius: "var(--radius-lg)",
             cursor: "pointer", position: "relative", overflow: "hidden"
           }}
         >
@@ -73,7 +73,7 @@ export function TeamPicker({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", fontWeight: 600 }}>{mission.groupA.questions.length} Qs</span>
-              <ArrowRight size={18} color="rgba(255,255,255,0.2)" />
+              <ArrowRight size={18} color="#94a3b8" />
             </div>
           </div>
         </motion.div>
@@ -84,8 +84,8 @@ export function TeamPicker({
           whileHover={{ scale: 1.01, x: 4, boxShadow: "0 10px 25px -10px rgba(59,130,246,0.3)" }} 
           whileTap={{ scale: 0.99 }}
           style={{
-            padding: "1.5rem", background: "linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(59,130,246,0.01) 100%)",
-            border: "1px solid rgba(59,130,246,0.25)", borderRadius: "var(--radius-lg)",
+            padding: "1.5rem", background: "var(--glass-surface)", backdropFilter: "blur(12px)",
+            border: "2px solid rgba(59,130,246,0.4)", borderRadius: "var(--radius-lg)",
             cursor: "pointer", position: "relative", overflow: "hidden"
           }}
         >
@@ -105,13 +105,13 @@ export function TeamPicker({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ color: "var(--text-muted)", fontSize: "0.8rem", fontWeight: 600 }}>{mission.groupB.questions.length} Qs</span>
-              <ArrowRight size={18} color="rgba(255,255,255,0.2)" />
+              <ArrowRight size={18} color="#94a3b8" />
             </div>
           </div>
         </motion.div>
       </div>
 
-      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "rgba(255,255,255,0.015)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(255,255,255,0.05)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "var(--glass-surface)", borderRadius: "var(--radius-sm)", border: "1px solid var(--glass-border)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
         <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "#f59e0b" }} />
         Group A goes first — Group B unlocks after Group A finishes.
       </div>

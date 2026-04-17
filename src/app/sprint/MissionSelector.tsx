@@ -41,8 +41,9 @@ export function MissionSelector({
             whileHover={{ y: -5, boxShadow: `0 10px 30px -10px ${m.topicColor}40`, borderColor: `${m.topicColor}80` }}
             onClick={() => onSelectMission(m)}
             style={{
-              background: "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--glass-surface)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid var(--glass-border)",
               borderRadius: "var(--radius-lg)", padding: "1.5rem",
               cursor: "pointer", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               position: "relative", overflow: "hidden",

@@ -44,8 +44,8 @@ export default function Navigation() {
                     position: "absolute",
                     inset: 0,
                     borderRadius: "8px",
-                    background: "rgba(255,255,255,0.05)",
-                    borderLeft: "3px solid var(--accent-purple)",
+                    background: "rgba(0,0,0,0.04)",
+                    borderLeft: "3px solid var(--accent-blue)",
                     zIndex: 0
                   }}
                 />
@@ -56,12 +56,10 @@ export default function Navigation() {
                 style={{ 
                   position: "relative", zIndex: 1, padding: "0.85rem 1rem", 
                   display: "flex", alignItems: "center", gap: "1rem",
-                  color: isActive ? "var(--text-primary)" : "var(--text-muted)",
                   textDecoration: "none", fontSize: "0.95rem", fontWeight: isActive ? 600 : 400,
-                  transition: "color 0.2s ease"
                 }}
               >
-                <Icon size={18} style={{ color: isActive ? "var(--accent-purple)" : "inherit" }} />
+                <Icon size={18} className="icon" style={{ strokeWidth: isActive ? 2.5 : 1.5 }} />
                 <span title={link.label}>{link.label}</span>
               </Link>
             </li>
@@ -69,22 +67,19 @@ export default function Navigation() {
         })}
       </ul>
 
-      <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem', fontFamily: "'JetBrains Mono', monospace" }}>
-          Level {level} • Progress
+      <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ fontSize: '0.8rem', color: 'black', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+          Level {level}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))', borderRadius: '3px' }} 
+              style={{ height: '100%', background: 'linear-gradient(90deg, #94a3b8, #64748b)', borderRadius: '2px' }} 
             />
           </div>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', fontWeight: 700, minWidth: "30px", textAlign: "right" }}>
-            {progressPercent}%
-          </span>
         </div>
       </div>
     </nav>

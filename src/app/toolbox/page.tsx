@@ -347,15 +347,16 @@ export default function ToolboxPage() {
               </div>
 
               <div style={{
-                background: 'rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'var(--glass-surface)',
+                border: '1px solid var(--glass-border)',
                 padding: '2rem',
                 borderRadius: 'var(--radius-sm)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1.5rem',
                 fontSize: '1.15rem',
-                fontFamily: "'JetBrains Mono', monospace"
+                fontFamily: "'JetBrains Mono', monospace",
+                color: 'var(--text-primary)'
               }}>
                 <DroppableArea />
                 {question.topic === "variables" && !question.options.includes("[name]") && (
@@ -394,14 +395,14 @@ export default function ToolboxPage() {
                   style={{
                     padding: '1.25rem 1.5rem',
                     background: selectedAnswer === opt
-                      ? (evaluated ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)') : 'rgba(255,255,255,0.1)')
-                      : 'rgba(255,255,255,0.02)',
+                      ? (evaluated ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)') : 'rgba(0,0,0,0.05)')
+                      : 'var(--glass-surface)',
                     border: '1px solid',
                     borderColor: evaluated && selectedAnswer === opt
                       ? isCorrect ? '#10b981' : '#ef4444'
-                      : (selectedAnswer === opt && evaluateMutation.isPending ? colors.main : 'rgba(255,255,255,0.08)'),
+                      : (selectedAnswer === opt && evaluateMutation.isPending ? colors.main : 'var(--glass-border)'),
                     borderRadius: 'var(--radius-sm)',
-                    color: '#fff',
+                    color: 'var(--text-primary)',
                     fontSize: '1rem',
                     cursor: evaluated || evaluateMutation.isPending ? 'default' : 'pointer',
                     textAlign: 'left',
@@ -453,7 +454,7 @@ export default function ToolboxPage() {
                       )}
                     </motion.div>
                     <div style={{ flex: 1 }}>
-                      <strong style={{ display: 'block', color: '#fff', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
+                      <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
                         {evalMessage}
                       </strong>
                       {reasoningText && (
