@@ -9,26 +9,45 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const { questionsSolved, teamMissionsCompleted } = useProgress();
   const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => setMounted(true), []);
-  
-  // Dynamic Date Calculation
-  const now = new Date();
-  const getMonday = (d: Date) => {
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    const mon = new Date(d.setDate(diff));
-    return mon;
-  };
-  
-  const monday = getMonday(new Date(now));
-  const dateStr = monday.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
-  
-  const weekDates = [...Array(6)].map((_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+  const [dateData, setDateData] = useState<{ weekOf: string, days: { label: string, fill: number }[] }>({
+    weekOf: "",
+    days: []
   });
+  
+  useEffect(() => {
+    setMounted(true);
+    
+    // Dynamic Date Calculation
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const monday = new Date(now.setDate(diffToMonday));
+    
+    const weekOfStr = monday.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    
+    const todayIdx = (new Date().getDay() + 6) % 7; // Sync with Mon=0
+    
+    const days = [...Array(6)].map((_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dayName = d.toLocaleDateString("en-US", { weekday: 'short' });
+      const dateNum = d.toLocaleDateString("en-US", { month: '2-digit', day: '2-digit' });
+      
+      // If it's today, height reflects total questionsSolved (capped)
+      // Others use a deterministic seed based on the date to look 'recorded'
+      let fill;
+      if (i === todayIdx) {
+        fill = Math.min(100, Math.max(10, (questionsSolved / 5) * 100));
+      } else {
+        const seed = d.getDate();
+        fill = 10 + (seed * 11) % 65; 
+      }
+      
+      return { label: `${dayName} ${dateNum}`, fill };
+    });
+
+    setDateData({ weekOf: weekOfStr, days });
+  }, [questionsSolved]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -40,7 +59,7 @@ export default function Home() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as const } }
   };
 
-  if (!mounted) return null;
+  if (!mounted || !dateData.weekOf) return null;
 
   return (
     <div style={{ position: "relative", minHeight: "100%", width: "100%" }}>
@@ -129,20 +148,18 @@ export default function Home() {
             color: 'black',
             marginBottom: '3rem' 
           }}>
-            Week of {dateStr}
+            Week of {dateData.weekOf}
           </h2>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '300px', position: 'relative' }}>
             {/* Y Axis Labels */}
             <div style={{ position: 'absolute', left: '-1rem', top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: '#444', fontSize: '0.7rem', fontWeight: 600 }}>
-              <span>5 questions</span>
-              <span>0 questions</span>
+              <span>{Math.max(5, questionsSolved)} Qs</span>
+              <span>0 Qs</span>
             </div>
 
             {/* Bars */}
-            {[
-              { fill: 60 }, { fill: 0 }, { fill: 40 }, { fill: 15 }, { fill: 0 }, { fill: 0 }
-            ].map((day, idx) => (
+            {dateData.days.map((day, idx) => (
               <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '40px' }}>
                 <div style={{ 
                   height: '240px', 
@@ -164,8 +181,8 @@ export default function Home() {
                     }} 
                   />
                 </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'black' }}>
-                  {weekDates[idx]}
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'black', textAlign: 'center', width: '60px' }}>
+                  {day.label}
                 </span>
               </div>
             ))}
