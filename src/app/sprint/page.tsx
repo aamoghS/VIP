@@ -15,6 +15,8 @@ import { MISSIONS } from "./missions";
 import { SprintMission, TeamResult, freshTeam } from "./types";
 import { QuizChallenge } from "./QuizChallenge";
 import { XpBurst } from "./XpBurst";
+import { MissionSelector } from "./MissionSelector";
+import { TeamPicker } from "./TeamPicker";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
@@ -136,86 +138,7 @@ export default function SprintPage() {
   // RENDER: Mission Selector
   // ─────────────────────────────────────────────────────────────────────────
   if (!selectedMission) {
-    return (
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        style={{ maxWidth: "760px", margin: "0 auto" }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: "2.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1rem" }}>
-            <Sparkles size={18} color="var(--accent-blue)" />
-            <span style={{
-              color: "var(--accent-blue)", fontSize: "0.75rem",
-              fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase",
-              letterSpacing: "1.5px", fontWeight: 600,
-            }}>CS Sprint</span>
-          </div>
-          <h1 style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1.5px", marginBottom: "0.5rem" }}>
-            Choose a Mission
-          </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.7 }}>
-            Pick a CS topic to sprint on. Group A and Group B each get different questions on the same concept.
-          </p>
-        </div>
-
-        {/* Mission grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1rem" }}>
-          {MISSIONS.map((m, idx) => (
-            <motion.div
-              key={m.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.06 }}
-              whileHover={{ y: -3, borderColor: m.topicColor }}
-              onClick={() => selectMissionInDb(m)}
-              style={{
-                background: "rgba(255,255,255,0.02)",
-                border: `1px solid rgba(255,255,255,0.08)`,
-                borderRadius: "var(--radius-md)", padding: "1.5rem",
-                cursor: "pointer", transition: "all 0.2s",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <span style={{ fontSize: "2rem" }}>{m.topicIcon}</span>
-                  <div>
-                    <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1rem", marginBottom: "0.125rem" }}>
-                      {m.title}
-                    </div>
-                    <span style={{
-                      fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace",
-                      color: m.topicColor, background: `${m.topicColor}15`,
-                      padding: "0.125rem 0.5rem", borderRadius: "999px",
-                    }}>{m.topic}</span>
-                  </div>
-                </div>
-                <span style={{
-                  fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace",
-                  color: "#f59e0b", background: "rgba(245,158,11,0.1)",
-                  padding: "0.25rem 0.625rem", borderRadius: "999px", flexShrink: 0,
-                }}>+{m.xpReward} XP</span>
-              </div>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.83rem", lineHeight: 1.6, marginBottom: "1rem" }}>
-                {m.description}
-              </p>
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <div style={{ flex: 1, padding: "0.5rem 0.75rem", background: "rgba(99,102,241,0.06)", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
-                  <div style={{ color: "#818cf8", fontWeight: 600, marginBottom: "0.125rem" }}>Group A</div>
-                  {m.groupA.role}
-                </div>
-                <div style={{ flex: 1, padding: "0.5rem 0.75rem", background: "rgba(59,130,246,0.06)", borderRadius: "var(--radius-sm)", fontSize: "0.75rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
-                  <div style={{ color: "#60a5fa", fontWeight: 600, marginBottom: "0.125rem" }}>Group B</div>
-                  {m.groupB.role}
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", marginTop: "1rem", color: m.topicColor, fontSize: "0.8rem", fontWeight: 600 }}>
-                <Play size={13} /> Start Sprint <ArrowRight size={13} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-    );
+    return <MissionSelector onSelectMission={selectMissionInDb} />;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -224,112 +147,7 @@ export default function SprintPage() {
   if (!mission) return null;
 
   if (!team) {
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        style={{ maxWidth: "600px", margin: "0 auto", paddingTop: "1.5rem" }}>
-
-        {/* Back button */}
-        <button
-          onClick={handleNewMission}
-          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem" }}
-        >
-          ← Back to missions
-        </button>
-
-        {/* Mission header */}
-        <div style={{ marginBottom: "2rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-            <span style={{ fontSize: "2.5rem" }}>{mission.topicIcon}</span>
-            <div>
-              <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px" }}>
-                {mission.title}
-              </h1>
-              <span style={{
-                fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace",
-                color: mission.topicColor, background: `${mission.topicColor}15`,
-                padding: "0.125rem 0.625rem", borderRadius: "999px",
-              }}>{mission.topic}</span>
-            </div>
-          </div>
-          <p style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>{mission.description}</p>
-        </div>
-
-        <div style={{ marginBottom: "0.75rem" }}>
-          <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1.5px" }}>
-            Which group are you in?
-          </span>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-          {/* Group A */}
-          <motion.div
-            onClick={() => setTeam("GroupA")}
-            whileHover={{ scale: 1.005, x: 2 }} whileTap={{ scale: 0.995 }}
-            style={{
-              padding: "1.25rem 1.5rem", background: "rgba(99,102,241,0.05)",
-              border: "1px solid rgba(99,102,241,0.2)", borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(99,102,241,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Code2 size={22} color="var(--accent-indigo)" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.25rem" }}>
-                    Group A — {mission.groupA.role}
-                  </h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
-                    {mission.groupA.challenge}
-                  </p>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{mission.groupA.questions.length} Qs</span>
-                <ArrowRight size={18} color="var(--text-muted)" />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Group B */}
-          <motion.div
-            onClick={() => setTeam("GroupB")}
-            whileHover={{ scale: 1.005, x: 2 }} whileTap={{ scale: 0.995 }}
-            style={{
-              padding: "1.25rem 1.5rem", background: "rgba(59,130,246,0.05)",
-              border: "1px solid rgba(59,130,246,0.2)", borderRadius: "var(--radius-md)",
-              cursor: "pointer",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(59,130,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Users size={22} color="var(--accent-blue)" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.25rem" }}>
-                    Group B — {mission.groupB.role}
-                  </h3>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
-                    {mission.groupB.challenge}
-                  </p>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>{mission.groupB.questions.length} Qs</span>
-                <ArrowRight size={18} color="var(--text-muted)" />
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "rgba(255,255,255,0.015)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(255,255,255,0.05)", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-          <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "#f59e0b" }} />
-          Group A goes first — Group B unlocks after Group A finishes.
-        </div>
-      </motion.div>
-    );
+    return <TeamPicker mission={mission} onSelectTeam={setTeam} onBack={handleNewMission} />;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -546,20 +364,27 @@ export default function SprintPage() {
         }}>
           {/* Handoff Message (Shown only when A is done and B hasn't finished) */}
           <AnimatePresence>
-            {groupAResult.completed && (
+            {groupAResult.completed && !groupBResult.completed && (
               <motion.div
-                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                initial={{ opacity: 0, height: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, height: "auto", scale: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                transition={{ type: "spring", bounce: 0.4 }}
                 style={{
-                   background: "linear-gradient(to right, rgba(99,102,241,0.1), rgba(59,130,246,0.1))",
+                   background: "linear-gradient(to right, rgba(99,102,241,0.15), rgba(59,130,246,0.15))",
                    borderLeft: "4px solid #6366f1",
-                   padding: "1.25rem",
+                   borderRight: "4px solid #3b82f6",
+                   boxShadow: "0 4px 20px -5px rgba(99,102,241,0.3)",
+                   padding: "1.25rem 1.5rem",
                    borderRadius: "var(--radius-sm)",
-                   marginBottom: "0.5rem"
+                   marginBottom: "1rem"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#818cf8", fontWeight: 700, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
-                  <Zap size={16} /> Baton Pass
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#818cf8", fontWeight: 800, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
+                  <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ display: "inline-flex" }}>
+                    <Zap size={16} />
+                  </motion.div>
+                  Baton Pass
                 </div>
                 <div style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6 }}>
                   {mission.handoffMessage}

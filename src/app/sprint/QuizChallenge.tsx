@@ -45,46 +45,87 @@ export function QuizChallenge({
 
   if (isCompleted) {
     return (
-      <div style={{
-        padding: "1.5rem", background: `${teamColor}15`,
-        border: `2px solid ${teamColor}40`, borderRadius: "var(--radius-md)",
-        textAlign: "center",
-      }}>
-        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>✅</div>
-        <div style={{ color: teamColor, fontWeight: 700, fontSize: "1.1rem" }}>Challenge Complete!</div>
-        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
-          {teamName} finished their round
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          padding: "2rem", background: `${teamColor}15`,
+          border: `2px solid ${teamColor}40`, borderRadius: "var(--radius-lg)",
+          textAlign: "center", boxShadow: `0 8px 32px -8px ${teamColor}30`,
+        }}
+      >
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", bounce: 0.6 }}
+          style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>✅</motion.div>
+        <div style={{ color: teamColor, fontWeight: 800, fontSize: "1.25rem" }}>Challenge Complete!</div>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.95rem", marginTop: "0.5rem" }}>
+          {teamName} successfully finished their round
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (!isActive) {
     return (
-      <div style={{
-        padding: "1.5rem", background: "rgba(255,255,255,0.02)",
-        border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "var(--radius-md)",
-        textAlign: "center", opacity: 0.6,
-      }}>
-        <Lock size={24} color="var(--text-muted)" style={{ marginBottom: "0.5rem" }} />
-        <div style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-          Waiting for Group A to finish first...
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        style={{
+          padding: "2rem",
+          background: "linear-gradient(145deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)",
+          border: "1px dashed rgba(255,255,255,0.15)",
+          borderRadius: "var(--radius-lg)",
+          textAlign: "center",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          minHeight: "220px"
+        }}
+      >
+        <motion.div
+          animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+          style={{
+            background: "rgba(255,255,255,0.03)", width: "64px", height: "64px",
+            borderRadius: "50%", display: "flex", alignItems: "center",
+            justifyContent: "center", marginBottom: "1rem"
+          }}
+        >
+          <Lock size={28} color="rgba(255,255,255,0.5)" />
+        </motion.div>
+        <h3 style={{ color: "var(--text-primary)", fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+          Group B is Locked
+        </h3>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
+          Waiting for Group A to clear their path first...
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (done) {
     return (
-      <div style={{
-        padding: "1.5rem", background: `${teamColor}10`,
-        border: `1px solid ${teamColor}30`, borderRadius: "var(--radius-md)",
-        textAlign: "center",
-      }}>
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}
-          style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>🎯</motion.div>
-        <div style={{ color: teamColor, fontWeight: 700, fontSize: "1rem" }}>Answers submitted!</div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{
+          padding: "2.5rem", background: `linear-gradient(135deg, ${teamColor}15 0%, ${teamColor}05 100%)`,
+          border: `1px solid ${teamColor}40`, borderRadius: "var(--radius-lg)",
+          textAlign: "center", position: "relative", overflow: "hidden"
+        }}
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+          style={{ position: "absolute", top: "-50px", right: "-50px", width: "150px", height: "150px", background: `radial-gradient(circle, ${teamColor}30 0%, transparent 70%)` }}
+        />
+        <motion.div initial={{ scale: 0, y: 10 }} animate={{ scale: 1, y: 0 }} transition={{ type: "spring", bounce: 0.6 }}
+          style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎯</motion.div>
+        <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.5rem", marginBottom: "0.5rem" }}>
+          Answers Submitted!
+        </div>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
+          Awesome job. Awaiting synchronization...
+        </div>
+      </motion.div>
     );
   }
 
@@ -127,7 +168,7 @@ export function QuizChallenge({
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem", opacity: 0.5 }}>
             <Terminal size={12} />
-            <span style={{ fontSize: "0.7rem", letterSpacing: "1px", textTransform: "uppercase" }}>Java</span>
+            <span style={{ fontSize: "0.7rem", letterSpacing: "1px", textTransform: "uppercase" }}>Python</span>
           </div>
           {q.code}
         </div>

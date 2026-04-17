@@ -26,63 +26,63 @@ export const MISSIONS: SprintMission[] = [
           explanation: "A variable is like a labeled box. The label is the name ('score'), and you can store values inside it and change them later.",
         },
         {
-          prompt: "What is the best data type to store a game score (like 150 points)?",
-          options: ["String", "boolean", "int", "char"],
-          answer: "int",
-          explanation: "Scores are whole numbers. 'int' stands for integer, which is perfect for counts, scores, and lives.",
+          prompt: "What is the best way to name a variable storing a game score?",
+          options: ["Score!", "game score", "score", "1score"],
+          answer: "score",
+          explanation: "Variable names in Python should be single words (or use underscores like 'game_score'), and cannot start with numbers or have spaces.",
         },
         {
-          prompt: "Write the code to create the score variable and set it to zero for the start of the game.",
-          code: `// Set up the start of the game`,
+          prompt: "Write the Python code to create the score variable and set it to zero for the start of the game.",
+          code: `# Set up the start of the game`,
           options: [
             "int score = 0;",
-            "score = 0;",
-            "String score = '0';",
-            "int score;",
+            "score = 0",
+            "set score = 0",
+            "score == 0",
           ],
-          answer: "int score = 0;",
-          explanation: "You must declare the type (int), name the variable (score), and set its initial value (= 0). Now the game is ready!",
+          answer: "score = 0",
+          explanation: "In Python, you just type the name and set it equal to its value. No 'int' or semicolons needed!",
         },
       ],
     },
-    handoffMessage: "Group A successfully created: `int score = 0;`. Group B, you must use this variable to give the player points!",
+    handoffMessage: "Group A successfully created: `score = 0`. Group B, you must use this variable to give the player points!",
     groupB: {
       role: "Gameplay Engineers",
       challenge: "Update the score variable Group A created",
       questions: [
         {
-          prompt: "Group A handed you the 'score' variable. The player just grabbed a coin! How do you add 10 points to their score?",
-          code: `// Group A code:
-int score = 0;
-// Your code:`,
+          prompt: "Group A handed you the 'score' variable. The player just grabbed a coin! How do you add 10 points to their score in Python?",
+          code: `# Group A code:
+score = 0
+# Your code:`,
           options: [
-            "int score = 10;",
-            "score = score + 10;",
-            "score = 10;",
-            "score + 10;"
+            "int score = 10",
+            "score = score + 10",
+            "score = 10",
+            "score + 10"
           ],
-          answer: "score = score + 10;",
-          explanation: "To update an existing variable, you don't redeclare the 'int' part. \"score = score + 10\" means \"take the old score (0), add 10, and save it back into the score box.\"",
+          answer: "score = score + 10",
+          explanation: "To update it, we calculate 'score + 10' and save it back into the 'score' box using the equals sign.",
         },
         {
           prompt: "Now the player grabbed a rare gem worth 50 points! Update the score again.",
-          code: `// Group A code: int score = 0;
-// Your previous code: score = score + 10;
-// What is the NEW score if you add 50?`,
+          code: `# Group A code: score = 0
+# Your previous code: score = score + 10
+# What is the NEW score if you add 50?`,
           options: ["50", "60", "0", "1050"],
           answer: "60",
-          explanation: "Variables remember their state. The score was 10. Adding 50 makes it 60. This memory is the core of all applications.",
+          explanation: "Variables remember things! The score was 10. Adding 50 makes it 60.",
         },
         {
           prompt: "Game over! How do you print the final score to the screen for the player to see?",
           options: [
-            "System.out.println(score);",
-            "System.out.println(\"score\");",
-            "print score;",
-            "System.print(score);"
+            "System.out.println(score)",
+            "print('score')",
+            "print score",
+            "print(score)"
           ],
-          answer: "System.out.println(score);",
-          explanation: "Without quotes, Java looks inside the variable box and prints the number (60). If you used quotes, it would literally print the word 'score'.",
+          answer: "print(score)",
+          explanation: "Use Python's print() function! No quotes around score means it prints the NUMBER inside, not the word.",
         },
       ],
     },
@@ -96,77 +96,75 @@ int score = 0;
     topic: "If / Else",
     topicIcon: "🤔",
     topicColor: "#3b82f6",
-    description: "Group A sets the entry criteria by writing the boolean logic. Group B takes that logic and wires up the consequences. Split the decision in half!",
+    description: "Group A sets the entry criteria using 'if' statements. Group B wires up what happens next. Make the right choice!",
     xpReward: 450,
     groupA: {
       role: "Gatekeepers",
       challenge: "Write the boolean condition for a VIP club",
       questions: [
         {
-          prompt: "We are programming a bouncer for a VIP club. People must be 18 or older to enter. Which operator means 'greater than or equal to'?",
+          prompt: "We are programming a VIP club. People must be 18 or older to enter. Which operator means 'greater than or equal to'?",
           options: [">=", "=>", "==", ">"],
           answer: ">=",
-          explanation: "In Java, >= means greater than or equal to. It checks if the value on the left is larger or the exact same as the right.",
+          explanation: "In Python, >= checks if the left side is bigger than or exactly the same as the right side.",
         },
         {
-          prompt: "Write the if statement condition that checks if a variable 'age' is 18 or older.",
+          prompt: "Write the Python if statement that checks if 'age' is 18 or older.",
           options: [
-            "if (age > 18)",
-            "if (age == 18)",
-            "if (age >= 18)",
-            "if age >= 18:"
+            "if age > 18:",
+            "if age == 18:",
+            "if age >= 18:",
+            "if (age >= 18)"
           ],
-          answer: "if (age >= 18)",
-          explanation: "Parentheses () are required around conditions in Java. 'age >= 18' is the exact boolean check we need for the bouncer.",
+          answer: "if age >= 18:",
+          explanation: "Python 'if' statements always end with a colon (:).",
         },
         {
-          prompt: "Wait! We also need them to have a VIP pass. Which operator means 'AND' to combine conditions?",
-          options: ["||", "&&", "++", "=="],
-          answer: "&&",
-          explanation: "&& is the logical AND operator. It means BOTH conditions must be true. Combining them: if (age >= 18 && hasPass)",
+          prompt: "Wait! We also need them to have a VIP pass. Which keyword means 'AND' to combine conditions?",
+          options: ["plus", "and", "&&", "also"],
+          answer: "and",
+          explanation: "In Python, you simply write the word 'and' to ensure both things are true. `if age >= 18 and has_pass:`",
         },
       ],
     },
-    handoffMessage: "Group A built the condition: `if (age >= 18 && hasPass)`. Group B, use this check to let them into the club or reject them!",
+    handoffMessage: "Group A built the condition: `if age >= 18 and has_pass:`. Group B, use this check to let them into the club or reject them!",
     groupB: {
       role: "Consequence Coders",
       challenge: "Write the action blocks for Group A's condition",
       questions: [
         {
-          prompt: "Group A handed you the bouncer check. If the condition is TRUE, print 'Welcome VIP!'. What block wraps this action?",
-          code: `// Group A:
-if (age >= 18 && hasPass) 
-// Your action:`,
+          prompt: "Group A gave you the check. If the condition is TRUE, print 'Welcome VIP!'. How do you write this inside the block?",
+          code: `# Group A:
+if age >= 18 and has_pass:
+# Your action:`,
           options: [
-            "{ System.out.println(\"Welcome VIP!\"); }",
-            "( System.out.println(\"Welcome VIP!\"); )",
-            "[ System.out.println(\"Welcome VIP!\"); ]",
-            "print \"Welcome VIP!\""
+            "{ print(\"Welcome VIP!\") }",
+            "( print(\"Welcome VIP!\") )",
+            "    print(\"Welcome VIP!\")",
+            "print(\"Welcome VIP!\")"
           ],
-          answer: "{ System.out.println(\"Welcome VIP!\"); }",
-          explanation: "Curly braces {} define the 'block' of code that runs if the condition is true. Parentheses are for conditions; braces are for actions.",
+          answer: "    print(\"Welcome VIP!\")",
+          explanation: "INDENTATION is everything in Python! The 4 spaces mean this code belongs inside the 'if' statement.",
         },
         {
-          prompt: "What if the condition is FALSE? We need to reject them. Which keyword acts as the backup plan?",
-          options: ["otherwise", "backup", "else", "catch"],
-          answer: "else",
-          explanation: "The 'else' block acts as a catch-all. If the 'if' condition is false, the code drops immediately into the 'else' block.",
+          prompt: "What if the condition is FALSE? Which keyword acts as the backup plan?",
+          options: ["otherwise:", "elif:", "else:", "catch()"],
+          answer: "else:",
+          explanation: "The 'else:' block catches everything that fails the 'if'.",
         },
         {
-          prompt: "Put it all together. What happens if the person is 19 but DOES NOT have a pass (hasPass = false)?",
-          code: `// Group A + Group B combined:
-if (age >= 18 && hasPass) {
-  System.out.println("Welcome VIP!");
-} else {
-  System.out.println("Go home.");
-}`,
+          prompt: "What happens if a 19-year-old shows up but DOES NOT have a pass (has_pass is False)?",
+          code: `if age >= 18 and has_pass:
+    print("Welcome VIP!")
+else:
+    print("Go home.")`,
           options: ["Welcome VIP!", "Go home.", "Error", "Nothing prints"],
           answer: "Go home.",
-          explanation: "Because the && operator requires BOTH to be true, the lack of a VIP pass makes the whole condition false, triggering the else block.",
+          explanation: "Because 'and' requires BOTH to be True, the lack of a VIP pass makes it False, triggering the else block.",
         },
       ],
     },
-    successMessage: "Decision Dome complete! Group A set the rules, Group B built the outcomes. Seamless logic pipeline!",
+    successMessage: "Decision Dome complete! Seamless logic pipeline!",
   },
 
   // ── MISSION 3: Loops ──────────────────────────────────────────────────────
@@ -176,54 +174,54 @@ if (age >= 18 && hasPass) {
     topic: "Loops",
     topicIcon: "🔁",
     topicColor: "#10b981",
-    description: "Group A creates the 'while' loop condition that runs the monster spawner. Group B is trapped inside the loop and must figure out how to stop it!",
+    description: "Group A sets up a 'while' loop. Group B is trapped inside and must escape!",
     xpReward: 500,
     groupA: {
       role: "Loop Starters",
       challenge: "Set up the condition that makes a loop run",
       questions: [
         {
-          prompt: "A 'while' loop repeats code automatically. It keeps running AS LONG AS... what?",
+          prompt: "A 'while' loop keeps repeating AS LONG AS... what?",
           options: [
             "The program is open",
-            "Its boolean condition remains true",
+            "Its condition remains True",
             "It runs exactly 10 times",
-            "The user presses the Enter key"
+            "The user presses Enter"
           ],
-          answer: "Its boolean condition remains true",
-          explanation: "A while loop is just an 'if' statement that repeats. As long as its condition is true, it goes back to the top and runs again.",
+          answer: "Its condition remains True",
+          explanation: "A while loop is just an 'if' statement that repeats.",
         },
         {
-          prompt: "We want an enemy spawner to run while we have fewer than 5 enemies. How do we start this?",
+          prompt: "We want an enemy spawner to run while we have fewer than 5 enemies. How do we start this in Python?",
           options: [
-            "if (enemies < 5) {",
-            "loop (enemies == 5) {",
+            "while enemies < 5:",
             "while (enemies < 5) {",
-            "for (enemies > 5) {"
+            "loop enemies < 5:",
+            "for enemies in 5:"
           ],
-          answer: "while (enemies < 5) {",
-          explanation: "The 'while' keyword checks the condition before every round. If you currently have 3 enemies, 3 < 5 is true, so a new enemy spawns.",
+          answer: "while enemies < 5:",
+          explanation: "Use the 'while' keyword, the condition, and always end with a colon (:).",
         },
         {
           prompt: "What happens if Group B never writes the code to increase the 'enemies' count?",
           options: [
-            "The game crashes instantly",
-            "The loop stops by itself",
-            "It creates an infinite loop and freezes the game",
+            "Game crashes instantly",
+            "It stops by itself",
+            "Infinite loop freezes the game",
             "It skips the loop"
           ],
-          answer: "It creates an infinite loop and freezes the game",
-          explanation: "If the condition (enemies < 5) is true, and the variable never changes, the condition stays true forever. The game will keep spawning enemies until it crashes!",
+          answer: "Infinite loop freezes the game",
+          explanation: "If the condition stays True forever, the computer will span enemies forever and crash!",
         },
       ],
     },
-    handoffMessage: "Group A wrote the loop engine: `int enemies = 0; while (enemies < 5) { spawnEnemy(); ... }`. Group B, you are trapped inside! You must write the escape code!",
+    handoffMessage: "Group A wrote: `enemies = 0` and `while enemies < 5:`. Group B, you are trapped! Write the escape code!",
     groupB: {
       role: "Loop Breakers",
-      challenge: "Update the loop variable to prevent an infinite crush",
+      challenge: "Update the loop variable to prevent a crash",
       questions: [
         {
-          prompt: "Group A threw you into a loop! `while (enemies < 5)`. To eventually break out, what must you do inside the loop?",
+          prompt: "You are stuck! You must eventually break out. What must you do inside the loop?",
           options: [
             "Change the 'enemies' variable",
             "Press ESC",
@@ -231,35 +229,34 @@ if (age >= 18 && hasPass) {
             "Use an if statement"
           ],
           answer: "Change the 'enemies' variable",
-          explanation: "To stop a while loop, the condition must eventually become false. That means you MUST update the variable checking the condition.",
+          explanation: "To stop a while loop, the condition must eventually become False.",
         },
         {
-          prompt: "How do you increase the `enemies` variable by 1 every time the loop runs?",
+          prompt: "How do you increase the `enemies` variable by 1 in Python?",
           options: [
-            "enemies + 1;",
-            "enemies++;",
-            "enemies = 1;",
-            "enemies == 1;"
+            "enemies + 1",
+            "enemies++",
+            "enemies += 1",
+            "enemies == 1"
           ],
-          answer: "enemies++;",
-          explanation: "enemies++ is a fast way to write 'enemies = enemies + 1'. This ensures the count goes up: 1, 2, 3, 4, 5... and eventually breaks the loop.",
+          answer: "enemies += 1",
+          explanation: "enemies += 1 is the Python shortcut for enemies = enemies + 1.",
         },
         {
-          prompt: "Let's put Group A and Group B's code together. How many enemies actually spawn?",
-          code: `// Group A:
-int enemies = 0;
-while (enemies < 5) {
-  spawnEnemy();
-  // Group B:
-  enemies++;
-}`,
+          prompt: "How many enemies actually spawn?",
+          code: `# Group A:
+enemies = 0
+while enemies < 5:
+    spawn_enemy()
+    # Group B:
+    enemies += 1`,
           options: ["4", "5", "6", "Infinite"],
           answer: "5",
-          explanation: "It runs when enemies is 0, 1, 2, 3, and 4 (five times total). When enemies hits 5, `5 < 5` becomes false, and the loop safely ends.",
+          explanation: "It runs when enemies is 0, 1, 2, 3, and 4. When it hits 5, the loop ends safely.",
         },
       ],
     },
-    successMessage: "Loop Labyrinth cleared! Group A built the loop logic, and Group B prevented an infinite crash. Flawless execution.",
+    successMessage: "Loop Labyrinth cleared! Flawless execution.",
   },
 
   // ── MISSION 4: Functions ──────────────────────────────────────────────────
@@ -269,88 +266,81 @@ while (enemies < 5) {
     topic: "Functions",
     topicIcon: "⚙️",
     topicColor: "#f59e0b",
-    description: "Group A creates a custom function machine to bake a pizza. Group B supplies the ingredients (arguments) to run the machine. Build the pipeline!",
+    description: "Group A builds a machine to bake pizzas. Group B sends ingredients into the machine.",
     xpReward: 550,
     groupA: {
       role: "Machine Builders",
-      challenge: "Define a function and its parameters",
+      challenge: "Define a function in Python",
       questions: [
         {
-          prompt: "What is the main reason programmers use functions?",
-          options: [
-            "To make code run slower",
-            "To group reusable code together so you don't repeat yourself",
-            "To change the color of the app",
-            "To draw graphics on the screen"
-          ],
-          answer: "To group reusable code together so you don't repeat yourself",
-          explanation: "The DRY principle (Don't Repeat Yourself) is key. If you bake pizzas a lot, you build a 'bakePizza()' function rather than typing out the recipe 50 times.",
+          prompt: "What keyword defines a function in Python?",
+          options: ["function", "def", "create", "void"],
+          answer: "def",
+          explanation: "Python uses 'def' (short for define) to create a reusable function.",
         },
         {
-          prompt: "Let's build a function. We want our function to accept an ingredient. What is the variable inside the parentheses called?",
-          code: `void bakePizza(String topping) { ... }`,
-          options: ["Return type", "Modifier", "Parameter", "Class"],
-          answer: "Parameter",
-          explanation: "A parameter (like \`String topping\`) is an empty slot. It's the machine waiting for someone to drop ingredients in to do its job.",
+          prompt: "We want our function to accept an ingredient. What goes in the parentheses?",
+          code: `def bake_pizza( _______ ):`,
+          options: ["def", "print", "topping", "true"],
+          answer: "topping",
+          explanation: "This is a parameter — an empty slot waiting for an ingredient.",
         },
         {
           prompt: "Inside the function, how do we use that parameter?",
           options: [
-            "System.out.println(\"Baking a pizza with \" + topping);",
-            "System.out.println(\"Baking a pizza with pepperoni\");",
-            "System.out.println(\"Baking a pizza with \" + String);",
-            "System.out.println(topping + topping);"
+            "print('Baking... ' + topping)",
+            "print('Baking... pepperoni')",
+            "print('Baking... ' + 'topping')",
+            "print(topping + topping)"
           ],
-          answer: "System.out.println(\"Baking a pizza with \" + topping);",
-          explanation: "You use the parameter's name (\`topping\`). You don't hardcode 'pepperoni', because the whole point of the machine is that it works for ANY topping handed to it.",
+          answer: "print('Baking... ' + topping)",
+          explanation: "Use the variable exactly as it's named without quotes around it.",
         },
       ],
     },
-    handoffMessage: "Group A built the machine: \`void bakePizza(String topping) { print... }\`. Group B, the machine is useless unless you call it! Send in the ingredients!",
+    handoffMessage: "Group A built the machine: `def bake_pizza(topping):`. Group B, the machine is useless unless you call it!",
     groupB: {
       role: "Machine Operators",
-      challenge: "Call Group A's function and pass arguments",
+      challenge: "Call the function and use arguments",
       questions: [
         {
-          prompt: "Group A gave you the \`bakePizza(String topping)\` machine. How do you turn it on and order a Mushroom pizza?",
+          prompt: "How do you run the `bake_pizza` function to request 'Mushroom'?",
           options: [
-            "bakePizza = \"Mushroom\";",
-            "String topping = \"Mushroom\";",
-            "bakePizza(\"Mushroom\");",
-            "call bakePizza;"
+            "bake_pizza = 'Mushroom'",
+            "topping = 'Mushroom'",
+            "bake_pizza('Mushroom')",
+            "call bake_pizza"
           ],
-          answer: "bakePizza(\"Mushroom\");",
-          explanation: "To run a function, you 'call' it by writing its name followed by parentheses, putting the specific data (the 'argument') inside the parentheses.",
+          answer: "bake_pizza('Mushroom')",
+          explanation: "To run it, 'call' it by writing its name followed by the data inside parentheses.",
         },
         {
-          prompt: "What happens if you run this line of code using Group A's machine?",
-          code: `bakePizza(100);`,
+          prompt: "What happens if you ask for \"Cheese\" and then \"Pepperoni\"?",
+          code: `bake_pizza("Cheese")
+bake_pizza("Pepperoni")`,
           options: [
-            "It prints 'Baking a pizza with 100'",
-            "It causes an ERROR (type mismatch)",
-            "It bakes 100 pizzas",
-            "It skips the line"
-          ],
-          answer: "It causes an ERROR (type mismatch)",
-          explanation: "Group A strictly designed the parameter as a \`String\`. If you try to pass an integer \`100\`, Java throws a type error. Machines only accept what they were built for!",
-        },
-        {
-          prompt: "What is the output of this final sequence?",
-          code: `// Group B calling Group A's machine
-bakePizza("Cheese");
-bakePizza("Pepperoni");`,
-          options: [
-             "Baking a pizza with Cheese (and nothing else)",
-             "Baking a pizza with Pepperoni (and nothing else)",
-             "Baking a pizza with Cheese\\nBaking a pizza with Pepperoni",
+             "Bakes Cheese only",
+             "Bakes Pepperoni only",
+             "Bakes Cheese, then Pepperoni",
              "Error"
           ],
-          answer: "Baking a pizza with Cheese\\nBaking a pizza with Pepperoni",
-          explanation: "Because Group A built a reusable machine, Group B can call it as many times as they want with different data. The code inside runs twice!",
+          answer: "Bakes Cheese, then Pepperoni",
+          explanation: "Reusable machines can be called as many times as you want!",
+        },
+        {
+          prompt: "What must you remember about indentation when calling a function?",
+          options: [
+            "It must be indented 4 spaces",
+            "It needs curly braces",
+            "It must *not* be indented so Python knows it is outside the function definition",
+            "Indentation doesn't matter"
+          ],
+          answer: "It must *not* be indented so Python knows it is outside the function definition",
+          explanation: "Calling a function happens outside the 'def' block, so it goes back to the left edge.",
         },
       ],
     },
-    successMessage: "Function Factory running! Group A built the logic, Group B executed it. That's how massive codebases at Google are organized.",
+    successMessage: "Function Factory running! That's how big codebases stay organized.",
   },
 
   // ── MISSION 5: Debugging ──────────────────────────────────────────────────
@@ -360,91 +350,103 @@ bakePizza("Pepperoni");`,
     topic: "Debugging",
     topicIcon: "🐛",
     topicColor: "#ef4444",
-    description: "Group A hunts syntax errors (typos in code). Group B tracks logic bugs (code that runs but gives wrong answers). Debugging is one of the most important real-world CS skills!",
+    description: "Group A hunts syntax errors. Group B tracks logic bugs. Time to debug!",
     xpReward: 500,
     groupA: {
       role: "Syntax Detectives",
-      challenge: "Spot errors that stop the code from running",
+      challenge: "Spot errors that break Python",
       questions: [
         {
-          prompt: "This code won't compile. What's the error?",
-          code: `int age = 14
-System.out.println(age);`,
+          prompt: "This code won't run. What's the error?",
+          code: `if score > 10
+    print("Winner!")`,
           options: [
-            "age should be a String",
-            "Missing semicolon after line 1",
-            "println is spelled wrong",
-            "14 is too small a number",
+            "Missing parentheses",
+            "Missing colon after the if condition",
+            "print is spelled wrong",
+            "score needs quotes",
           ],
-          answer: "Missing semicolon after line 1",
-          explanation: "Java requires a semicolon (;) at the end of every statement — it's like a period at the end of a sentence. Missing one causes a compile error before the program even runs. This is the single most common beginner mistake!",
+          answer: "Missing colon after the if condition",
+          explanation: "Every if statement, loop, or function in Python must end with a colon (:).",
         },
         {
-          prompt: "What TYPE of error happens when code runs but crashes mid-way?",
-          code: `// This compiles fine but crashes:
-int[] scores = {90, 85, 70};
-System.out.println(scores[5]); // only 3 items!`,
-          options: ["Syntax error", "Runtime error", "Logic error", "No error"],
-          answer: "Runtime error",
-          explanation: "Runtime errors happen WHILE the program is running — not before. There's no index 5 in a 3-item array (valid: 0, 1, 2), so Java crashes with \"ArrayIndexOutOfBoundsException\". The code looked fine to the compiler but failed at runtime.",
+          prompt: "What is wrong with the indentation here?",
+          code: `def say_hello():
+print("Hi there!")`,
+          options: [
+            "Nothing is wrong",
+            "The print statement must be indented 4 spaces because it belongs to the function",
+            "def should be capitalized",
+            "say_hello shouldn't have parentheses",
+          ],
+          answer: "The print statement must be indented 4 spaces because it belongs to the function",
+          explanation: "If you don't indent, Python thinks the function is completely empty and will crash.",
         },
         {
           prompt: "Which tool is most useful for finding a syntax error?",
           options: [
-            "Running the program and testing it",
-            "The compiler / IDE error messages (they point to the line)",
-            "Asking a friend to read it",
-            "Deleting the code and starting over",
+            "Guessing",
+            "Python's error messages (they point to the line number)",
+            "Deleting everything",
+            "Closing the app",
           ],
-          answer: "The compiler / IDE error messages (they point to the line)",
-          explanation: "The compiler catches syntax errors BEFORE running — it tells you the exact line number and what's wrong. Read the error message carefully. It often says \"expected ';'\" or \"cannot find symbol\" right next to the line with the problem.",
+          answer: "Python's error messages (they point to the line number)",
+          explanation: "The compiler will literally tell you 'SyntaxError: invalid syntax' and point to exactly where the colon or parenthesis is missing.",
         },
       ],
     },
-    handoffMessage: "Group A fixed the syntax errors. Now the code runs, but it's giving the wrong answers! Group B, hunt down the logic bugs!",
+    handoffMessage: "Syntax fixed! But it's giving wrong answers! Group B, fix the logic!",
     groupB: {
       role: "Logic Hunters",
       challenge: "Find bugs that give wrong answers",
       questions: [
         {
-          prompt: "This code should print the AVERAGE of 3 scores. What's wrong?",
-          code: `int a = 80, b = 90, c = 70;
-int average = a + b + c / 3;
-System.out.println(average);`,
+          prompt: "This should average 3 numbers. What's mathematically wrong?",
+          code: `a = 80
+b = 90
+c = 70
+average = a + b + c / 3
+print(average)`,
           options: [
-            "The variables are wrong",
-            "Division happens before addition — needs parentheses",
-            "You can't average 3 numbers",
-            "Nothing — it's correct",
+            "Division happens before addition — needs parentheses: (a+b+c)/3",
+            "Variables are wrong",
+            "Can't average in Python",
+            "It's correct",
           ],
-          answer: "Division happens before addition — needs parentheses",
-          explanation: "Order of operations! Java does c / 3 first (70/3 = 23), then adds 80 + 90 + 23 = 193. The fix: (a + b + c) / 3 = 240 / 3 = 80. Logic errors are silent — code runs but produces the wrong answer.",
+          answer: "Division happens before addition — needs parentheses: (a+b+c)/3",
+          explanation: "Order of operations! Python divides c/3 first. Use parentheses () to force addition first.",
         },
         {
-          prompt: "What type of error is this? The program runs but the output is wrong.",
-          code: `// Should check if a student is passing (>= 60):
-int grade = 55;
-if (grade > 60) {
-  System.out.println("Passing");
-}`,
-          options: ["Syntax error", "Runtime error", "Logic error", "No error"],
-          answer: "Logic error",
-          explanation: "The condition uses > instead of >=. A grade of 60 should pass, but 60 > 60 is false. The code runs without crashing — but produces the wrong result. Logic errors are the hardest bugs to find because the computer doesn't know your intent.",
+          prompt: "The code runs but prints the wrong thing. Why?",
+          code: `# Kids under 12 eat free
+age = 12
+if age < 12:
+    print("Free meal")
+else:
+    print("Pay up")`,
+          options: [
+            "Syntax error",
+            "Logic error: A 12-year-old should pay, but wait, 'under 12' means < 12 strictly.",
+            "Logic error: age < 12 shouldn't be used",
+            "Nothing is wrong — but if you wanted 12-year-olds to eat free, it should be <="
+          ],
+          answer: "Nothing is wrong — but if you wanted 12-year-olds to eat free, it should be <=",
+          explanation: "If the rules say \"12 and under\", < 12 is a logic error. It should be age <= 12.",
         },
         {
-          prompt: "What's the fastest way to trace a logic error in your code?",
+          prompt: "Fastest way to trace a logic bug?",
           options: [
-            "Delete everything and start over",
-            "Submit it anyway and hope it's right",
-            "Add print statements to show variable values at each step",
-            "Wait — logic errors fix themselves",
+            "Delete code",
+            "Add print statements inside the code to see what the variables are doing",
+            "Wait for an update",
+            "Nothing",
           ],
-          answer: "Add print statements to show variable values at each step",
-          explanation: "Print-debugging: add System.out.println() at key points to see what values your variables actually hold. It's like adding checkpoints to see where your program \"goes wrong\". Real professional developers do this every day.",
+          answer: "Add print statements inside the code to see what the variables are doing",
+          explanation: "Professional coders use 'print-debugging' every day to trace exactly what value is inside a variable right before it breaks.",
         },
       ],
     },
-    successMessage: "Bug Bounty claimed! Professional developers spend up to 50% of their time debugging. Finding bugs is a superpower — not a sign you're bad at coding.",
+    successMessage: "Bugs squashed! Finding bugs is a superpower.",
   },
 
   // ── MISSION 6: Algorithms & Problem Solving ───────────────────────────────
@@ -454,100 +456,88 @@ if (grade > 60) {
     topic: "Algorithms",
     topicIcon: "🗺️",
     topicColor: "#06b6d4",
-    description: "Group A breaks down problems step by step (like writing a recipe). Group B traces through algorithms to predict what they do. Algorithms are just clear instructions!",
+    description: "Group A breaks down problems step by step. Group B traces through to find answers.",
     xpReward: 550,
     groupA: {
       role: "Step Writers",
-      challenge: "Write clear step-by-step algorithms",
+      challenge: "Write clear algorithms",
       questions: [
         {
-          prompt: "An algorithm is a step-by-step set of instructions to solve a problem. Which of these is the BEST algorithm for making a peanut butter sandwich?",
+          prompt: "An algorithm is just a step-by-step set of instructions. Which is the BEST algorithm for writing a computer program?",
           options: [
-            "Make sandwich, enjoy",
-            "1. Get bread 2. Open peanut butter 3. Spread peanut butter 4. Close sandwich",
-            "Put peanut butter somewhere on something",
-            "Think about the sandwich",
+            "Make code, done",
+            "1. Plan logic 2. Write code 3. Test code 4. Fix bugs",
+            "Type super fast",
+            "Look at screen",
           ],
-          answer: "1. Get bread 2. Open peanut butter 3. Spread peanut butter 4. Close sandwich",
-          explanation: "Algorithms must be specific, ordered, and complete. \"Make sandwich\" is too vague — a computer needs exact steps. In CS, we write algorithms before we write code to make sure our logic is correct first.",
+          answer: "1. Plan logic 2. Write code 3. Test code 4. Fix bugs",
+          explanation: "Algorithms must be explicit, ordered, and structured.",
         },
         {
-          prompt: "Order matters in algorithms! What's wrong with this sequence?",
-          code: `// Making hot chocolate:
-1. Drink the hot chocolate
-2. Boil water
-3. Add cocoa powder
-4. Pour water into cup`,
+          prompt: "Why does the sequence of an algorithm matter?",
           options: [
-            "Nothing — order doesn't matter",
-            "Step 1 (drinking) happens before the drink is even made",
-            "Cocoa powder is wrong",
-            "You shouldn't boil water",
+            "It doesn't",
+            "The computer executes lines strictly from top to bottom",
+            "Because algorithms are long",
+            "You can execute backwards",
           ],
-          answer: "Step 1 (drinking) happens before the drink is even made",
-          explanation: "Sequence — the ORDER of steps — is one of the three core ideas in CS (along with selection/if-else and repetition/loops). If steps are out of order, the algorithm fails. Code runs exactly in the order you write it.",
+          answer: "The computer executes lines strictly from top to bottom",
+          explanation: "You can't eat a sandwich before you make it. The order of instructions handles how the state of your application changes.",
         },
         {
-          prompt: "This algorithm finds the highest score. What is the KEY step that makes it work?",
-          code: `// Find highest score in a list:
-1. Start: highest = first score
-2. Look at each remaining score
-3. IF this score > highest:
-     highest = this score  ← KEY STEP
-4. After all scores: print highest`,
+          prompt: "This algorithm finds the biggest number in a list. What's the key step?",
+          code: `biggest = 0
+for number in list:
+    if number > biggest:
+        biggest = number`,
           options: [
-            "Step 1 — starting the algorithm",
-            "Step 3 — updating highest when a bigger score is found",
-            "Step 4 — printing the result",
-            "Step 2 — looking at scores",
+            "biggest = 0",
+            "if number > biggest",
+            "biggest = number",
+            "Both checking the condition and updating the biggest variable"
           ],
-          answer: "Step 3 — updating highest when a bigger score is found",
-          explanation: "The comparison and update — if current > highest, then highest = current — is what makes this work. Without it, you'd never find a number bigger than your starting value. This pattern (tracking a running max/min) appears in almost every app.",
+          answer: "Both checking the condition and updating the biggest variable",
+          explanation: "This allows the program to constantly compare and 'save' the best result so far.",
         },
       ],
     },
     groupB: {
       role: "Algorithm Tracers",
-      challenge: "Follow algorithms step by step and predict results",
+      challenge: "Follow steps manually and predict",
       questions: [
         {
-          prompt: "Trace this algorithm. What is the final value of total?",
-          code: `// Algorithm: sum a list of numbers
-int[] numbers = {5, 10, 3, 8};
-int total = 0;
+          prompt: "Trace this loop. What is the final total?",
+          code: `total = 0
+numbers = [5, 10, 3]
 
-for each number in the list:
-  total = total + number`,
-          options: ["5", "16", "26", "8"],
-          answer: "26",
-          explanation: "Trace it: total = 0+5=5, then 5+10=15, then 15+3=18, then 18+8=26. This pattern — accumulating a running total — is used everywhere: adding up a shopping cart, totaling test scores, calculating average temperature.",
+for number in numbers:
+    total = total + number`,
+          options: ["5", "15", "18", "0"],
+          answer: "18",
+          explanation: "0+5 = 5. Then 5+10 = 15. Then 15+3 = 18.",
         },
         {
-          prompt: "This algorithm searches for a name. How many steps does it take to find \"Carlos\" in the list?",
-          code: `// List: ["Alice", "Bob", "Carlos", "Diana"]
-// Linear Search: check each item in order
-
-Step 1: Is "Alice" == "Carlos"? No
-Step 2: Is "Bob" == "Carlos"? No
-Step 3: Is "Carlos" == "Carlos"? YES — found it!`,
-          options: ["1 step", "2 steps", "3 steps", "4 steps"],
-          answer: "3 steps",
-          explanation: "Linear search checks items one by one from the start. For a 4-item list, worst case is 4 steps (item is last or not there at all). This is fine for small lists, but for 1,000,000 items it would be very slow — that's why smarter search algorithms matter.",
+          prompt: "How many steps to find 'Carlos' linearly?",
+          code: `names = ["Alice", "Bob", "Carlos", "Diana"]`,
+          options: ["1", "2", "3", "4"],
+          answer: "3",
+          explanation: "Linear search checks item 1, then item 2, then item 3...",
         },
         {
-          prompt: "Decomposition means breaking a big problem into smaller pieces. Which approach shows decomposition for building a game?",
+          prompt: "What does decomposition mean?",
           options: [
-            "Write all the game code in one giant block",
-            "Don't plan — just start coding",
-            "Break it into: Player, Enemies, Score, Controls — then solve each part",
-            "Only work on the part you enjoy",
+            "Breaking large problems into smaller chunks",
+            "Deleting old code",
+            "Letting code rot over time",
+            "Combining small apps into huge ones",
           ],
-          answer: "Break it into: Player, Enemies, Score, Controls — then solve each part",
-          explanation: "Decomposition is a core computational thinking skill. Big problems (\"build a game\") become manageable when split into smaller pieces (Player movement, Enemy AI, Score tracking). Each piece is easier to code, test, and fix independently.",
+          answer: "Breaking large problems into smaller chunks",
+          explanation: "It's how we build big games: break it up into movement, drawing, scoring, AI, etc.",
         },
       ],
     },
-    handoffMessage: "Group A laid out the steps of the algorithm. Group B, it's your turn to trace those steps and predict the outcome!",
-    successMessage: "Algorithm Academy complete! Every app, game, and website runs on algorithms. Learning to think in steps and solve problems is the heart of Computer Science.",
+    handoffMessage: "Group A laid out the logic. Group B traced it. Nice execution!",
+    successMessage: "Algorithm Academy complete! The heart of computer science.",
   },
 ];
+
