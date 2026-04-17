@@ -11,6 +11,24 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => setMounted(true), []);
+  
+  // Dynamic Date Calculation
+  const now = new Date();
+  const getMonday = (d: Date) => {
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(d.setDate(diff));
+    return mon;
+  };
+  
+  const monday = getMonday(new Date(now));
+  const dateStr = monday.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+  
+  const weekDates = [...Array(6)].map((_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit" });
+  });
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -111,7 +129,7 @@ export default function Home() {
             color: 'black',
             marginBottom: '3rem' 
           }}>
-            Week of 03/30
+            Week of {dateStr}
           </h2>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '300px', position: 'relative' }}>
@@ -147,7 +165,7 @@ export default function Home() {
                   />
                 </div>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'black' }}>
-                  Date
+                  {weekDates[idx]}
                 </span>
               </div>
             ))}

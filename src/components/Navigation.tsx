@@ -22,11 +22,15 @@ export default function Navigation() {
 
   return (
     <nav className="glass-sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
-      <div className="logo" style={{ marginBottom: "2rem" }}>
-        <div className="logo-icon">
-          <Code2 size={20} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      <div className="logo" style={{ marginBottom: "2.5rem" }}>
+        <div className="logo-icon" style={{ 
+          width: '40px', height: '40px', borderRadius: '10px', 
+          background: 'var(--accent-blue)', display: 'flex', 
+          alignItems: 'center', justifyContent: 'center' 
+        }}>
+          <Code2 size={20} color="white" />
         </div>
-        <h1 style={{ letterSpacing: "-1px" }}>codedash</h1>
+        <h1 style={{ letterSpacing: "-1px", fontSize: "1.5rem", fontWeight: 700, color: "black" }}>codedash</h1>
       </div>
       
       <ul className="nav-links" style={{ display: "flex", flexDirection: "column", gap: "0.25rem", listStyle: "none", padding: 0 }}>
@@ -72,12 +76,12 @@ export default function Navigation() {
           Level {level}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          <div style={{ width: '100%', height: '4px', background: 'rgba(0,0,0,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, #94a3b8, #64748b)', borderRadius: '2px' }} 
+              style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-indigo))', borderRadius: '3px' }} 
             />
           </div>
         </div>

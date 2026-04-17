@@ -401,6 +401,17 @@ print("Hi there!")`,
       challenge: "Find bugs that give wrong answers",
       questions: [
         {
+          prompt: "My game calculates score = 10 + 5, but I wanted it to be 10 minus 5. The program doesn't crash, but the score is wrong. What kind of bug is this?",
+          options: [
+            "Indentation Error",
+            "Syntax Error",
+            "Logic Bug (Code runs, but does the wrong math)",
+            "Speed Bug"
+          ],
+          answer: "Logic Bug (Code runs, but does the wrong math)",
+          explanation: "If the code runs but produces the wrong result, it's a logic bug. You used a '+' where you needed a '-'!",
+        },
+        {
           prompt: "This should average 3 numbers. What's mathematically wrong?",
           code: `a = 80
 b = 90

@@ -29,7 +29,9 @@ export default function RootLayout({
                 position: 'fixed', top: 0, left: 250, right: 0, bottom: 0, zIndex: -1, 
                 backgroundImage: "url('/landscape.png')", backgroundSize: "cover", 
                 backgroundPosition: "bottom center" 
-              }} />
+              }}>
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.4)' }} />
+              </div>
               <MouseSpotlight />
               <Navigation />
               <main className="main-content">
