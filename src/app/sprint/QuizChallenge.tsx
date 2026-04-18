@@ -15,15 +15,6 @@ export function QuizChallenge({
   isActive: boolean;
   isCompleted: boolean;
 }) {
-  const sessionRef = useRef<string | null>(null);
-  const shuffleStateRef = useRef({
-    shownQuestions: [] as Array<{ id: string; shownAt: number | null }>,
-    lastShown: null as string | null,
-  });
-
-  // Convert questions to IDs for tracking
-  const allQuestionIds = questions.map((q, i) => `q_${i}`);
-
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
