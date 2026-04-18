@@ -16,7 +16,7 @@ export function TeamPicker({
       {/* Back button - chunky border */}
       <button
         onClick={onBack}
-        style={{ background: "transparent", border: "2px solid rgba(255,255,255,0.12)", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem", fontFamily: "'JetBrains Mono', monospace" }}
+        style={{ background: "transparent", border: "2px solid rgba(255,255,255,0.12)", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "0.5px" }}
       >
         ← Back to missions
       </button>
@@ -26,7 +26,7 @@ export function TeamPicker({
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
           <span style={{ fontSize: "2.5rem" }}>{mission.topicIcon}</span>
           <div>
-            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px" }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", lineHeight: 1.1 }}>
               {mission.title}
             </h1>
             <span style={{
@@ -38,11 +38,11 @@ export function TeamPicker({
             }}>{mission.topic}</span>
           </div>
         </div>
-        <p style={{ color: "var(--text-secondary)", lineHeight: 1.7 }}>{mission.description}</p>
+        <p style={{ color: "var(--text-secondary)", lineHeight: 1.8, fontSize: "0.9rem" }}>{mission.description}</p>
       </div>
 
       <div style={{ marginBottom: "0.75rem" }}>
-        <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+        <span style={{ color: "var(--text-muted)", fontSize: "0.7rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "1px" }}>
           Select your team
         </span>
       </div>
@@ -67,7 +67,7 @@ export function TeamPicker({
                 <Code2 size={26} color="var(--accent-indigo)" />
               </div>
               <div>
-                <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px" }}>
+                <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px", lineHeight: 1.2 }}>
                   Group A — {mission.groupA.role}
                 </h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.5, paddingLeft: 3 }}>
@@ -113,7 +113,7 @@ export function TeamPicker({
                 <Users size={26} color="var(--accent-blue)" />
               </div>
               <div>
-                <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px" }}>
+                <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px", lineHeight: 1.2 }}>
                   Group B — {mission.groupB.role}
                 </h3>
                 <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.5, paddingLeft: 3 }}>
@@ -141,7 +141,7 @@ export function TeamPicker({
         </motion.div>
       </div>
 
-      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "var(--glass-surface)", borderRadius: "var(--radius-sm)", border: "2px solid rgba(255,255,255,0.12)", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "var(--glass-surface)", borderRadius: "var(--radius-sm)", border: "2px solid rgba(255,255,255,0.12)", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: "0.5rem", lineHeight: 1.4 }}>
         <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "#f59e0b", filter: "drop-shadow(0 0 4px rgba(245,158,11,0.5))" }} />
         Group A goes first — Group B unlocks after Group A finishes.
       </div>

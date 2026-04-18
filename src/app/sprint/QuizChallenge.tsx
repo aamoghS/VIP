@@ -206,7 +206,7 @@ export function QuizChallenge({
       </div>
 
       {/* Prompt */}
-      <p style={{ color: "var(--text-primary)", fontSize: "1.05rem", lineHeight: 1.7, marginBottom: "1rem", fontWeight: 500, textAlign: "center" }}>
+      <p style={{ color: "var(--text-primary)", fontSize: "1.1rem", lineHeight: 1.8, marginBottom: "1rem", fontWeight: 500, textAlign: "center" }}>
         {q.prompt}
       </p>
 
@@ -233,7 +233,7 @@ export function QuizChallenge({
         </div>
       )}
 
-      {/* Options - chunky buttons */}
+      {/* Options - chunky buttons with better contrast */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "1rem" }}>
         {q.options.map((opt, i) => {
           const isSelected = selected === opt;
@@ -242,8 +242,8 @@ export function QuizChallenge({
           let border = "2px solid var(--glass-border)";
           let color = "var(--text-primary)";
           if (revealed) {
-            if (correct) { bg = "rgba(16,185,129,0.12)"; border = "3px solid #10b981"; color = "#10b981"; }
-            else if (isSelected) { bg = "rgba(239,68,68,0.1)"; border = "3px solid #ef4444"; color = "#ef4444"; }
+            if (correct) { bg = "rgba(16,185,129,0.15)"; border = "3px solid #10b981"; color = "#10b981"; }
+            else if (isSelected) { bg = "rgba(239,68,68,0.15)"; border = "3px solid #ef4444"; color = "#ef4444"; }
           } else if (isSelected) {
             bg = `${teamColor}15`; border = `3px solid ${teamColor}`;
           }
@@ -255,11 +255,12 @@ export function QuizChallenge({
               onClick={() => handleSelect(opt)}
               disabled={revealed}
               style={{
-                padding: "1rem 1.25rem", background: bg, border, borderRadius: "var(--radius-sm)",
+                padding: "1.125rem 1.25rem", background: bg, border, borderRadius: "var(--radius-sm)",
                 cursor: revealed ? "default" : "pointer", textAlign: "left",
-                color, fontFamily: "'JetBrains Mono', monospace", fontSize: "0.9rem",
+                color, fontFamily: "'JetBrains Mono', monospace", fontSize: "0.95rem",
                 display: "flex", alignItems: "center", gap: "1rem", transition: "all 0.2s",
                 boxShadow: isSelected && !revealed ? `0 4px 0px ${border}` : "none",
+                textShadow: "0 1px 2px rgba(0,0,0,0.2)",
               }}
             >
               <span style={{
@@ -272,7 +273,7 @@ export function QuizChallenge({
               }}>
                 {revealed && correct ? "✓" : revealed && isSelected ? "✕" : String.fromCharCode(65 + i)}
               </span>
-              <span style={{ paddingLeft: 2 }}>{opt}</span>
+              <span style={{ paddingLeft: 2, fontWeight: 500 }}>{opt}</span>
             </motion.button>
           );
         })}

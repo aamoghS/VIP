@@ -138,6 +138,22 @@
   .crt-flicker {
     animation: ctflicker var(--crt-flicker-rate) infinite;
   }
+
+  /* Subtle color shift overlay for depth */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      rgba(0, 0, 0, 0.2) 60%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 0;
+    mix-blend-mode: multiply;
+  }
 }
 
 * {
