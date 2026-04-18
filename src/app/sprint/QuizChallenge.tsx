@@ -4,12 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, BookOpen, Terminal, CheckCircle, XCircle, Trophy, ArrowRight } from "lucide-react";
 import { QuizQuestion } from "./types";
-import {
-  getNextQuestionId,
-  recordShownQuestion,
-  resetShuffleState,
-  generateSessionId,
-} from "./shuffling";
 
 export function QuizChallenge({
   questions, onComplete, teamColor, teamName, isActive, isCompleted,
@@ -39,7 +33,7 @@ export function QuizChallenge({
   const q = questions[qIndex];
   const isCorrect = selected === q?.answer;
 
-  // Get next question ID using intelligent shuffle
+  // Get next question index using intelligent shuffle
   const nextQIndex = useCallback(() => {
     if (qIndex + 1 >= questions.length) {
       // End of questions - complete
@@ -57,9 +51,14 @@ export function QuizChallenge({
       return;
     }
 
-    // Pick next question from available
-    const nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-    setQIndex(nextIndex);
+    // Pick next question from available using deterministic shuffle
+    // Seed based on question index to ensure variety
+    const seed = qIndex + availableIndices.length;
+    let result = seed;
+    // Simple LCG for deterministic randomness
+    result = (result * 1103515245 + 12345) & 0x7fffffff;
+    const pick = result % availableIndices.length;
+    setQIndex(availableIndices[pick]);
   }, [qIndex, questions.length]);
 
   const handleSelect = (opt: string) => {
