@@ -24,32 +24,32 @@ export function QuizChallenge({
   const q = questions[qIndex];
   const isCorrect = selected === q?.answer;
 
-  // Get next question index using intelligent shuffle
+  // Get next question using deterministic shuffle to avoid repeats
   const nextQIndex = useCallback(() => {
     if (qIndex + 1 >= questions.length) {
-      // End of questions - complete
       setDone(true);
       return;
     }
 
-    // Get next question index using shuffle
-    const availableIndices = questions
-      .map((_, i) => i)
-      .filter(i => i !== qIndex); // Exclude current
+    // Create shuffled list using seeded random
+    const availableIndices = questions.map((_, i) => i).filter(i => i !== qIndex);
 
     if (availableIndices.length === 0) {
       setDone(true);
       return;
     }
 
-    // Pick next question from available using deterministic shuffle
-    // Seed based on question index to ensure variety
-    const seed = qIndex + availableIndices.length;
-    let result = seed;
-    // Simple LCG for deterministic randomness
-    result = (result * 1103515245 + 12345) & 0x7fffffff;
-    const pick = result % availableIndices.length;
-    setQIndex(availableIndices[pick]);
+    // Deterministic shuffle based on current index for variety
+    const seed = qIndex * availableIndices.length * 17;
+    let shuffled = [...availableIndices];
+
+    // Fisher-Yates shuffle
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = (seed + i * 13) % (i + 1);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    setQIndex(shuffled[0]);
   }, [qIndex, questions.length]);
 
   const handleSelect = (opt: string) => {
@@ -62,14 +62,6 @@ export function QuizChallenge({
   const handleNext = useCallback(() => {
     nextQIndex();
   }, [nextQIndex]);
-
-  // Initialize session when active
-  useEffect(() => {
-    if (isActive && !isCompleted && !done) {
-      sessionRef.current = generateSessionId();
-      shuffleStateRef.current = resetShuffleState(shuffleStateRef.current);
-    }
-  }, [isActive, isCompleted, done]);
 
   if (isCompleted) {
     return (
