@@ -355,7 +355,9 @@ const QUESTIONS: Question[] = [
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const topic = searchParams.get('topic');
+  const id = searchParams.get('id'); // cooldown ID to avoid repeating same question
 
+  // Filter questions by topic or use all
   const pool = topic
     ? QUESTIONS.filter(q => q.topic === topic)
     : QUESTIONS;
@@ -364,6 +366,25 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'No questions found for this topic.' }, { status: 404 });
   }
 
-  const selected = pool[Math.floor(Math.random() * pool.length)];
+  // Intelligent shuffling with cooldowns
+  // This prevents the same question from appearing consecutively
+  let selected: Question;
+
+  if (id) {
+    // If a cooldown ID is provided, avoid showing the same question again
+    const filtered = pool.filter(q => q.id.toString() !== id);
+
+    if (filtered.length > 0) {
+      // Pick from questions that haven't been shown yet
+      selected = filtered[Math.floor(Math.random() * filtered.length)];
+    } else {
+      // If all questions have been shown (shouldn't happen normally), pick any
+      selected = pool[0];
+    }
+  } else {
+    // No cooldown - just pick randomly for first load
+    selected = pool[Math.floor(Math.random() * pool.length)];
+  }
+
   return NextResponse.json(selected);
 }

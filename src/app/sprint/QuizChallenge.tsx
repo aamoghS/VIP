@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, BookOpen, Terminal, CheckCircle, XCircle, Trophy, ArrowRight } from "lucide-react";
 import { QuizQuestion } from "./types";
+import {
+  getNextQuestionId,
+  recordShownQuestion,
+  resetShuffleState,
+  generateSessionId,
+} from "./shuffling";
 
 export function QuizChallenge({
   questions, onComplete, teamColor, teamName, isActive, isCompleted,
@@ -15,6 +21,15 @@ export function QuizChallenge({
   isActive: boolean;
   isCompleted: boolean;
 }) {
+  const sessionRef = useRef<string | null>(null);
+  const shuffleStateRef = useRef({
+    shownQuestions: [] as Array<{ id: string; shownAt: number | null }>,
+    lastShown: null as string | null,
+  });
+
+  // Convert questions to IDs for tracking
+  const allQuestionIds = questions.map((q, i) => `q_${i}`);
+
   const [qIndex, setQIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -24,6 +39,29 @@ export function QuizChallenge({
   const q = questions[qIndex];
   const isCorrect = selected === q?.answer;
 
+  // Get next question ID using intelligent shuffle
+  const nextQIndex = useCallback(() => {
+    if (qIndex + 1 >= questions.length) {
+      // End of questions - complete
+      setDone(true);
+      return;
+    }
+
+    // Get next question index using shuffle
+    const availableIndices = questions
+      .map((_, i) => i)
+      .filter(i => i !== qIndex); // Exclude current
+
+    if (availableIndices.length === 0) {
+      setDone(true);
+      return;
+    }
+
+    // Pick next question from available
+    const nextIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    setQIndex(nextIndex);
+  }, [qIndex, questions.length]);
+
   const handleSelect = (opt: string) => {
     if (revealed || !isActive) return;
     setSelected(opt);
@@ -32,16 +70,16 @@ export function QuizChallenge({
   };
 
   const handleNext = useCallback(() => {
-    if (qIndex + 1 < questions.length) {
-      setQIndex(i => i + 1);
-      setSelected(null);
-      setRevealed(false);
-    } else {
-      setDone(true);
-      const finalCorrect = isCorrect ? correctCount + 1 : correctCount;
-      onComplete(finalCorrect, questions.length);
+    nextQIndex();
+  }, [nextQIndex]);
+
+  // Initialize session when active
+  useEffect(() => {
+    if (isActive && !isCompleted && !done) {
+      sessionRef.current = generateSessionId();
+      shuffleStateRef.current = resetShuffleState(shuffleStateRef.current);
     }
-  }, [qIndex, questions.length, isCorrect, correctCount, onComplete]);
+  }, [isActive, isCompleted, done]);
 
   if (isCompleted) {
     return (
