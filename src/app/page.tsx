@@ -67,53 +67,55 @@ export default function Home() {
         
         {/* Header Section */}
         <motion.div variants={itemVariants} style={{ marginBottom: '2rem' }}>
-          <h1 style={{ 
-            fontFamily: "var(--font-vt323)", 
-            fontSize: "6rem", 
+          <h1 style={{
+            fontFamily: "var(--font-vt323)",
+            fontSize: "6rem",
             fontWeight: 'normal',
-            color: "black", 
-            textShadow: "4px 4px 0px rgba(0,0,0,0.2)",
+            color: "var(--text-primary)",
             marginBottom: "1.5rem",
-            lineHeight: 1
+            lineHeight: 1,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.08)"
           }}>
             Welcome back!
           </h1>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ 
-              background: 'rgba(255, 255, 255, 0.7)', 
+            <div style={{
+              background: 'var(--glass-surface)',
               backdropFilter: 'blur(10px)',
-              padding: '0.6rem 1.25rem', 
+              padding: '0.6rem 1.25rem',
               borderRadius: '999px',
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              color: 'black', fontWeight: 700, fontSize: '0.9rem'
+              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
+              border: '1px solid var(--glass-border)'
             }}>
-              <Code2 size={16} color="black" /> 
+              <Code2 size={16} color="var(--text-primary)" />
               <span>{questionsSolved} Questions solved</span>
             </div>
 
-            <div style={{ 
-              background: 'rgba(255, 255, 255, 0.7)', 
+            <div style={{
+              background: 'var(--glass-surface)',
               backdropFilter: 'blur(10px)',
-              padding: '0.6rem 1.25rem', 
+              padding: '0.6rem 1.25rem',
               borderRadius: '999px',
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              color: 'black', fontWeight: 700, fontSize: '0.9rem'
+              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
+              border: '1px solid var(--glass-border)'
             }}>
-              <Users size={16} color="black" /> 
+              <Users size={16} color="var(--text-primary)" />
               <span>{teamMissionsCompleted} Sprints completed</span>
             </div>
             
             <div style={{ flex: 1 }} />
 
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
-              <motion.button 
-                whileHover={{ scale: 1.05 }} 
+              <motion.button
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 style={{
-                  background: 'linear-gradient(to bottom, #3b82f6, #2563eb)',
+                  background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
                   color: 'white',
-                  border: '2px solid rgba(255,255,255,0.4)',
+                  border: '2px solid var(--glass-border)',
                   padding: '0.75rem 1.5rem',
                   borderRadius: '999px',
                   fontWeight: 700,
@@ -122,7 +124,7 @@ export default function Home() {
                   alignItems: 'center',
                   gap: '0.5rem',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 15px rgba(37, 99, 235, 0.4)'
+                  boxShadow: '0 4px 15px var(--accent-indigo-glow)'
                 }}
               >
                 Start Learning <ArrowRight size={16} />
@@ -133,27 +135,27 @@ export default function Home() {
 
         {/* Dashboard Glass Pane */}
         <motion.div variants={itemVariants} style={{
-          background: 'rgba(255, 255, 255, 0.65)',
+          background: 'var(--glass-surface)',
           backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
+          border: '1px solid var(--glass-border)',
           borderRadius: '24px',
           padding: '2.5rem',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          boxShadow: 'var(--glass-glow)',
           marginTop: '4rem'
         }}>
-          <h2 style={{ 
-            textAlign: 'center', 
-            fontSize: '2rem', 
-            fontWeight: 800, 
-            color: 'black',
-            marginBottom: '3rem' 
+          <h2 style={{
+            textAlign: 'center',
+            fontSize: '2rem',
+            fontWeight: 800,
+            color: 'var(--text-primary)',
+            marginBottom: '3rem'
           }}>
             Week of {dateData.weekOf}
           </h2>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '300px', position: 'relative' }}>
             {/* Y Axis Labels */}
-            <div style={{ position: 'absolute', left: '-1rem', top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: '#444', fontSize: '0.7rem', fontWeight: 600 }}>
+            <div style={{ position: 'absolute', left: '-1rem', top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>
               <span>{Math.max(5, questionsSolved)} Qs</span>
               <span>0 Qs</span>
             </div>
@@ -164,7 +166,7 @@ export default function Home() {
                 <div style={{ 
                   height: '240px', 
                   width: '8px', 
-                  background: 'rgba(0,0,0,0.3)', 
+                  background: 'rgba(0,0,0,0.05)', 
                   borderRadius: '4px',
                   display: 'flex',
                   alignItems: 'flex-end',
@@ -176,12 +178,12 @@ export default function Home() {
                     transition={{ delay: 0.8 + idx * 0.1, duration: 1, type: "spring", bounce: 0.2 }}
                     style={{ 
                       width: '100%', 
-                      background: 'radial-gradient(circle at top, #a5f3fc, #06b6d4)',
+                      background: 'linear-gradient(to top, var(--accent-cyan), var(--accent-blue))',
                       borderRadius: '4px' 
                     }} 
                   />
                 </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'black', textAlign: 'center', width: '60px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', width: '60px' }}>
                   {day.label}
                 </span>
               </div>
@@ -205,7 +207,7 @@ export default function Home() {
             padding: '2.5rem',
             boxShadow: 'var(--glass-glow)'
           }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'black', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Sparkles size={24} color="var(--accent-amber)" />
               Why Logic Matters
             </h3>
@@ -221,7 +223,7 @@ export default function Home() {
                 <li key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
                   <div>
-                    <div style={{ fontWeight: 700, color: 'black', fontSize: '0.9rem' }}>{item.title}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{item.title}</div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.text}</div>
                   </div>
                 </li>
@@ -237,7 +239,7 @@ export default function Home() {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            boxShadow: '0 20px 40px rgba(37, 99, 235, 0.3)'
+            boxShadow: '0 20px 40px var(--accent-indigo-glow)'
           }}>
             <h3 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>
               Your Superpower.

@@ -23,16 +23,16 @@ export default function Navigation() {
   return (
     <nav className="glass-sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="logo" style={{ marginBottom: "2.5rem" }}>
-        <div className="logo-icon" style={{ 
-          width: '40px', height: '40px', borderRadius: '10px', 
-          background: 'var(--accent-blue)', display: 'flex', 
-          alignItems: 'center', justifyContent: 'center' 
+        <div className="logo-icon" style={{
+          width: '40px', height: '40px', borderRadius: '10px',
+          background: 'var(--accent-blue)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center'
         }}>
           <Code2 size={20} color="white" />
         </div>
-        <h1 style={{ letterSpacing: "-1px", fontSize: "1.5rem", fontWeight: 700, color: "black" }}>codedash</h1>
+        <h1 style={{ letterSpacing: "-1px", fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)" }}>codedash</h1>
       </div>
-      
+
       <ul className="nav-links" style={{ display: "flex", flexDirection: "column", gap: "0.25rem", listStyle: "none", padding: 0 }}>
         {links.map((link) => {
           const isActive = pathname === link.href || (pathname !== '/' && link.href !== '/' && pathname.startsWith(link.href));
@@ -57,8 +57,8 @@ export default function Navigation() {
               <Link
                 href={link.href}
                 className={`nav-item ${isActive ? 'active' : ''}`}
-                style={{ 
-                  position: "relative", zIndex: 1, padding: "0.85rem 1rem", 
+                style={{
+                  position: "relative", zIndex: 1, padding: "0.85rem 1rem",
                   display: "flex", alignItems: "center", gap: "1rem",
                   textDecoration: "none", fontSize: "0.95rem", fontWeight: isActive ? 600 : 400,
                 }}
@@ -71,17 +71,17 @@ export default function Navigation() {
         })}
       </ul>
 
-      <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
-        <div style={{ fontSize: '0.8rem', color: 'black', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
+      <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)' }}>
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
           Level {level}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
           <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
-              style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-indigo))', borderRadius: '3px' }} 
+              style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-indigo))', borderRadius: '3px' }}
             />
           </div>
         </div>
