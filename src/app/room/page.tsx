@@ -253,7 +253,7 @@ export default function RoomPage() {
                     transform: isUnlocked ? 'scale(1)' : 'scale(0.85)'
                   }}
                 >
-                  {isUnlocked ? renderTrophyIcon(unlockedItem?.iconKey || trophy.icon) : renderTrophyIcon(trophy.icon)}
+                  {isUnlocked ? renderTrophyIcon(unlockedItem?.icon || trophy.icon) : renderTrophyIcon(trophy.icon)}
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <h3 style={{
@@ -370,7 +370,7 @@ export default function RoomPage() {
                 { name: '10 Questions Solved', icon: '📝', achieved: questionsSolved >= 10 },
                 { name: 'Complete a Sprint', icon: '🏃', achieved: teamMissionsCompleted >= 1 },
                 { name: 'Unlock 5 Trophies', icon: '🏆', achieved: unlockedCount >= 5 },
-                { name: 'Reach Level 10', icon: '🚀', achieved: level >= 10 },
+                { name: 'Reach Level 10', icon: '🚀', achieved: currentLevel >= 10 },
               ].map((milestone, index) => (
                 <motion.div
                   key={milestone.name}
