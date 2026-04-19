@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code2, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Code2, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
 import { useProgress } from "@/context/ProgressContext";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -83,41 +83,44 @@ export default function Home() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <div style={{
-              background: 'var(--glass-surface)',
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(59, 130, 246, 0.04))',
               backdropFilter: 'blur(10px)',
               padding: '0.6rem 1.25rem',
               borderRadius: '999px',
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)'
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 2px 8px var(--accent-indigo-dim)'
             }}>
-              <Code2 size={16} color="var(--text-primary)" />
+              <Code2 size={16} color="var(--accent-cyan)" />
               <span>{questionsSolved} Questions solved</span>
             </div>
 
             <div style={{
-              background: 'var(--glass-surface)',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(59, 130, 246, 0.04))',
               backdropFilter: 'blur(10px)',
               padding: '0.6rem 1.25rem',
               borderRadius: '999px',
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)'
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 2px 8px var(--accent-emerald-dim)'
             }}>
-              <Users size={16} color="var(--text-primary)" />
+              <Users size={16} color="var(--accent-blue)" />
               <span>{teamMissionsCompleted} Sprints completed</span>
             </div>
-    
+
             <div style={{ flex: 1 }} />
 
             <div style={{
-              background: 'var(--glass-surface)',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(99, 102, 241, 0.05))',
               backdropFilter: 'blur(10px)',
               padding: '0.6rem 1.25rem',
               borderRadius: '999px',
               display: 'flex', alignItems: 'center', gap: '0.5rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)', marginTop: '0.25rem'
+              border: '1px solid var(--glass-border)', marginTop: '0.25rem',
+              boxShadow: '0 2px 8px var(--accent-amber-dim)'
             }}>
               <Sparkles size={16} color="var(--accent-amber)" />
               <span>Level {currentLevel}</span>
@@ -142,7 +145,8 @@ export default function Home() {
                   alignItems: 'center',
                   gap: '0.5rem',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 15px var(--accent-indigo-glow)'
+                  boxShadow: '0 4px 15px var(--accent-indigo-glow), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
                 Start Learning <ArrowRight size={16} />
@@ -159,19 +163,30 @@ export default function Home() {
           borderRadius: '24px',
           padding: '2.5rem',
           boxShadow: 'var(--glass-glow)',
-          marginTop: '4rem'
+          marginTop: '4rem',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+            <div style={{
+              position: 'absolute', top: '-50%', left: '-50%', width: '300%', height: '300%',
+              background: 'radial-gradient(circle at 40% 30%, rgba(99, 102, 241, 0.06), transparent 50%)',
+              borderRadius: '50%'
+            }} />
+          </div>
+
           <h2 style={{
             textAlign: 'center',
             fontSize: '2rem',
             fontWeight: 800,
             color: 'var(--text-primary)',
-            marginBottom: '3rem'
+            marginBottom: '3rem',
+            letterSpacing: '-0.5px'
           }}>
             Week of {dateData.weekOf}
           </h2>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '300px', position: 'relative' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '280px', position: 'relative', padding: '0.5rem', gap: '1.25rem' }}>
             {/* Y Axis Labels */}
             <div style={{ position: 'absolute', left: '-1rem', top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>
               <span>{Math.max(5, questionsSolved)} Qs</span>
@@ -218,13 +233,23 @@ export default function Home() {
           paddingBottom: '4rem'
         }}>
           <div style={{
-            background: 'var(--glass-surface)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.65), rgba(248,250,252,0.4))',
             backdropFilter: 'blur(16px)',
             border: '1px solid var(--glass-border)',
             borderRadius: '24px',
             padding: '2.5rem',
-            boxShadow: 'var(--glass-glow)'
+            boxShadow: 'var(--glass-glow)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+              <div style={{
+                position: 'absolute', top: '-40%', left: '-40%', width: '200%', height: '200%',
+                background: 'radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.04), transparent 40%)',
+                borderRadius: '50%'
+              }} />
+            </div>
+
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Sparkles size={24} color="var(--accent-amber)" />
               Why Logic Matters
@@ -234,9 +259,9 @@ export default function Home() {
             </p>
             <ul style={{ marginTop: '1.5rem', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
-                { icon: '🧩', title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
-                { icon: '⚖️', title: 'Better Decisions', text: 'Use "if/else" logic to weigh your options in the real world.' },
-                { icon: '🚀', title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
+                { icon: <Code2 size={24} color="var(--text-primary)" />, title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
+                { icon: <Users size={24} color="var(--text-primary)" />, title: 'Better Decisions', text: 'Use logic to weigh your options in the real world.' },
+                { icon: <Zap size={24} color="var(--text-primary)" />, title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
               ].map((item, i) => (
                 <li key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                   <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>

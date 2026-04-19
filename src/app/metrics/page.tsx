@@ -7,13 +7,33 @@ import {
   Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, FlaskConical,
 } from "lucide-react";
 
+import {
+  BarChart3, Target, Zap, TrendingUp, CheckCircle, XCircle,
+  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, FlaskConical,
+} from "lucide-react";
+
+// Trophy icons as SVG components (no emojis in UI)
+const TrophyIcons = {
+  variables: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v2m0 16v2M5.6 6.4L9.4 10.2m-8.5 0l3.8 3.8M20.4 10.2l-3.8 3.8m-3.2-12.8v-2m0 16v2"/><path d="M4.2 4h15.6l-3 16H7.2L4.2 4z"/><path d="M12 9a4 4 0 0 0-4 4c0 1.5.8 2.7 2 3.5L12 19l2-2.5c1.2-.8 2-2 2-3.5a4 4 0 0 0-4-4Z"/></svg>,
+  logic: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+  loops: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M21.5 22a1 1 0 0 0 1-1 1 1 0 0 0-1-1h-2m5 2h-5"/><path d="M21.5 2a1 1 0 0 0 1 1v2H2v-2a1 1 0 0 0 1-1"/></svg>,
+  functions: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18a3 3 0 0 0 3 3 3 3 0 0 0 3-3"/><path d="M9 3a3 3 0 0 0 3-3 3 3 0 0 0-3 3"/><path d="M9 3v12a3 3 0 0 0 6 0V3"/><path d="M15 21l-6 0"/></svg>,
+  debugging: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 10a2 2 0 0 1-2-2v-2m0 0a2 2 0 0 0-4 0v2m0 0H6m6 0a2 2 0 0 0-2 2v2m0 0a2 2 0 0 1-2 2h-2m0 0V6"/><path d="M18 14a2 2 0 0 1-2 2h-2"/></svg>,
+  algorithms: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21l6-6"/><path d="M15 9l9 9"/><path d="M21 3l-6 6"/><path d="M3 9l9 9"/></svg>,
+};
+
+function renderTrophyIcon(iconKey: string, size: number = 24) {
+  const Icon = TrophyIcons[iconKey as keyof typeof TrophyIcons];
+  return Icon ? <Icon /> : null;
+}
+
 const TOPICS = [
-  { key: "variables",  label: "Variables",  emoji: "📦", icon: Code2,      color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
-  { key: "logic",      label: "If / Else",  emoji: "🤔", icon: GitBranch,  color: "#3b82f6", glow: "rgba(59,130,246,0.3)"  },
-  { key: "loops",      label: "Loops",      emoji: "🔁", icon: Repeat2,    color: "#10b981", glow: "rgba(16,185,129,0.3)"  },
-  { key: "functions",  label: "Functions",  emoji: "⚙️", icon: FlaskConical, color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
-  { key: "debugging",  label: "Debugging",  emoji: "🐛", icon: Bug,        color: "#ef4444", glow: "rgba(239,68,68,0.3)"   },
-  { key: "algorithms", label: "Algorithms", emoji: "🗺️", icon: BookOpen,   color: "#06b6d4", glow: "rgba(6,182,212,0.3)"   },
+  { key: "variables",  label: "Variables",  iconKey: "variables", color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
+  { key: "logic",      label: "If / Else",  iconKey: "logic",     color: "#3b82f6", glow: "rgba(59,130,246,0.3)"  },
+  { key: "loops",      label: "Loops",      iconKey: "loops",     color: "#10b981", glow: "rgba(16,185,129,0.3)"  },
+  { key: "functions",  label: "Functions",  iconKey: "functions",  color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
+  { key: "debugging",  label: "Debugging",  iconKey: "debugging", color: "#ef4444", glow: "rgba(239,68,68,0.3)"   },
+  { key: "algorithms", label: "Algorithms", iconKey: "algorithms", color: "#06b6d4", glow: "rgba(6,182,212,0.3)"   },
 ];
 
 function accuracyColor(pct: number) {
@@ -191,7 +211,10 @@ export default function MetricsPage() {
           {/* Coaching callouts */}
           {(weakest.length > 0 || strongest.length > 0) && (
             <div style={card}>
-              <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem" }}>💡 Focus Areas</h2>
+              <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <Lightbulb size={16} color="var(--accent-amber)" />
+                Focus Areas
+              </h2>
               {weakest.length > 0 && (
                 <div style={{ marginBottom: "0.75rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
