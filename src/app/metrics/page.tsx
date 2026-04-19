@@ -4,12 +4,7 @@ import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import {
   BarChart3, Target, Zap, TrendingUp, CheckCircle, XCircle,
-  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, FlaskConical,
-} from "lucide-react";
-
-import {
-  BarChart3, Target, Zap, TrendingUp, CheckCircle, XCircle,
-  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, FlaskConical,
+  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2,
 } from "lucide-react";
 
 // Trophy icons as SVG components (no emojis in UI)
@@ -28,12 +23,12 @@ function renderTrophyIcon(iconKey: string, size: number = 24) {
 }
 
 const TOPICS = [
-  { key: "variables",  label: "Variables",  iconKey: "variables", color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
-  { key: "logic",      label: "If / Else",  iconKey: "logic",     color: "#3b82f6", glow: "rgba(59,130,246,0.3)"  },
-  { key: "loops",      label: "Loops",      iconKey: "loops",     color: "#10b981", glow: "rgba(16,185,129,0.3)"  },
-  { key: "functions",  label: "Functions",  iconKey: "functions",  color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
-  { key: "debugging",  label: "Debugging",  iconKey: "debugging", color: "#ef4444", glow: "rgba(239,68,68,0.3)"   },
-  { key: "algorithms", label: "Algorithms", iconKey: "algorithms", color: "#06b6d4", glow: "rgba(6,182,212,0.3)"   },
+  { key: "variables",  label: "Variables",  iconKey: "variables", emoji: "🔧", color: "#a855f7", glow: "rgba(168,85,247,0.3)"  },
+  { key: "logic",      label: "If / Else",  iconKey: "logic",     emoji: "🧠", color: "#3b82f6", glow: "rgba(59,130,246,0.3)"  },
+  { key: "loops",      label: "Loops",      iconKey: "loops",     emoji: "🔁", color: "#10b981", glow: "rgba(16,185,129,0.3)"  },
+  { key: "functions",  label: "Functions",  iconKey: "functions",  emoji: "🧪", color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
+  { key: "debugging",  label: "Debugging",  iconKey: "debugging", emoji: "🐛", color: "#ef4444", glow: "rgba(239,68,68,0.3)"   },
+  { key: "algorithms", label: "Algorithms", iconKey: "algorithms", emoji: "🗺️", color: "#06b6d4", glow: "rgba(6,182,212,0.3)"   },
 ];
 
 function accuracyColor(pct: number) {
