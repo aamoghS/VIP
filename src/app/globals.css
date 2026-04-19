@@ -571,21 +571,21 @@ body.dark .btn-primary:hover {
 
 /* Input Fields */
 .input-premium {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-secondary);
   border: 2px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 0.875rem 1.25rem;
   color: var(--text-primary);
   font-size: 1rem;
   font-family: 'JetBrains Mono', monospace;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   width: 100%;
 }
 
 .input-premium:focus {
   outline: none;
   border-color: var(--accent-indigo);
-  box-shadow: 0 0 0 3px var(--accent-indigo-dim);
+  background: var(--bg-elevated);
 }
 
 .input-premium::placeholder {
