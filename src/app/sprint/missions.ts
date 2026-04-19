@@ -43,6 +43,19 @@ export const MISSIONS: SprintMission[] = [
           answer: "power = 100",
           explanation: "In Python logic, the variable on the left takes on the value on the right.",
         },
+        // Critical thinking question: Edge case - what happens at boundary?
+        {
+          prompt: "Critical Thinking: If we start at power = 100 and subtract 40 twice (power = power - 40), what's the final value?",
+          code: `power = 100\npower = power - 40\npower = power - 40`,
+          options: [
+            "20",
+            "60",
+            "10",
+            "0"
+          ],
+          answer: "20",
+          explanation: "Trace it step by step: 100 - 40 = 60, then 60 - 40 = 20. This tests careful mental tracing of state changes!",
+        },
       ],
     },
     handoffMessage: "Mission Control (A) successfully initialized: `power = 100`. Engineers (B), the satellite is entering shadow! You must recalculate the power.",
@@ -167,6 +180,19 @@ export const MISSIONS: SprintMission[] = [
           options: ["expect:", "else:", "otherwise:", "stop:"],
           answer: "else:",
           explanation: "Else is our logical default. It handles everything that didn't pass the first check.",
+        },
+        // Critical thinking: boundary condition
+        {
+          prompt: "Critical Thinking: Which of these is a LOGIC BUG (code runs, wrong output) for checking 'age 13 or older'?",
+          code: `if age > 13:\n    grant_access()`,
+          options: [
+            "if age > 13: (misses exactly 13)",
+            "if age >= 13: (correct - includes 13)",
+            "if age == 13:",
+            "if age is 13:"
+          ],
+          answer: "if age > 13: (misses exactly 13)",
+          explanation: "This is a boundary bug! age=13 is NOT > 13, it's EQUAL. The student aged exactly 13 would be denied access. This teaches edge case precision.",
         },
       ],
     },
