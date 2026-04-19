@@ -373,20 +373,7 @@ body.dark .glass-card:hover {
   margin-bottom: 0.5rem;
   letter-spacing: -0.5px;
   color: var(--text-primary);
-  position: relative;
   font-family: 'Space Grotesk', sans-serif;
-}
-
-.page-title::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 60px;
-  height: 4px;
-  background: var(--accent-indigo);
-  box-shadow: 0 0 10px var(--accent-indigo-glow);
-  border-radius: 2px;
 }
 
 .page-subtitle {
