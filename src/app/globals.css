@@ -697,42 +697,34 @@ body.dark .btn-primary:hover {
   gap: 1rem;
   min-height: 180px;
   position: relative;
+  transition: all 0.3s ease;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .trophy-card.unlocked {
-  background: linear-gradient(135deg, var(--glass-surface), rgba(99, 102, 241, 0.05));
+  background: var(--glass-surface);
 }
 
 .trophy-card.unlocked:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   border-color: var(--accent-indigo);
 }
 
 .trophy-card.unlocked::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(from 0deg, transparent, var(--accent-indigo-glow), transparent);
-  animation: trophyRotate 4s linear infinite;
-  opacity: 0.3;
-}
-
-@keyframes trophyRotate {
-  100% { transform: rotate(360deg); }
+  display: none;
 }
 
 .trophy-icon {
   font-size: 3.5rem;
   color: #1e293b;
-  filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
   position: relative;
   z-index: 1;
+}
+
+body.dark .trophy-icon {
+  color: #cbd5e1;
 }
 
 .trophy-card.locked {
