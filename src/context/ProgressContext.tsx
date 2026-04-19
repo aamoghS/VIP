@@ -46,6 +46,15 @@ type SavedProgress = {
   topicStats: TopicStats;
 };
 
+const defaultProgress = (): SavedProgress => ({
+  xp: 0,
+  unlockedItems: [],
+  sprintStage: 1,
+  questionsSolved: 0,
+  teamMissionsCompleted: 0,
+  topicStats: {},
+});
+
 // XP requirements increase with level (exponential curve)
 function getXpForLevel(level: number): number {
   // Formula: 500 * (1.2 ^ (level - 1))
