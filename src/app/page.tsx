@@ -8,31 +8,32 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const { questionsSolved, teamMissionsCompleted } = useProgress();
+  const { xp, currentLevel, xpPerLevel, levelProgress } = useProgress();
   const [mounted, setMounted] = useState(false);
   const [dateData, setDateData] = useState<{ weekOf: string, days: { label: string, fill: number }[] }>({
     weekOf: "",
     days: []
   });
-  
+
   useEffect(() => {
     setMounted(true);
-    
+
     // Dynamic Date Calculation
     const now = new Date();
     const dayOfWeek = now.getDay();
     const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(now.setDate(diffToMonday));
-    
+
     const weekOfStr = monday.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    
+
     const todayIdx = (new Date().getDay() + 6) % 7; // Sync with Mon=0
-    
+
     const days = [...Array(6)].map((_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
       const dayName = d.toLocaleDateString("en-US", { weekday: 'short' });
       const dateNum = d.toLocaleDateString("en-US", { month: '2-digit', day: '2-digit' });
-      
+
       // If it's today, height reflects total questionsSolved (capped)
       // Others use a deterministic seed based on the date to look 'recorded'
       let fill;
@@ -40,9 +41,9 @@ export default function Home() {
         fill = Math.min(100, Math.max(10, (questionsSolved / 5) * 100));
       } else {
         const seed = d.getDate();
-        fill = 10 + (seed * 11) % 65; 
+        fill = 10 + (seed * 11) % 65;
       }
-      
+
       return { label: `${dayName} ${dateNum}`, fill };
     });
 
@@ -60,8 +61,6 @@ export default function Home() {
   };
 
   if (!mounted || !dateData.weekOf) return null;
-
-  const { xp, currentLevel, xpPerLevel, levelProgress } = useProgress();
 
   return (
     <div style={{ position: "relative", minHeight: "100%", width: "100%" }}>
