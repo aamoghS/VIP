@@ -10,10 +10,13 @@ type Question = {
   options: string[];
   currentAnswer: string;
   reasoning: string;
+  complexity?: number; // 1-3: 1=single step, 2=requires tracing, 3=multi-step reasoning
+  bloomLevel?: 'remembering' | 'understanding' | 'applying' | 'analyzing' | 'evaluating' | 'creating';
 };
 
 // 6–8th grade CS question bank
 // Topics: variables, conditionals, loops, functions, debugging, algorithms
+// Critical thinking focus: edge cases, reverse engineering, multi-concept questions
 const QUESTIONS: Question[] = [
   // ── Variables ─────────────────────────────────────────────────────────────
   {
@@ -352,15 +355,215 @@ const QUESTIONS: Question[] = [
   },
 ];
 
+// ── CRITICAL THINKING QUESTIONS (Edge Cases, Reverse Engineering, Multi-concept) ──
+const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
+  // ── Edge Case Analysis ──
+  {
+    topic: "variables",
+    complexity: 2,
+    bloomLevel: "analyzing",
+    question: "The code prints 60:\n\nmoney = 100\nmoney = money - 50\nmoney = money - 10\n\nWhat if the second line was `money -= 40` instead? What would print?",
+    options: ["90", "70", "60", "50"],
+    reasoning: "Starting at 100: with -= 40, we get 100 - 40 = 60, then 60 - 10 = 50. This tests understanding of operator shorthand and sequential state changes.",
+    currentAnswer: "50",
+  },
+  {
+    topic: "logic",
+    complexity: 3,
+    bloomLevel: "evaluating",
+    question: "Which condition is FALSE when age = 15 and height = 48?\n\nA) age >= 15 AND height >= 45\nB) age < 20 OR height < 50\nC) NOT (age > 18)\nD) age > 15 AND height < 50",
+    options: [
+      "A) age >= 15 AND height >= 45",
+      "B) age < 20 OR height < 50",
+      "C) NOT (age > 18)",
+      "D) age > 15 AND height < 50",
+    ],
+    reasoning: "Testing multiple conditions at once! age=15, so 'age > 15' is FALSE. D fails because one side is false. This develops multi-condition evaluation skills.",
+    currentAnswer: "D) age > 15 AND height < 50",
+  },
+  {
+    topic: "loops",
+    complexity: 3,
+    bloomLevel: "creating",
+    question: "Consider:\n\npackages = 3\nwhile packages > 0:\n    print('Delivered')\n    packages -= 1\n\nWhat if we changed the condition to `packages >= 0`? What happens?",
+    options: ["The droid delivers one more time then stops", "Infinite loop (packages keeps going forever)", "Nothing changes", "Droid stops immediately"],
+    reasoning: "Edge case! packages starts at 3, goes 2, 1, 0. At 0, 0 >= 0 is True, prints again, then packages=-1. When -1 >= 0, that's False. So it delivers one extra. This teaches boundary condition thinking.",
+    currentAnswer: "The droid delivers one more time then stops",
+  },
+  {
+    topic: "debugging",
+    complexity: 3,
+    bloomLevel: "creating",
+    question: "The robot should turn LEFT when sensor == 0. But it goes STRAIGHT. You see:\n\nif sensor == 0:\n    turn_right()\n\nWhat's wrong?",
+    options: [
+      "turn_right is wrong - should be turn_left",
+      "The indentation is wrong",
+      "Missing a colon",
+      "It's a syntax error, not a logic bug"
+    ],
+    reasoning: "Syntax is fine, logic is wrong! The computer did exactly what we told it - this is a logic bug, not a syntax bug. Students must distinguish between 'wrong instruction' vs 'wrong computer'.",
+    currentAnswer: "turn_right is wrong - should be turn_left",
+  },
+  {
+    topic: "debugging",
+    complexity: 3,
+    bloomLevel: "analyzing",
+    question: "This code prints '10' at the end. Which original value of 'score' would make this happen?\n\nscore = score - 5\nprint(score)",
+    options: ["10", "5", "15", "0"],
+    reasoning: "Reverse engineering! We need: score - 5 = 10, so score = 15. This tests thinking backwards instead of forward execution.",
+    currentAnswer: "15",
+  },
+  {
+    topic: "functions",
+    complexity: 2,
+    bloomLevel: "understanding",
+    question: "What prints when calling double(5) and then double(10)?\n\ndef double(n):\n    result = n * 2\n    return result",
+    options: [
+      "Prints 10 then 20",
+      "Prints 5 then 10",
+      "Crashes - can't return two values",
+      "Prints 15 then 30"
+    ],
+    reasoning: "Function calls are isolated! Each call computes independently. double(5) → 10, double(10) → 20. This reinforces understanding of function composition.",
+    currentAnswer: "Prints 10 then 20",
+  },
+  {
+    topic: "loops",
+    complexity: 3,
+    bloomLevel: "evaluating",
+    question: "Both loops run until packages = 0:\n1. while packages > 0: ... packages -= 1\n2. for i in range(packages): ...\n\nWhat's a key difference?",
+    options: [
+      "Loop 1 can be infinite; Loop 2 always has a known count",
+      "Loop 1 is faster",
+      "Loop 2 is more memory efficient",
+      "Loop 1 can't access initial packages value"
+    ],
+    reasoning: "Trade-off analysis! while checks runtime condition (can be infinite), for uses pre-calculated range. This teaches when to choose each.",
+    currentAnswer: "Loop 1 can be infinite; Loop 2 always has a known count",
+  },
+  {
+    topic: "debugging",
+    complexity: 3,
+    bloomLevel: "analyzing",
+    question: "The code should print numbers 1-10. But it prints 1-9. Where's the bug?\n\ni = 1\nwhile i < 10:\n    print(i)\n    i = i + 1",
+    options: [
+      "The condition should be i <= 10 (includes 10)",
+      "i = i + 1 should come before print",
+      "Print statement is wrong",
+      "No bug - computer is smart"
+    ],
+    reasoning: "Boundary condition bug! i=9 is < 10, prints, becomes 10. Then 10 < 10 is False, stops. The fix: use <= to include the boundary. This teaches edge case precision.",
+    currentAnswer: "The condition should be i <= 10 (includes 10)",
+  },
+  {
+    topic: "logic",
+    complexity: 2,
+    bloomLevel: "understanding",
+    question: "Which prints first?\n\nif x > 5 or y > 10:\n    print('A')\nelif x < 3:\n    print('B')\nelse:\n    print('C')",
+    options: [
+      "'A' (evaluates left side of 'or' first)",
+      "'B' (if or is short-circuit, evaluates right side)",
+      "Depends on x and y values",
+      "Nothing prints"
+    ],
+    reasoning: "Operator precedence! 'or' evaluates left to right. If x > 5 is True, short-circuits and prints A. Otherwise checks right side. This teaches execution order.",
+    currentAnswer: "'A' (evaluates left side of 'or' first)",
+  },
+  {
+    topic: "algorithms",
+    complexity: 3,
+    bloomLevel: "evaluating",
+    question: "You need to sum all numbers in a list AND find the maximum. Which approach shows better critical thinking?",
+    options: [
+      "Make two loops (one for sum, one for max)",
+      "Make one loop that updates BOTH total AND highest",
+      "Use two different functions",
+      "Hardcode the answer"
+    ],
+    reasoning: "Accumulator pattern! Solving multiple goals in a single pass is efficient and elegant. This teaches decomposition + combining solutions.",
+    currentAnswer: "Make one loop that updates BOTH total AND highest",
+  },
+  {
+    topic: "debugging",
+    complexity: 3,
+    bloomLevel: "analyzing",
+    question: "The output is 42 but you expected 100. What's most likely wrong?\n\nresult = 5 * 10\nresult = result + 42 - 10",
+    options: [
+      "Math error: 50 + 42 - 10 = 82, not 100",
+      "Operator precedence issue",
+      "result variable not initialized",
+      "No bugs, output is correct"
+    ],
+    reasoning: "Math tracing! Step by step: 5*10=50, 50+42=92, 92-10=82. This tests careful mental tracing and error detection.",
+    currentAnswer: "Math error: 50 + 42 - 10 = 82, not 100",
+  },
+  {
+    topic: "variables",
+    complexity: 3,
+    bloomLevel: "analyzing",
+    question: "Why would you use a 'const' instead of 'let' for a variable?",
+    options: [
+      "It's faster",
+      "The value shouldn't change - prevents logic bugs from accidental reassignment",
+      "Syntax is shorter",
+      "const is required by law"
+    ],
+    reasoning: "Intent signaling! const declares that this value is foundational. If the code tries to change it, Python (or JS) prevents it. This is a contract: 'this doesn't change'.",
+    currentAnswer: "The value shouldn't change - prevents logic bugs from accidental reassignment",
+  },
+  {
+    topic: "functions",
+    complexity: 3,
+    bloomLevel: "evaluating",
+    question: "Why do we pass parameters to functions?",
+    options: [
+      "To make code longer",
+      "So the function can work on specific data without redefining itself",
+      "It's required",
+      "Functions can't work without them"
+    ],
+    reasoning: "Reusability with customization! A function is a recipe. Parameters are ingredients. Same recipe, different ingredients = different results. This teaches abstraction.",
+    currentAnswer: "So the function can work on specific data without redefining itself",
+  },
+  {
+    topic: "loops",
+    complexity: 3,
+    bloomLevel: "evaluating",
+    question: "What's the 'escape hatch' in a while loop?",
+    options: [
+      "In the condition (what stops it from being infinite)",
+      "In the loop body (what changes the condition variable)",
+      "Using break statement",
+      "Using a for loop instead"
+    ],
+    reasoning: "Critical concept! The escape hatch is changing the condition variable. Each iteration moves us closer to False. Without this, you get infinite loop.",
+    currentAnswer: "In the loop body (what changes the condition variable)",
+  },
+  {
+    topic: "algorithms",
+    complexity: 3,
+    bloomLevel: "understanding",
+    question: "Why does the ORDER of steps matter in an algorithm?",
+    options: [
+      "Order doesn't matter",
+      "Because putting on shoes before socks wouldn't work!",
+      "Computers can rearrange steps automatically",
+      "To make it longer"
+    ],
+    reasoning: "Sequence is everything! Code runs top-to-bottom like a story. Getting steps out of order breaks the logic flow. Real world analogy: you can't put on socks after shoes.",
+    currentAnswer: "Because putting on shoes before socks wouldn't work!",
+  },
+];
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const topic = searchParams.get('topic');
   const id = searchParams.get('id'); // cooldown ID to avoid repeating same question
 
-  // Filter questions by topic or use all
+  // Filter questions by topic or use all (including critical thinking questions)
   const pool = topic
-    ? QUESTIONS.filter(q => q.topic === topic)
-    : QUESTIONS;
+    ? [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS].filter(q => q.topic === topic)
+    : [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS];
 
   if (pool.length === 0) {
     return NextResponse.json({ error: 'No questions found for this topic.' }, { status: 404 });
