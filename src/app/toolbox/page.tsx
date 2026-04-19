@@ -243,12 +243,12 @@ export default function ToolboxPage() {
   return (
     <div>
 
-      <div className="flex-between" style={{ marginBottom: '2.5rem', alignItems: 'flex-end' }}>
-        <div>
-          <h1 style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem', maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: "2.25rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.5rem", lineHeight: 1 }}>
             The Toolbox
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.5 }}>
             Interactive coding challenges.
           </p>
         </div>

@@ -83,16 +83,16 @@ export default function MetricsPage() {
     <motion.div initial="hidden" animate="visible" variants={containerVariants}>
 
       {/* Header */}
-      <motion.div variants={item} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem" }}>
-        <div>
-          <h1 style={{ fontSize: "2.5rem", fontWeight: 800, letterSpacing: "-1px", marginBottom: "0.25rem" }}>
+      <motion.div variants={item} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "2.5rem", flexWrap: "wrap", gap: "1rem", maxWidth: "900px", margin: "0 auto" }}>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontSize: "2.25rem", fontWeight: 800, letterSpacing: "-1px", marginBottom: "0.5rem", lineHeight: 1 }}>
             My Progress
           </h1>
-          <p style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.5 }}>
             All stats are saved locally — your personal learning snapshot.
           </p>
         </div>
-        <button
+        <motion.button
           onClick={() => { if (confirm("Reset ALL progress? This cannot be undone.")) resetProgress(); }}
           style={{
             display: "flex", alignItems: "center", gap: "0.5rem",
@@ -101,16 +101,18 @@ export default function MetricsPage() {
             color: "#ef4444", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600,
             transition: "all 0.2s",
           }}
+          whileHover={{ x: 2 }}
+          whileTap={{ x: 0 }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.2)")}
           onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")}
         >
           <RotateCcw size={14} />
           Reset Progress
-        </button>
+        </motion.button>
       </motion.div>
 
       {/* Stat tiles */}
-      <motion.div variants={item} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
+      <motion.div variants={item} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "2.5rem" }}>
         {[
           { label: "Total XP",        value: xp,                   icon: Sparkles,   color: "#f59e0b" },
           { label: "Level",            value: level,                icon: TrendingUp, color: "#a855f7" },
@@ -118,7 +120,7 @@ export default function MetricsPage() {
           { label: "Sprints Done",     value: teamMissionsCompleted, icon: Zap,        color: "#10b981" },
           { label: "Overall Accuracy", value: `${overallPct}%`,    icon: BarChart3,  color: accuracyColor(overallPct) },
         ].map(({ label, value, icon: Icon, color }) => (
-          <motion.div key={label} style={{ ...card }} whileHover={{ y: -3 }}>
+          <motion.div key={label} style={{ ...card }} whileHover={{ y: -3, scale: 1.01 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
               <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Icon size={17} color={color} />

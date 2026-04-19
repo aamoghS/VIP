@@ -69,7 +69,7 @@ export default function RoomPage() {
       variants={containerVariants}
     >
 
-      <motion.div variants={itemVariants} className="flex-between" style={{ marginBottom: '3rem', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+      <motion.div variants={itemVariants} style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem', maxWidth: '900px', margin: '0 auto' }}>
         <div style={{ flex: 1 }}>
           <div style={{
             display: 'inline-flex',
@@ -80,11 +80,12 @@ export default function RoomPage() {
             <div style={{
               padding: '0.5rem 0.75rem',
               background: 'linear-gradient(90deg, var(--accent-purple), var(--accent-blue))',
-              borderRadius: 'var(--radius-xs)',
+              borderRadius: 'var(--radius-md)',
               fontWeight: 700,
               fontSize: '0.75rem',
               letterSpacing: '0.5px',
-              color: 'white'
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.2)'
             }}>
               LEVEL {currentLevel}
             </div>
@@ -98,7 +99,7 @@ export default function RoomPage() {
               {currentLevel >= 5 ? 'EXPERT' : currentLevel >= 3 ? 'ADVANCED' : 'NOVICE'}
             </span>
           </div>
-          <h1 style={{ fontSize: "3rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem", lineHeight: 1 }}>
+          <h1 style={{ fontSize: "2.75rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.25rem", lineHeight: 1 }}>
             Your Room
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem", fontWeight: 400, opacity: 0.8 }}>
