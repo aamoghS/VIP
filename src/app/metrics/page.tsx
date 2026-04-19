@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import {
   BarChart3, Target, Zap, TrendingUp, CheckCircle, XCircle,
-  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2,
+  Trophy, Sparkles, RotateCcw, BookOpen, Code2, Bug, GitBranch, Repeat2, Lightbulb,
 } from "lucide-react";
 
 // Trophy icons as SVG components (no emojis in UI)
@@ -48,8 +48,9 @@ const card = {
   background: "var(--glass-surface)",
   border: "1px solid var(--glass-border)",
   borderRadius: "var(--radius-md)",
-  padding: "1.5rem",
-  backdropFilter: "blur(12px)",
+  padding: "1.75rem",
+  backdropFilter: "blur(16px)",
+  boxShadow: "var(--glass-glow)",
 };
 
 const containerVariants = {

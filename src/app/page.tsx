@@ -67,29 +67,31 @@ export default function Home() {
       <motion.div initial="hidden" animate="visible" variants={containerVariants}>
 
         {/* Header Section */}
-        <motion.div variants={itemVariants} style={{ marginBottom: '2rem' }}>
+        <motion.div variants={itemVariants} style={{ marginBottom: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{
             fontFamily: "var(--font-vt323)",
-            fontSize: "6rem",
-            fontWeight: 'normal',
+            fontSize: "5rem",
+            fontWeight: '800',
             color: "var(--text-primary)",
-            marginBottom: "1.5rem",
-            lineHeight: 1,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.08)"
+            marginBottom: "1.25rem",
+            lineHeight: 0.95,
+            letterSpacing: '-1px',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
           }}>
             Welcome back!
           </h1>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '0.5rem', justifyContent: 'center' }}>
             <div style={{
               background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(59, 130, 246, 0.04))',
-              backdropFilter: 'blur(10px)',
-              padding: '0.6rem 1.25rem',
+              backdropFilter: 'blur(12px)',
+              padding: '0.8rem 1.25rem',
               borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
               border: '1px solid var(--glass-border)',
-              boxShadow: '0 2px 8px var(--accent-indigo-dim)'
+              boxShadow: '0 2px 12px var(--accent-indigo-dim)',
+              transition: 'all 0.2s ease'
             }}>
               <Code2 size={16} color="var(--accent-cyan)" />
               <span>{questionsSolved} Questions solved</span>
@@ -97,29 +99,29 @@ export default function Home() {
 
             <div style={{
               background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(59, 130, 246, 0.04))',
-              backdropFilter: 'blur(10px)',
-              padding: '0.6rem 1.25rem',
+              backdropFilter: 'blur(12px)',
+              padding: '0.8rem 1.25rem',
               borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
               border: '1px solid var(--glass-border)',
-              boxShadow: '0 2px 8px var(--accent-emerald-dim)'
+              boxShadow: '0 2px 12px var(--accent-emerald-dim)',
+              transition: 'all 0.2s ease'
             }}>
               <Users size={16} color="var(--accent-blue)" />
               <span>{teamMissionsCompleted} Sprints completed</span>
             </div>
 
-            <div style={{ flex: 1 }} />
-
             <div style={{
               background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(99, 102, 241, 0.05))',
-              backdropFilter: 'blur(10px)',
-              padding: '0.6rem 1.25rem',
+              backdropFilter: 'blur(12px)',
+              padding: '0.8rem 1.25rem',
               borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
               color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)', marginTop: '0.25rem',
-              boxShadow: '0 2px 8px var(--accent-amber-dim)'
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 2px 12px var(--accent-amber-dim)',
+              transition: 'all 0.2s ease'
             }}>
               <Sparkles size={16} color="var(--accent-amber)" />
               <span>Level {currentLevel}</span>
@@ -127,28 +129,31 @@ export default function Home() {
                 {xp} / {xpPerLevel} XP
               </span>
             </div>
+          </div>
 
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
                 style={{
                   background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
                   color: 'white',
                   border: '2px solid var(--glass-border)',
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.85rem 1.75rem',
                   borderRadius: '999px',
                   fontWeight: 700,
-                  fontSize: '0.95rem',
+                  fontSize: '1rem',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 15px var(--accent-indigo-glow), inset 0 1px 0 rgba(255,255,255,0.15)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                  boxShadow: '0 4px 20px var(--accent-indigo-glow), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                Start Learning <ArrowRight size={16} />
+                Start Learning <ArrowRight size={18} />
               </motion.button>
             </Link>
           </div>
@@ -169,14 +174,14 @@ export default function Home() {
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
             <div style={{
               position: 'absolute', top: '-50%', left: '-50%', width: '300%', height: '300%',
-              background: 'radial-gradient(circle at 40% 30%, rgba(99, 102, 241, 0.06), transparent 50%)',
+              background: 'radial-gradient(circle at 40% 30%, rgba(99, 102, 241, 0.05), transparent 50%)',
               borderRadius: '50%'
             }} />
           </div>
 
           <h2 style={{
             textAlign: 'center',
-            fontSize: '2rem',
+            fontSize: '1.875rem',
             fontWeight: 800,
             color: 'var(--text-primary)',
             marginBottom: '3rem',
@@ -185,88 +190,88 @@ export default function Home() {
             Week of {dateData.weekOf}
           </h2>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '280px', position: 'relative', padding: '0.5rem', gap: '1.25rem' }}>
-            {/* Y Axis Labels */}
-            <div style={{ position: 'absolute', left: '-1rem', top: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.7rem', fontWeight: 600 }}>
-              <span>{Math.max(5, questionsSolved)} Qs</span>
-              <span>0 Qs</span>
-            </div>
-
-            {/* Bars */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))', alignItems: 'flex-end', gap: '1.5rem', justifyContent: 'center' }}>
             {dateData.days.map((day, idx) => (
-              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', width: '40px' }}>
-                <div style={{ 
-                  height: '240px', 
-                  width: '8px', 
-                  background: 'rgba(0,0,0,0.05)', 
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  overflow: 'hidden'
-                }}>
-                  <motion.div 
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + idx * 0.07, duration: 0.5 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}
+              >
+                <motion.div style={{ position: 'relative', width: '100%', height: '180px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(to top, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.05))',
+                    borderRadius: 'var(--radius-sm)',
+                    overflow: 'hidden'
+                  }} />
+                  <motion.div
                     initial={{ height: 0 }}
                     animate={{ height: `${day.fill}%` }}
-                    transition={{ delay: 0.8 + idx * 0.1, duration: 1, type: "spring", bounce: 0.2 }}
-                    style={{ 
-                      width: '100%', 
+                    transition={{ delay: 0.9 + idx * 0.07, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      width: '100%',
                       background: 'linear-gradient(to top, var(--accent-cyan), var(--accent-blue))',
-                      borderRadius: '4px' 
-                    }} 
+                      borderRadius: 'var(--radius-sm)',
+                      boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
+                    }}
                   />
-                </div>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', width: '60px' }}>
+                </motion.div>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', whiteSpace: 'nowrap' }}>
                   {day.label}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* Philosophy / Why Code Section */}
         <motion.div variants={itemVariants} style={{
-          marginTop: '3rem',
+          marginTop: '4rem',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2rem',
-          paddingBottom: '4rem'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '2rem'
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.65), rgba(248,250,252,0.4))',
-            backdropFilter: 'blur(16px)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))',
+            backdropFilter: 'blur(12px)',
             border: '1px solid var(--glass-border)',
             borderRadius: '24px',
-            padding: '2.5rem',
+            padding: '2rem',
             boxShadow: 'var(--glass-glow)',
             position: 'relative',
             overflow: 'hidden'
           }}>
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
               <div style={{
-                position: 'absolute', top: '-40%', left: '-40%', width: '200%', height: '200%',
+                position: 'absolute', top: '-30%', left: '-30%', width: '180%', height: '180%',
                 background: 'radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.04), transparent 40%)',
                 borderRadius: '50%'
               }} />
             </div>
 
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Sparkles size={24} color="var(--accent-amber)" />
+            <h3 style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Sparkles size={22} color="var(--accent-amber)" />
               Why Logic Matters
             </h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '1rem' }}>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.95rem' }}>
               Coding isn&apos;t just about building websites. It&apos;s about <strong>Logic Blocks</strong>. When you learn to code, you&apos;re teaching your brain to break down scary, complex problems into small, manageable cubes.
             </p>
             <ul style={{ marginTop: '1.5rem', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {[
-                { icon: <Code2 size={24} color="var(--text-primary)" />, title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
-                { icon: <Users size={24} color="var(--text-primary)" />, title: 'Better Decisions', text: 'Use logic to weigh your options in the real world.' },
-                { icon: <Zap size={24} color="var(--text-primary)" />, title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
+                { icon: <Code2 size={20} color="var(--text-primary)" />, title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
+                { icon: <Users size={20} color="var(--text-primary)" />, title: 'Better Decisions', text: 'Use logic to weigh your options in the real world.' },
+                { icon: <Zap size={20} color="var(--text-primary)" />, title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
               ].map((item, i) => (
-                <li key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '1.5rem' }}>{item.icon}</span>
+                <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
                   <div>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>{item.title}</div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.text}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.85rem' }}>{item.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.text}</div>
                   </div>
                 </li>
               ))}
@@ -276,22 +281,22 @@ export default function Home() {
           <div style={{
             background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
             borderRadius: '24px',
-            padding: '2.5rem',
+            padding: '2rem',
             color: 'white',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             boxShadow: '0 20px 40px var(--accent-indigo-glow)'
           }}>
-            <h3 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.5px' }}>
+            <h3 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>
               Your Superpower.
             </h3>
-            <p style={{ fontSize: '1.1rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '2rem' }}>
+            <p style={{ fontSize: '1rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '1.5rem' }}>
               We don&apos;t just teach you the &quot;web route.&quot; We teach you how to think like an engineer. Logical thinking is the foundation of every great invention in history.
             </p>
-            <div style={{ background: 'rgba(255,255,255,0.15)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontFamily: 'var(--font-vt323)', fontSize: '1.75rem', marginBottom: '0.5rem' }}>The Mission:</div>
-              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+            <div style={{ background: 'rgba(255,255,255,0.15)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <div style={{ fontFamily: 'var(--font-vt323)', fontSize: '1.5rem', marginBottom: '0.4rem' }}>The Mission:</div>
+              <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
                 To transform 6th-8th graders from consumers of technology into the <strong>Architects</strong> of the future through pure logical grit.
               </div>
             </div>
