@@ -84,17 +84,17 @@ export default function ToolboxPage() {
         addXp(100);
         incrementQuestionsSolved?.();
 
-        const itemMap: Record<string, { id: string; name: string; icon: string }> = {
-          variables: { id: "variables", name: "Variables Wrench", icon: "📦" },
-          logic: { id: "logic", name: "Logic Brain", icon: "🧠" },
-          loops: { id: "loops", name: "Infinity Loop", icon: "♾️" },
-          functions: { id: "functions", name: "Functions Flask", icon: "⚙️" },
-          debugging: { id: "debugging", name: "Debugging Bug", icon: "🐛" },
-          algorithms: { id: "algorithms", name: "Algorithms Map", icon: "🗺️" },
+        const itemMap: Record<string, { id: string; name: string; iconKey: string }> = {
+          variables: { id: "variables", name: "Variables Wrench", iconKey: "variables" },
+          logic: { id: "logic", name: "Logic Brain", iconKey: "logic" },
+          loops: { id: "loops", name: "Infinity Loop", iconKey: "loops" },
+          functions: { id: "functions", name: "Functions Flask", iconKey: "functions" },
+          debugging: { id: "debugging", name: "Debugging Bug", iconKey: "debugging" },
+          algorithms: { id: "algorithms", name: "Algorithms Map", iconKey: "algorithms" },
         };
 
         const item = itemMap[question?.topic || ""];
-        if (item) unlockItem(item);
+        if (item) unlockItem({ ...item, icon: renderTrophyIcon(item.iconKey) });
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
