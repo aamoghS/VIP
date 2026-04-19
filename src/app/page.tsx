@@ -61,10 +61,12 @@ export default function Home() {
 
   if (!mounted || !dateData.weekOf) return null;
 
+  const { xp, currentLevel, xpPerLevel, levelProgress } = useProgress();
+
   return (
     <div style={{ position: "relative", minHeight: "100%", width: "100%" }}>
       <motion.div initial="hidden" animate="visible" variants={containerVariants}>
-        
+
         {/* Header Section */}
         <motion.div variants={itemVariants} style={{ marginBottom: '2rem' }}>
           <h1 style={{
@@ -105,8 +107,24 @@ export default function Home() {
               <Users size={16} color="var(--text-primary)" />
               <span>{teamMissionsCompleted} Sprints completed</span>
             </div>
-            
+    
             <div style={{ flex: 1 }} />
+
+            <div style={{
+              background: 'var(--glass-surface)',
+              backdropFilter: 'blur(10px)',
+              padding: '0.6rem 1.25rem',
+              borderRadius: '999px',
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
+              border: '1px solid var(--glass-border)', marginTop: '0.25rem'
+            }}>
+              <Sparkles size={16} color="var(--accent-amber)" />
+              <span>Level {currentLevel}</span>
+              <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
+                {xp} / {xpPerLevel} XP
+              </span>
+            </div>
 
             <Link href="/toolbox" style={{ textDecoration: 'none' }}>
               <motion.button

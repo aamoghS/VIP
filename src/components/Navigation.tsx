@@ -8,9 +8,7 @@ import { useProgress } from "@/context/ProgressContext";
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { xp } = useProgress();
-  const level = Math.floor(xp / 500) + 1;
-  const progressPercent = Math.round(((xp % 500) / 500) * 100);
+  const { xp, currentLevel, xpPerLevel, levelProgress } = useProgress();
 
   const links = [
     { href: '/', icon: Home, label: 'Dashboard' },
@@ -73,13 +71,13 @@ export default function Navigation() {
 
       <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)' }}>
         <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.75rem' }}>
-          Level {level}
+          Level {currentLevel} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({xpPerLevel} XP needed)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
           <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
+              animate={{ width: `${levelProgress}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
               style={{ height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-indigo))', borderRadius: '3px' }}
             />

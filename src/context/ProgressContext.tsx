@@ -30,6 +30,9 @@ type ProgressContextType = {
   topicStats: TopicStats;
   recordAnswer: (topic: string, correct: boolean) => void;
   resetProgress: () => void;
+  currentLevel: number;
+  xpPerLevel: number;
+  levelProgress: number;
 };
 
 const STORAGE_KEY = "vip_progress";
@@ -43,14 +46,37 @@ type SavedProgress = {
   topicStats: TopicStats;
 };
 
-const defaultProgress = (): SavedProgress => ({
-  xp: 0,
-  unlockedItems: [],
-  sprintStage: 1,
-  questionsSolved: 0,
-  teamMissionsCompleted: 0,
-  topicStats: {},
-});
+// XP requirements increase with level (exponential curve)
+function getXpForLevel(level: number): number {
+  // Formula: 500 * (1.2 ^ (level - 1))
+  // Level 1: 500, Level 2: 600, Level 3: 720, Level 4: 864, etc.
+  return Math.round(500 * Math.pow(1.2, level - 1));
+}
+
+function getLevelFromXp(xp: number): number {
+  // Reverse calculation to find current level
+  let level = 1;
+  let cumulativeXp = 0;
+  while (true) {
+    const xpForLevel = getXpForLevel(level);
+    if (xp < cumulativeXp + xpForLevel) {
+      break;
+    }
+    cumulativeXp += xpForLevel;
+    level++;
+  }
+  return level;
+}
+
+function getXpProgressForLevel(xp: number, level: number): number {
+  // Calculate progress within current level
+  const xpForLevel = getXpForLevel(level);
+  const xpNeededForNextLevel = getXpForLevel(level + 1);
+  const cumulativeXpBelowLevel = xp - getXpForLevel(level);
+  const progressWithinLevel = xp - cumulativeXpBelowLevel;
+  const totalNeeded = xpNeededForNextLevel - cumulativeXpBelowLevel;
+  return Math.min(100, Math.round((progressWithinLevel / totalNeeded) * 100));
+}
 
 function readProgress(): SavedProgress | null {
   if (typeof window === "undefined") return null;
@@ -79,6 +105,11 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [teamMissionsCompleted, setTeamMissionsCompleted] = useState(0);
   const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [hydrated, setHydrated] = useState(false);
+
+  // Calculate level and XP progress
+  const currentLevel = getLevelFromXp(xp);
+  const xpPerLevel = getXpForLevel(currentLevel);
+  const levelProgress = getXpProgressForLevel(xp, currentLevel);
 
   useEffect(() => {
     const saved = readProgress() ?? defaultProgress();
@@ -140,6 +171,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       xp, addXp, unlockedItems, unlockItem, sprintStage, advanceSprint,
       questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions,
       topicStats, recordAnswer, resetProgress,
+      currentLevel, xpPerLevel, levelProgress,
     }}>
       {children}
     </ProgressContext.Provider>
