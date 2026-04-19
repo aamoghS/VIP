@@ -22,7 +22,7 @@ function renderTrophyIcon(iconKey: string, size: number = 24) {
 
 function getTrophyIconComponent(iconKey: string, size: number = 24) {
   const Icon = TrophyIcons[iconKey as keyof typeof TrophyIcons];
-  return Icon ? <Icon width={size} height={size} /> : null;
+  return Icon ? <Icon /> : null;
 }
 
 const allTrophies = [
