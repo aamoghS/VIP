@@ -49,63 +49,63 @@ const ANSWERS: Question[] = [
   { id: 36, topic: "algorithms",  currentAnswer: "Adds up all the coins to get 3",                                              reasoning: "This is a classic 'accumulator' algorithm." },
 
   // ── Folding Clothes (Variables, Conditionals, Loops) ───────────────────────
-  { id: 100, topic: "variables",  currentAnswer: "folded_count",                                                                reasoning: "A descriptive variable name like 'folded_count' clearly shows what it stores." },
-  { id: 101, topic: "logic",      currentAnswer: "An if-else statement",                                                        reasoning: "This is a conditional! You're making a decision based on what type of item you have." },
-  { id: 102, topic: "loops",      currentAnswer: "for item in clothes_pile:",                                                   reasoning: "A 'for' loop is perfect here! It goes through each item one by one." },
-  { id: 103, topic: "logic",      currentAnswer: "if sock.has_match == False:",                                                reasoning: "You need to check if the sock doesn't have a match." },
+  { id: 100, topic: "variables",  currentAnswer: "Adds 1 to current value and saves it back",                                  reasoning: "Variable update! You take the OLD value, add 1, and store the NEW result back in the same box." },
+  { id: 101, topic: "logic",      currentAnswer: "It folds the shirt",                                                         reasoning: "Since it's NOT socks, the ELSE path runs - it folds the shirt!" },
+  { id: 102, topic: "loops",      currentAnswer: "23 times",                                                                   reasoning: "The loop goes through EACH item one by one - 23 iterations!" },
+  { id: 103, topic: "logic",      currentAnswer: "AND",                                                                        reasoning: "AND means BOTH must be true - sock needs NO left match AND NO right match to be set aside!" },
 
   // ── Fruits (Sorting, Filtering, Grouping) ─────────────────────────────────
-  { id: 110, topic: "algorithms", currentAnswer: "Sorting",                                                                     reasoning: "Sorting means putting things in a specific order!" },
-  { id: 111, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "Filtering means keeping only the items that meet a certain condition." },
-  { id: 112, topic: "logic",      currentAnswer: "Conditional",                                                                 reasoning: "This is a conditional statement!" },
-  { id: 113, topic: "loops",      currentAnswer: "A loop",                                                                       reasoning: "You need a loop to go through each fruit in your list." },
+  { id: 110, topic: "algorithms", currentAnswer: "Compares pairs and swaps if wrong",                                          reasoning: "Sorting compares items and swaps them if out of order - repeated until sorted!" },
+  { id: 111, topic: "algorithms", currentAnswer: "Filtering",                                                                 reasoning: "Filtering keeps items that pass a test (not rotten) and removes ones that fail!" },
+  { id: 112, topic: "logic",      currentAnswer: "It's thrown away",                                                           reasoning: "OR means EITHER condition being true is enough! Since it's brown, it gets thrown away." },
+  { id: 113, topic: "loops",      currentAnswer: "They're skipped",                                                            reasoning: "The loop checks every fruit but only adds good ones - rotten ones are skipped!" },
 
   // ── Math (Expressions, Ratios, Fractions) ─────────────────────────────────
-  { id: 120, topic: "variables",  currentAnswer: "Replace x with 4",                                                            reasoning: "To evaluate an expression with a variable, you substitute the variable with its given value!" },
-  { id: 121, topic: "logic",      currentAnswer: "Yes, because 4/2 = 2",                                                        reasoning: "The ratio 2:1 means 2 chips for every 1 juice." },
-  { id: 122, topic: "algorithms", currentAnswer: "Two lists (correct_answers, incorrect_answers)",                               reasoning: "Using two separate lists lets you group and organize the answers." },
-  { id: 123, topic: "logic",      currentAnswer: "A conditional filter",                                                        reasoning: "This is filtering! You're using a condition to decide which items to keep." },
+  { id: 120, topic: "variables",  currentAnswer: "5 * 2 first, then + 10",                                                     reasoning: "Order of operations! 5*2=10, then 10+10=20, not 15*2=30!" },
+  { id: 121, topic: "logic",      currentAnswer: "Yes - both ratios are at least 2",                                           reasoning: "Each ratio must be at least 2! 6÷2=3 (✓), 2÷1=2 (✓). Both pass!" },
+  { id: 122, topic: "algorithms", currentAnswer: "Check each and put in correct or incorrect pile",                           reasoning: "Single pass filtering! Go through each test once and place in the right pile." },
+  { id: 123, topic: "logic",      currentAnswer: "Is not equal to",                                                            reasoning: "!= means 'not equal' - if answer doesn't match, mark it wrong!" },
 
   // ── Science - Water Cycle ─────────────────────────────────────────────────
-  { id: 130, topic: "logic",      currentAnswer: "It freezes",                                                                  reasoning: "Water freezes at 32°F or below. Since 30 < 32, the water will freeze!" },
-  { id: 131, topic: "loops",      currentAnswer: "A loop with a condition",                                                    reasoning: "You need a loop to check each day's temperature AND a condition to filter." },
-  { id: 132, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're keeping days that match certain conditions - that's filtering!" },
-  { id: 133, topic: "algorithms", currentAnswer: "Finding the maximum",                                                        reasoning: "Finding the maximum is a common algorithm!" },
+  { id: 130, topic: "logic",      currentAnswer: "liquid",                                                                     reasoning: "50°F is not <= 32 (not frozen) and not >= 212 (not gas), so it falls to else - liquid!" },
+  { id: 131, topic: "loops",      currentAnswer: "4",                                                                          reasoning: "Days above 80°F: 82, 91, 88, 85 = 4 days!" },
+  { id: 132, topic: "algorithms", currentAnswer: "Filtering by condition",                                                    reasoning: "Applying a condition to each day and categorizing - that's conditional filtering!" },
+  { id: 133, topic: "algorithms", currentAnswer: "Finding maximum",                                                            reasoning: "'Keep track of highest so far' pattern! Compare each temp and update if higher found." },
 
   // ── Science - Rock Types & Cells ──────────────────────────────────────────
-  { id: 140, topic: "logic",      currentAnswer: "Conditional",                                                                 reasoning: "This checks a condition and categorizes the rock - that's a conditional!" },
-  { id: 141, topic: "algorithms", currentAnswer: "Cell wall presence",                                                          reasoning: "Plant cells have cell walls, animal cells don't." },
-  { id: 142, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're keeping only complete cells and removing incomplete ones." },
-  { id: 143, topic: "logic",      currentAnswer: "A conditional classification",                                               reasoning: "You're using a condition to classify items into groups." },
+  { id: 140, topic: "logic",      currentAnswer: "medium",                                                                    reasoning: "5 is not >= 6 (not hard), but IS >= 3, so it goes to medium!" },
+  { id: 141, topic: "algorithms", currentAnswer: "Cell wall presence",                                                          reasoning: "Plant cells have cell walls and chloroplasts - the distinguishing features!" },
+  { id: 142, topic: "algorithms", currentAnswer: "Filtering",                                                                 reasoning: "Keeping only cells that pass a completeness test - classic filtering!" },
+  { id: 143, topic: "logic",      currentAnswer: "prokaryote",                                                                reasoning: "AND requires BOTH true! No mito = condition fails, goes to else - prokaryote!" },
 
   // ── Science - Organisms & Food Chains ─────────────────────────────────────
-  { id: 150, topic: "logic",      currentAnswer: "How it gets energy",                                                          reasoning: "Organisms are classified by their role in the food chain!" },
-  { id: 151, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're removing items that don't belong - that's filtering!" },
-  { id: 152, topic: "algorithms", currentAnswer: "Sorting",                                                                     reasoning: "Putting things in a specific order based on a rule is sorting!" },
+  { id: 150, topic: "logic",      currentAnswer: "decomposer",                                                                reasoning: "Mushrooms break down dead things - that's the 'else' case, so decomposer!" },
+  { id: 151, topic: "algorithms", currentAnswer: "Filtering out an item",                                                     reasoning: "Removing an item that doesn't belong in this food chain - filtering it out!" },
+  { id: 152, topic: "algorithms", currentAnswer: "Sorting by energy level",                                                   reasoning: "Ordering by position in energy flow - sorting by a specific criteria!" },
 
   // ── ELA - Sentence Structure & Grammar ────────────────────────────────────
-  { id: 160, topic: "logic",      currentAnswer: "A conditional check",                                                        reasoning: "You're checking each sentence for a specific condition." },
-  { id: 161, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're keeping only unique sentences and removing duplicates." },
-  { id: 162, topic: "logic",      currentAnswer: "Marks paragraphs missing a topic sentence",                                  reasoning: "This conditional checks for a missing topic sentence." },
-  { id: 163, topic: "algorithms", currentAnswer: "A dictionary (claim: evidence)",                                              reasoning: "A dictionary lets you store key-value pairs." },
+  { id: 160, topic: "logic",      currentAnswer: "Word is NOT in the dictionary",                                              reasoning: "'not in' means the item is absent! If word isn't in dictionary, it gets flagged." },
+  { id: 161, topic: "algorithms", currentAnswer: "Removing duplicates",                                                       reasoning: "Compare each sentence to previous ones and remove matches - deduplication/filtering!" },
+  { id: 162, topic: "logic",      currentAnswer: "It's not flagged",                                                          reasoning: "Checks if topic_sentence is NOT in paragraph - since it IS in there, condition is FALSE, no flag!" },
+  { id: 163, topic: "algorithms", currentAnswer: "A dictionary/hash map",                                                      reasoning: "Dictionaries store key-value pairs! Each claim maps to its evidence - perfect for lookups!" },
 
   // ── ELA - Stories & Arguments ─────────────────────────────────────────────
-  { id: 170, topic: "algorithms", currentAnswer: "Sorting",                                                                     reasoning: "Putting events in order is sorting!" },
-  { id: 171, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're keeping only relevant events - that's filtering!" },
-  { id: 172, topic: "logic",      currentAnswer: "A comparison for sorting",                                                   reasoning: "Comparing values to determine order is how sorting algorithms work!" },
-  { id: 173, topic: "logic",      currentAnswer: "A conditional filter",                                                        reasoning: "You're using a condition to identify and flag arguments." },
+  { id: 170, topic: "algorithms", currentAnswer: "Sorting by time",                                                            reasoning: "Ordering events by when they happened - sorting by temporal criteria!" },
+  { id: 171, topic: "algorithms", currentAnswer: "Remove it (filter)",                                                         reasoning: "Filtering out events that don't belong to the main story - keeping only relevant content!" },
+  { id: 172, topic: "logic",      currentAnswer: "Which comes first in sorted order",                                        reasoning: "Comparing strength determines relative ordering - stronger one gets ranked higher!" },
+  { id: 173, topic: "logic",      currentAnswer: "It's NOT marked weak",                                                      reasoning: "'not arg.has_evidence' means evidence is ABSENT. Since it HAS evidence, condition is FALSE - not marked!" },
 
   // ── History - Government & Voting ─────────────────────────────────────────
-  { id: 180, topic: "logic",      currentAnswer: "Number of people in power",                                                  reasoning: "Government types are classified by how many people hold power!" },
-  { id: 181, topic: "algorithms", currentAnswer: "Sorting and filtering",                                                      reasoning: "Separating votes by candidate is sorting, removing invalid ballots is filtering!" },
-  { id: 182, topic: "algorithms", currentAnswer: "Finding the maximum",                                                        reasoning: "Finding who has the most votes is finding the maximum value!" },
-  { id: 183, topic: "logic",      currentAnswer: "A compound conditional",                                                     reasoning: "This checks multiple conditions before accepting - that's a compound conditional!" },
+  { id: 180, topic: "logic",      currentAnswer: "oligarchy",                                                                 reasoning: "5 is not 1 (not dictatorship), but IS <= 10, so it falls to oligarchy! Small group rule." },
+  { id: 181, topic: "algorithms", currentAnswer: "Sort then filter",                                                          reasoning: "First organize votes (sorting), then remove invalid ones (filtering) - sequential operations!" },
+  { id: 182, topic: "algorithms", currentAnswer: "Finding the maximum",                                                        reasoning: "Finding who has the most votes is literally finding the maximum value!" },
+  { id: 183, topic: "logic",      currentAnswer: "Rejected",                                                                  reasoning: "AND requires ALL true! 'already_voted' is TRUE, so NOT makes it FALSE - one condition fails, REJECTED!" },
 
   // ── History - Events & Causes ─────────────────────────────────────────────
-  { id: 190, topic: "algorithms", currentAnswer: "Sorting",                                                                     reasoning: "You're categorizing events into groups - that's sorting!" },
-  { id: 191, topic: "algorithms", currentAnswer: "Filtering",                                                                   reasoning: "You're keeping only relevant events - that's filtering!" },
-  { id: 192, topic: "logic",      currentAnswer: "A conditional matching",                                                     reasoning: "You're using a condition to find and pair related items!" },
-  { id: 193, topic: "algorithms", currentAnswer: "A list of pairs",                                                             reasoning: "Storing cause-effect pairs in a list lets you track relationships!" },
+  { id: 190, topic: "algorithms", currentAnswer: "Categorizing/filtering",                                                     reasoning: "Sorting events into groups based on type (cause vs effect) - that's categorization/filtering!" },
+  { id: 191, topic: "algorithms", currentAnswer: "Filtering out irrelevant",                                                  reasoning: "Removing items that don't match your topic - filtering out the irrelevant ones!" },
+  { id: 192, topic: "logic",      currentAnswer: "They're NOT linked",                                                        reasoning: "Condition requires year difference of 1! Since they're 2 years apart, condition fails - no link!" },
+  { id: 193, topic: "algorithms", currentAnswer: "A list of pairs/dictionary",                                                reasoning: "Storing (cause, effect) pairs lets you look up effects by cause or reverse-lookup!" },
 ];
 
 export async function POST(request: Request) {
