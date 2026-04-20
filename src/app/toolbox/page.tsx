@@ -109,7 +109,7 @@ export default function ToolboxPage() {
         };
 
         const item = itemMap[question?.topic || ""];
-        if (item) unlockItem({ ...item, icon: renderTrophyIcon(item.iconKey) });
+        if (item) unlockItem({ ...item, icon: item.iconKey });
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
