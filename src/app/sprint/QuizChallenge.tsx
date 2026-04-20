@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, BookOpen, Terminal, CheckCircle, XCircle, Trophy, ArrowRight } from "lucide-react";
 import { QuizQuestion } from "./types";
@@ -20,6 +20,13 @@ export function QuizChallenge({
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
+
+  // Call onComplete when quiz is done
+  useEffect(() => {
+    if (done && !isCompleted) {
+      onComplete(correctCount, questions.length);
+    }
+  }, [done, isCompleted, correctCount, questions.length, onComplete]);
 
   const q = questions[qIndex];
   const isCorrect = selected === q?.answer;
