@@ -330,6 +330,20 @@ const QUESTIONS: Question[] = [
     currentAnswer: "Using the print() command to print out variables and see what's inside them",
     reasoning: "Using print() helps you peek inside your program! By printing a variable before and after it changes, you can easily spot where the math went wrong.",
   },
+  {
+    id: 37,
+    topic: "logic",
+    type: "multiple-choice",
+    question: "Which prints first?\n\nif x > 5 or y > 10:\n    print('A')\nelif x < 3:\n    print('B')\nelse:\n    print('C')",
+    options: [
+      "'A' (evaluates left side of 'or' first)",
+      "'B' (if or is short-circuit, evaluates right side)",
+      "Depends on x and y values",
+      "Nothing prints"
+    ],
+    currentAnswer: "'A' (evaluates left side of 'or' first)",
+    reasoning: "Operator precedence! 'or' evaluates left to right. If x > 5 is True, short-circuits and prints A.",
+  },
 
   // ── Algorithms ────────────────────────────────────────────────────────────
   {

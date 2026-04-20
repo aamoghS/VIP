@@ -40,6 +40,7 @@ const ANSWERS: Question[] = [
   { id: 28, topic: "debugging",   currentAnswer: "Logic Bug (Code runs, but does the wrong math)",                               reasoning: "A logic bug is when the code is fine Python, but we gave wrong instructions." },
   { id: 29, topic: "debugging",   currentAnswer: "Using the print() command to print out variables",                              reasoning: "Using print() helps you peek inside your program." },
   { id: 30, topic: "debugging",   currentAnswer: "The condition should be i <= 10 (includes 10)",                                reasoning: "Boundary condition bug! i=9 is < 10, prints, becomes 10." },
+  { id: 37, topic: "logic",       currentAnswer: "'A' (evaluates left side of 'or' first)",                                      reasoning: "Operator precedence! 'or' evaluates left to right." },
   { id: 31, topic: "algorithms",  currentAnswer: "1. Get bread 2. Put jelly on bread 3. Put bread together",                     reasoning: "Algorithms must be specific, ordered, and complete." },
   { id: 32, topic: "algorithms",  currentAnswer: "Because putting on shoes before socks wouldn't work!",                         reasoning: "Sequence is important. Code runs line by line, top to bottom." },
   { id: 33, topic: "algorithms",  currentAnswer: "Look from person 1 to person 10, one by one, checking if their name is Sam",   reasoning: "Checking one by one is called 'Linear Search'." },
