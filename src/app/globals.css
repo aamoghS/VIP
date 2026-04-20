@@ -68,7 +68,6 @@
   margin: 0;
   padding: 0;
 }
-}
 
 /* Pixelated containers - apply pixel rendering to specific elements */
 .pixelated, .pixel-grid, .pixel-border {
