@@ -634,7 +634,7 @@ const QUESTIONS: Question[] = [
     id: 161,
     topic: "algorithms",
     type: "multiple-choice",
-    question: "Essay: "The cat sat. The cat sat. The cat sat on the mat." Remove the repeated sentence. What's the algorithm?",
+    question: "Essay: 'The cat sat. The cat sat. The cat sat on the mat.' Remove the repeated sentence. What's the algorithm?",
     options: ["Sorting", "Removing duplicates", "Counting sentences", "Finding maximum"],
     currentAnswer: "Removing duplicates",
     reasoning: "Compare each sentence to previous ones and remove matches - deduplication/filtering!",
