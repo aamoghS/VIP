@@ -31,6 +31,9 @@ export function QuizChallenge({
       return;
     }
     setQIndex(qIndex + 1);
+    // Reset state for new question
+    setSelected(null);
+    setRevealed(false);
   }, [qIndex, questions.length]);
 
   const handleSelect = (opt: string) => {
