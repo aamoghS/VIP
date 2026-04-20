@@ -23,55 +23,88 @@ const QUESTIONS: Question[] = [
     id: 1,
     topic: "variables",
     type: "multiple-choice",
-    question: "Think of a variable as a labeled box where you can put things. In Python, how do we create a variable named 'score' and put the number 10 inside it?",
-    options: ["score = 10", "make score 10", "10 = score", "var score == 10"],
-    currentAnswer: "score = 10",
-    reasoning: "In Python, we use the equals sign (=) to put the value on the right (10) into the variable name on the left (score). So, score = 10 means 'put 10 into the box named score'.",
+    question: "You want to keep track of a player's score in a game that can go up and down. What would be a creative way to name your variable, and why does your choice matter for someone else reading your code?",
+    options: [
+      "scoreTracker",
+      "x",
+      "number",
+      "var1"
+    ],
+    currentAnswer: "scoreTracker",
+    reasoning: "Descriptive variable names help others (and your future self) understand what the code is doing. 'scoreTracker' is clear and logical, while 'x' or 'var1' are confusing.",
   },
   {
     id: 2,
     topic: "variables",
     type: "multiple-choice",
-    question: "What will this Python code do?\n\nname = \"Alex\"\nprint(name)",
-    options: ["Print the word name", "Print the word Alex", "Crash the program", "Print nothing"],
-    currentAnswer: "Print the word Alex",
-    reasoning: "First, we put \"Alex\" in the box called 'name'. Then, print(name) looks inside the box, sees \"Alex\", and shows it on the screen.",
+    question: "Imagine you are debugging a program and see: name = 'Alex'; print(name). If you wanted to make this code more flexible for any name, how would you change it, and why is that better?",
+    options: [
+      "Ask the user for input and store it in name",
+      "Keep Alex hardcoded",
+      "Change name to n",
+      "Print Alex directly without a variable"
+    ],
+    currentAnswer: "Ask the user for input and store it in name",
+    reasoning: "Letting the user input a name makes the program reusable and interactive, not just for 'Alex'. This shows creative thinking about code flexibility.",
   },
   {
     id: 3,
     topic: "variables",
     type: "multiple-choice",
-    question: "We can change what's inside a variable box! What will print here?\n\ncoins = 5\ncoins = 10\nprint(coins)",
-    options: ["5", "10", "15", "Error"],
-    currentAnswer: "10",
-    reasoning: "First, the box 'coins' holds 5. But then we put 10 in it, replacing the 5. So it prints 10. The box only remembers the most recent thing put inside!",
+    question: "Suppose you want to keep a running total of coins collected in a game. How would you update your code so it always shows the latest total, and what mistake could make your total wrong?",
+    options: [
+      "Add new coins to the existing variable each time",
+      "Always reset coins to 0 before adding",
+      "Use a different variable for each coin",
+      "Never update the variable"
+    ],
+    currentAnswer: "Add new coins to the existing variable each time",
+    reasoning: "A running total means you add to the same variable. Resetting to 0 or using new variables would break the logic. This tests understanding of state and accumulation.",
   },
   {
     id: 4,
     topic: "variables",
     type: "multiple-choice",
-    question: "In Python, text is called a 'String'. How must we write a String?",
-    options: ["Inside numbers", "Without any quotes", "Inside quotes, like \"Hello\"", "Inside brackets, like [Hello]"],
-    currentAnswer: "Inside quotes, like \"Hello\"",
-    reasoning: "Python needs quotes (like \"Hello\" or 'Hello') to know it's a String (text). Without quotes, Python thinks Hello is a variable name and gets confused!",
+    question: "In Python, text is called a 'String'. How must we write a String, and why might you choose to use single quotes vs double quotes in your code?",
+    options: [
+      "Inside quotes, like 'Hello' or \"Hello\"",
+      "Inside numbers",
+      "Without any quotes",
+      "Inside brackets, like [Hello]",
+      "Use single quotes if your text contains double quotes, and vice versa"
+    ],
+    currentAnswer: "Inside quotes, like 'Hello' or \"Hello\"",
+    reasoning: "Strings must be in quotes. Choosing single or double quotes can help you include the other type inside your text, showing creative problem-solving.",
   },
   {
     id: 5,
     topic: "variables",
     type: "multiple-choice",
-    question: "What is the best way to name a variable that holds a player's score?",
-    options: ["s", "player_score", "Thing1", "1score"],
+    question: "What is the best way to name a variable that holds a player's score, and how could a bad name cause confusion in a big project?",
+    options: [
+      "player_score",
+      "s",
+      "Thing1",
+      "1score",
+      "scoreValue"
+    ],
     currentAnswer: "player_score",
-    reasoning: "Variable names should be clear and easy to understand. 'player_score' tells everyone exactly what's inside! Python likes words separated by an underscore (_), which is called snake_case.",
+    reasoning: "Descriptive names help everyone understand the code. Bad names make bugs and teamwork harder, especially in big projects.",
   },
   {
     id: 6,
     topic: "variables",
     type: "multiple-choice",
-    question: "What happens when we add text in Python using '+'?\n\nword1 = \"Cat\"\nword2 = \"Dog\"\nprint(word1 + word2)",
-    options: ["CatDog", "Cat Dog", "Error", "7"],
+    question: "What happens when we add text in Python using '+'?\n\nword1 = \"Cat\"\nword2 = \"Dog\"\nprint(word1 + word2)\nHow could you change the code to print 'Cat Dog' instead, and why might you want to?",
+    options: [
+      "CatDog",
+      "Cat Dog",
+      "Error",
+      "7",
+      "You might want a space for readability or to make a sentence"
+    ],
     currentAnswer: "CatDog",
-    reasoning: "Using '+' connects Strings (text) together like glue. It doesn't add spaces automatically, so \"Cat\" + \"Dog\" becomes \"CatDog\".",
+    reasoning: "Adding strings glues them together. To add a space, you must do it yourself. This shows attention to detail and creative thinking about output.",
   },
   {
     id: 7,
@@ -360,6 +393,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   // ── Edge Case Analysis ──
   {
     topic: "variables",
+    type: "multiple-choice",
     complexity: 2,
     bloomLevel: "analyzing",
     question: "The code prints 60:\n\nmoney = 100\nmoney = money - 50\nmoney = money - 10\n\nWhat if the second line was `money -= 40` instead? What would print?",
@@ -369,6 +403,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "logic",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "evaluating",
     question: "Which condition is FALSE when age = 15 and height = 48?\n\nA) age >= 15 AND height >= 45\nB) age < 20 OR height < 50\nC) NOT (age > 18)\nD) age > 15 AND height < 50",
@@ -383,6 +418,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "loops",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "creating",
     question: "Consider:\n\npackages = 3\nwhile packages > 0:\n    print('Delivered')\n    packages -= 1\n\nWhat if we changed the condition to `packages >= 0`? What happens?",
@@ -392,6 +428,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "debugging",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "creating",
     question: "The robot should turn LEFT when sensor == 0. But it goes STRAIGHT. You see:\n\nif sensor == 0:\n    turn_right()\n\nWhat's wrong?",
@@ -406,6 +443,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "debugging",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "analyzing",
     question: "This code prints '10' at the end. Which original value of 'score' would make this happen?\n\nscore = score - 5\nprint(score)",
@@ -415,6 +453,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "functions",
+    type: "multiple-choice",
     complexity: 2,
     bloomLevel: "understanding",
     question: "What prints when calling double(5) and then double(10)?\n\ndef double(n):\n    result = n * 2\n    return result",
@@ -429,6 +468,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "loops",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "evaluating",
     question: "Both loops run until packages = 0:\n1. while packages > 0: ... packages -= 1\n2. for i in range(packages): ...\n\nWhat's a key difference?",
@@ -443,6 +483,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "debugging",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "analyzing",
     question: "The code should print numbers 1-10. But it prints 1-9. Where's the bug?\n\ni = 1\nwhile i < 10:\n    print(i)\n    i = i + 1",
@@ -457,6 +498,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "logic",
+    type: "multiple-choice",
     complexity: 2,
     bloomLevel: "understanding",
     question: "Which prints first?\n\nif x > 5 or y > 10:\n    print('A')\nelif x < 3:\n    print('B')\nelse:\n    print('C')",
@@ -471,6 +513,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "algorithms",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "evaluating",
     question: "You need to sum all numbers in a list AND find the maximum. Which approach shows better critical thinking?",
@@ -485,6 +528,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "debugging",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "analyzing",
     question: "The output is 42 but you expected 100. What's most likely wrong?\n\nresult = 5 * 10\nresult = result + 42 - 10",
@@ -499,6 +543,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "variables",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "analyzing",
     question: "Why would you use a 'const' instead of 'let' for a variable?",
@@ -513,6 +558,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "functions",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "evaluating",
     question: "Why do we pass parameters to functions?",
@@ -527,6 +573,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "loops",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "evaluating",
     question: "What's the 'escape hatch' in a while loop?",
@@ -541,6 +588,7 @@ const CRITICAL_THINKING_QUESTIONS: Omit<Question, 'id'>[] = [
   },
   {
     topic: "algorithms",
+    type: "multiple-choice",
     complexity: 3,
     bloomLevel: "understanding",
     question: "Why does the ORDER of steps matter in an algorithm?",
@@ -559,11 +607,16 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const topic = searchParams.get('topic');
   const id = searchParams.get('id'); // cooldown ID to avoid repeating same question
+  const critical = searchParams.get('critical');
 
-  // Filter questions by topic or use all (including critical thinking questions)
-  const pool = topic
-    ? [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS].filter(q => q.topic === topic)
-    : [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS];
+  let pool: Omit<Question, 'id'>[] | Question[];
+  if (critical === '1') {
+    pool = CRITICAL_THINKING_QUESTIONS;
+  } else if (topic) {
+    pool = [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS].filter(q => q.topic === topic);
+  } else {
+    pool = [...QUESTIONS, ...CRITICAL_THINKING_QUESTIONS];
+  }
 
   if (pool.length === 0) {
     return NextResponse.json({ error: 'No questions found for this topic.' }, { status: 404 });
@@ -571,11 +624,11 @@ export async function GET(request: Request) {
 
   // Intelligent shuffling with cooldowns
   // This prevents the same question from appearing consecutively
-  let selected: Question;
+  let selected: any;
 
   if (id) {
     // If a cooldown ID is provided, avoid showing the same question again
-    const filtered = pool.filter(q => q.id.toString() !== id);
+    const filtered = pool.filter((q: any) => q.id?.toString() !== id);
 
     if (filtered.length > 0) {
       // Pick from questions that haven't been shown yet
