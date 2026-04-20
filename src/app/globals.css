@@ -98,7 +98,7 @@
 
   body.dark {
     background-color: var(--bg-primary-dark);
-    color: var(--text-primary-dark);
+    color: var(--text-primary);
   }
 
   body.dark .main-content {
@@ -115,16 +115,6 @@
 
   body.dark .terminal-chrome {
     background-color: var(--bg-secondary-dark);
-  }
-
-  body.dark .terminal-chrome::after {
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255,255,255,0.05) 2px,
-      rgba(255,255,255,0.05) 4px
-    );
   }
 
 * {
