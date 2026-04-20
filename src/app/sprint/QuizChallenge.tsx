@@ -24,32 +24,13 @@ export function QuizChallenge({
   const q = questions[qIndex];
   const isCorrect = selected === q?.answer;
 
-  // Get next question using deterministic shuffle to avoid repeats
+  // Get next question - simple sequential progression
   const nextQIndex = useCallback(() => {
     if (qIndex + 1 >= questions.length) {
       setDone(true);
       return;
     }
-
-    // Create shuffled list using seeded random
-    const availableIndices = questions.map((_, i) => i).filter(i => i !== qIndex);
-
-    if (availableIndices.length === 0) {
-      setDone(true);
-      return;
-    }
-
-    // Deterministic shuffle based on current index for variety
-    const seed = qIndex * availableIndices.length * 17;
-    let shuffled = [...availableIndices];
-
-    // Fisher-Yates shuffle
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = (seed + i * 13) % (i + 1);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    setQIndex(shuffled[0]);
+    setQIndex(qIndex + 1);
   }, [qIndex, questions.length]);
 
   const handleSelect = (opt: string) => {
