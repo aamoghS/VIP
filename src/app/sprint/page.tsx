@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import {
@@ -8,8 +8,7 @@ import {
   Trophy, Code2, RotateCcw, Crown, Medal, Flame, Zap,
   BookOpen, Terminal, XCircle, Users, ChevronDown,
 } from "lucide-react";
-import { doc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createClient } from "@/utils/supabase/client";
 
 import { MISSIONS } from "./missions";
 import { SprintMission, TeamResult, freshTeam } from "./types";
@@ -29,7 +28,6 @@ export default function SprintPage() {
   // Which team the student picked
   const [team, setTeam] = useState<"GroupA" | "GroupB" | null>(null);
 
-  // Local team results (synced with Firebase)
   const [groupAResult, setGroupAResult] = useState<TeamResult>(freshTeam());
   const [groupBResult, setGroupBResult] = useState<TeamResult>(freshTeam());
 
@@ -38,32 +36,79 @@ export default function SprintPage() {
   const [xpAmount, setXpAmount] = useState(0);
 
   const mission = selectedMission;
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  if (
+    supabaseRef.current === null &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== "your-anon-key"
+  ) {
+    supabaseRef.current = createClient();
+  }
+  const supabase = supabaseRef.current;
 
-  // ── Firebase Sync ────────────────────────────────────────────────────────
+  const applyRoom = (data: {
+    selected_mission_id?: string | null;
+    group_a_result?: TeamResult;
+    group_b_result?: TeamResult;
+  }) => {
+    if (data.selected_mission_id) {
+      const m = MISSIONS.find((item) => item.id === data.selected_mission_id);
+      if (m) setSelectedMission(m);
+    } else if (data.selected_mission_id === null) {
+      setSelectedMission(null);
+    }
+    if (data.group_a_result && Object.keys(data.group_a_result).length > 0) {
+      setGroupAResult(data.group_a_result);
+    }
+    if (data.group_b_result && Object.keys(data.group_b_result).length > 0) {
+      setGroupBResult(data.group_b_result);
+    }
+  };
+
   useEffect(() => {
-    const roomRef = doc(db, "sprint_rooms", "default");
-    const unsub = onSnapshot(roomRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.selectedMissionId) {
-          const m = MISSIONS.find(m => m.id === data.selectedMissionId);
-          if (m) setSelectedMission(m);
-        } else {
-          setSelectedMission(null);
-        }
-        if (data.groupAResult) setGroupAResult(data.groupAResult);
-        if (data.groupBResult) setGroupBResult(data.groupBResult);
-      }
-    });
-    return () => unsub();
-  }, []);
+    if (!supabase) return;
+    let active = true;
+    supabase
+      .from("sprint_rooms")
+      .select("selected_mission_id, group_a_result, group_b_result")
+      .eq("id", "default")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active && data) applyRoom(data);
+      });
+
+    const channel = supabase
+      .channel("sprint-default")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "sprint_rooms", filter: "id=eq.default" },
+        (payload) => applyRoom(payload.new as {
+          selected_mission_id?: string | null;
+          group_a_result?: TeamResult;
+          group_b_result?: TeamResult;
+        })
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   const selectMissionInDb = async (m: SprintMission) => {
-    const roomRef = doc(db, "sprint_rooms", "default");
-    await setDoc(roomRef, {
-      selectedMissionId: m.id,
-      groupAResult: freshTeam(),
-      groupBResult: freshTeam()
+    const groupA = freshTeam();
+    const groupB = freshTeam();
+    setSelectedMission(m);
+    setGroupAResult(groupA);
+    setGroupBResult(groupB);
+    if (!supabase) return;
+    await supabase.from("sprint_rooms").upsert({
+      id: "default",
+      selected_mission_id: m.id,
+      group_a_result: groupA,
+      group_b_result: groupB,
     });
   };
 
@@ -76,9 +121,7 @@ export default function SprintPage() {
     setShowXpBurst(true);
     const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
     setGroupAResult(result);
-    // sync to Firebase
-    const roomRef = doc(db, "sprint_rooms", "default");
-    await updateDoc(roomRef, { groupAResult: result });
+    if (supabase) await supabase.from("sprint_rooms").upsert({ id: "default", group_a_result: result });
   };
 
   const handleGroupBComplete = async (correct: number, total: number) => {
@@ -89,9 +132,7 @@ export default function SprintPage() {
     setShowXpBurst(true);
     const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
     setGroupBResult(result);
-    // sync to Firebase
-    const roomRef = doc(db, "sprint_rooms", "default");
-    await updateDoc(roomRef, { groupBResult: result });
+    if (supabase) await supabase.from("sprint_rooms").upsert({ id: "default", group_b_result: result });
   };
 
   // Auto-show final when both done
@@ -105,22 +146,33 @@ export default function SprintPage() {
   const handlePlayAgain = async () => {
     setTeam(null);
     setShowFinalEnd(false);
-    const roomRef = doc(db, "sprint_rooms", "default");
-    await setDoc(roomRef, {
-      groupAResult: freshTeam(),
-      groupBResult: freshTeam()
-    }, { merge: true });
+    const groupA = freshTeam();
+    const groupB = freshTeam();
+    setGroupAResult(groupA);
+    setGroupBResult(groupB);
+    if (!supabase) return;
+    await supabase.from("sprint_rooms").upsert({
+      id: "default",
+      group_a_result: groupA,
+      group_b_result: groupB,
+    });
   };
 
   const handleNewMission = async () => {
     setTeam(null);
     setShowFinalEnd(false);
-    const roomRef = doc(db, "sprint_rooms", "default");
-    await setDoc(roomRef, {
-      selectedMissionId: null,
-      groupAResult: freshTeam(),
-      groupBResult: freshTeam()
-    }, { merge: true });
+    setSelectedMission(null);
+    const groupA = freshTeam();
+    const groupB = freshTeam();
+    setGroupAResult(groupA);
+    setGroupBResult(groupB);
+    if (!supabase) return;
+    await supabase.from("sprint_rooms").upsert({
+      id: "default",
+      selected_mission_id: null,
+      group_a_result: groupA,
+      group_b_result: groupB,
+    });
   };
 
   const getWinner = () => {
