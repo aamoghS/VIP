@@ -8,7 +8,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push"
   },
   "repository": {
     "type": "git",
@@ -27,18 +29,27 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
+    "@t3-oss/env-nextjs": "^0.13.11",
     "@tanstack/react-query": "^5.91.0",
+    "@trpc/client": "^11.19.0",
+    "@trpc/react-query": "^11.19.0",
+    "@trpc/server": "^11.19.0",
+    "drizzle-orm": "^0.45.3",
     "framer-motion": "^12.36.0",
     "lucide-react": "^0.577.0",
     "next": "^16.1.6",
+    "postgres": "^3.4.9",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "superjson": "^2.2.6",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.27",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.1.6",
     "postcss": "^8.5.8",

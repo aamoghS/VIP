@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const createClient = async (request: NextRequest) => {
   let supabaseResponse = NextResponse.next({
@@ -11,7 +11,7 @@ export const createClient = async (request: NextRequest) => {
     },
   });
 
-  if (!supabaseUrl || !supabaseKey || supabaseKey === "your-anon-key") {
+  if (!supabaseUrl || !supabaseKey) {
     return supabaseResponse;
   }
 
