@@ -8,6 +8,7 @@ create table if not exists public.sprint_rooms (
 
 alter table public.sprint_rooms enable row level security;
 
+drop policy if exists "sprint rooms are shared" on public.sprint_rooms;
 create policy "sprint rooms are shared"
   on public.sprint_rooms
   for all
@@ -15,4 +16,12 @@ create policy "sprint rooms are shared"
   using (true)
   with check (true);
 
-alter publication supabase_realtime add table public.sprint_rooms;
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.sprint_rooms to anon, authenticated;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.sprint_rooms;
+exception
+  when duplicate_object then null;
+end $$;
