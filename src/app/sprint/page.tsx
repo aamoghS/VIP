@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import {
@@ -16,6 +17,7 @@ import { QuizChallenge } from "./QuizChallenge";
 import { XpBurst } from "./XpBurst";
 import { MissionSelector } from "./MissionSelector";
 import { TeamPicker } from "./TeamPicker";
+import { TopicMark } from "./TopicMark";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN PAGE
@@ -34,6 +36,8 @@ export default function SprintPage() {
   const [showFinalEnd, setShowFinalEnd] = useState(false);
   const [showXpBurst, setShowXpBurst] = useState(false);
   const [xpAmount, setXpAmount] = useState(0);
+  const [constraint, setConstraint] = useState("");
+  const [constraintSet, setConstraintSet] = useState(false);
 
   const mission = selectedMission;
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
@@ -161,6 +165,8 @@ export default function SprintPage() {
     setTeam(null);
     setShowFinalEnd(false);
     setSelectedMission(null);
+    setConstraint("");
+    setConstraintSet(false);
     const groupA = freshTeam();
     const groupB = freshTeam();
     setGroupAResult(groupA);
@@ -204,8 +210,10 @@ export default function SprintPage() {
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER: Game view
   // ─────────────────────────────────────────────────────────────────────────
-  const teamColor = team === "GroupA" ? "#6366f1" : "#3b82f6";
+  const teamColor = team === "GroupA" ? "var(--ink)" : "var(--accent-indigo)";
   const myLabel = team === "GroupA" ? "Group A" : "Group B";
+  const myResult = team === "GroupA" ? groupAResult : groupBResult;
+  const myAccuracy = myResult.questionsAnswered > 0 ? myResult.questionsCorrect / myResult.questionsAnswered : 0;
 
   return (
     <>
@@ -222,7 +230,7 @@ export default function SprintPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1rem" }}>
             <motion.div initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }}
-              style={{ background: "var(--glass-surface)", borderRadius: "var(--radius-lg)", padding: "3rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "1px solid var(--glass-border)", boxShadow: "var(--glass-glow)" }}>
+              style={{ background: "var(--bg-elevated)", borderRadius: 0, padding: "2rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "3px solid var(--ink)", boxShadow: "6px 6px 0 var(--ticket)" }}>
               {(() => {
                 const winner = getWinner();
                 return (
@@ -230,7 +238,7 @@ export default function SprintPage() {
                     <motion.div initial={{ scale: 0, rotate: -15 }} animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: "spring", delay: 0.15 }} style={{ marginBottom: "1.5rem" }}>
                       {winner === "tie"
-                        ? <span style={{ fontSize: "4rem" }}>🤝</span>
+                        ? <Crown size={72} color="var(--ticket)" />
                         : <Crown size={72} color="#f59e0b" style={{ filter: "drop-shadow(0 0 20px rgba(245,158,11,0.5))" }} />}
                     </motion.div>
                     <h2 style={{ fontSize: "2.25rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
@@ -239,9 +247,18 @@ export default function SprintPage() {
                     <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: "0.5rem" }}>
                       {mission.successMessage}
                     </p>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: "2rem" }}>
-                      {winner === "tie" ? "Both teams tied — great effort!" : `${winner === "GroupA" ? "Group A" : "Group B"} wins this round! 🏆`}
+                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: myAccuracy < 0.7 ? "0.75rem" : "2rem" }}>
+                      {winner === "tie" ? "Both teams tied." : `${winner === "GroupA" ? "Group A" : "Group B"} wins this round.`}
                     </p>
+
+                    {myAccuracy < 0.7 && (
+                      <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "2rem" }}>
+                        This run still misses the constraint.{" "}
+                        <Link href={`/toolbox?topic=${mission.topicKey}`} style={{ color: "var(--accent-blue)", fontWeight: 700 }}>
+                          Practice {mission.topic}
+                        </Link>
+                      </p>
+                    )}
 
                     {/* Scores */}
                     <div style={{ display: "flex", gap: "1.25rem", marginBottom: "2rem", justifyContent: "center" }}>
@@ -251,8 +268,9 @@ export default function SprintPage() {
                         return (
                           <div key={t} style={{
                             flex: 1, padding: "1.5rem", borderRadius: "var(--radius-md)",
-                            background: isWin ? (t === "GroupA" ? "rgba(99,102,241,0.15)" : "rgba(59,130,246,0.15)") : "var(--glass-surface)",
-                            border: isWin ? `2px solid ${t === "GroupA" ? "#6366f1" : "#3b82f6"}` : "1px solid var(--glass-border)",
+                            background: "var(--bg-elevated)",
+                            border: isWin ? "3px solid var(--ink)" : "3px solid var(--ink)",
+                            boxShadow: isWin ? "4px 4px 0 var(--ticket)" : "none",
                           }}>
                             {isWin && <Crown size={20} color="#f59e0b" style={{ marginBottom: "0.5rem" }} />}
                             <div style={{ color: t === "GroupA" ? "var(--accent-indigo)" : "var(--accent-blue)", fontWeight: 700, marginBottom: "0.5rem" }}>
@@ -272,12 +290,13 @@ export default function SprintPage() {
                     <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
                       <motion.button onClick={() => { incrementTeamMissions(); handlePlayAgain(); }}
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        style={{ background: "linear-gradient(135deg, #6366f1, #3b82f6)", border: "none", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "white", fontWeight: 700, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                        className="play-btn"
+                        style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
                         <RotateCcw size={16} /> Play Again
                       </motion.button>
                       <motion.button onClick={() => { incrementTeamMissions(); handleNewMission(); }}
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        style={{ background: "var(--glass-surface)", border: "1px solid var(--glass-border)", borderRadius: "var(--radius-md)", padding: "0.875rem 1.75rem", cursor: "pointer", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                        style={{ background: "var(--bg-elevated)", border: "3px solid var(--ink)", borderRadius: 0, padding: "0.55rem 1.1rem", cursor: "pointer", color: "var(--ink)", fontWeight: 700, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
                         <ChevronDown size={16} /> New Mission
                       </motion.button>
                     </div>
@@ -296,7 +315,7 @@ export default function SprintPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
-              <span style={{ fontSize: "1.5rem" }}>{mission.topicIcon}</span>
+              <TopicMark topicKey={mission.topicKey} size={18} />
               <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
                 {mission.title}
               </h1>
@@ -308,14 +327,14 @@ export default function SprintPage() {
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             <div style={{
               display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.75rem",
-              borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600,
-              background: teamColor + "15", color: teamColor, border: `1px solid ${teamColor}30`,
+              borderRadius: 0, fontSize: "0.75rem", fontWeight: 700,
+              background: "var(--ticket)", color: "var(--ink)", border: "2px solid var(--ink)",
             }}>
               <Users size={12} /> {myLabel}
             </div>
             <button
               onClick={() => setTeam(null)}
-              style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.75rem", padding: "0.375rem 0.75rem" }}
+              style={{ background: "var(--bg-elevated)", border: "2px solid var(--ink)", borderRadius: 0, color: "var(--ink)", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, padding: "0.375rem 0.75rem" }}
             >
               Switch
             </button>
@@ -327,25 +346,20 @@ export default function SprintPage() {
           initial={{ opacity: 0, y: 10 }} 
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: "linear-gradient(135deg, var(--glass-surface), rgba(255,255,255,0.4))",
-            border: "1px solid var(--glass-border)",
-            borderRadius: "var(--radius-md)",
+            background: "var(--bg-elevated)",
+            border: "3px solid var(--ink)",
+            borderRadius: 0,
             padding: "1.25rem 1.75rem",
             marginBottom: "1.75rem",
             display: "flex",
             gap: "1.25rem",
             alignItems: "center",
-            boxShadow: "var(--glass-glow)"
+            boxShadow: "4px 4px 0 var(--ticket)"
           }}
         >
-          <div style={{ 
-            width: "50px", height: "50px", borderRadius: "12px", background: mission.topicColor + "20",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem"
-          }}>
-            {mission.topicIcon}
-          </div>
+          <TopicMark topicKey={mission.topicKey} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "0.7rem", color: mission.topicColor, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.25rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--ink)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.25rem" }}>
               Mission Scenario
             </div>
             <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6, fontWeight: 500 }}>
@@ -357,13 +371,13 @@ export default function SprintPage() {
         {/* Score strip */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem",
-          background: "var(--glass-surface)", padding: "0.875rem 1.5rem",
-          borderRadius: "var(--radius-md)", marginBottom: "1.75rem",
-          border: "1px solid var(--glass-border)",
+          background: "var(--bg-elevated)", padding: "0.875rem 1.5rem",
+          borderRadius: 0, marginBottom: "1.75rem",
+          border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--ticket)",
         }}>
           {(["GroupA", "GroupB"] as const).map((t, i) => {
             const result = t === "GroupA" ? groupAResult : groupBResult;
-            const tColor = t === "GroupA" ? "#6366f1" : "#3b82f6";
+            const tColor = t === "GroupA" ? "var(--ink)" : "var(--accent-indigo)";
             return (
               <div key={t} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 {i === 1 && <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>vs</div>}
@@ -383,17 +397,52 @@ export default function SprintPage() {
           })}
         </div>
 
+        {!constraintSet ? (
+          <div style={{
+            background: "var(--bg-elevated)", border: "3px solid var(--ink)",
+            boxShadow: "4px 4px 0 var(--ticket)", borderRadius: 0, padding: "1.5rem",
+          }}>
+            <label style={{ display: "block", color: "var(--text-primary)", fontWeight: 700, fontSize: "1rem", marginBottom: "0.5rem" }}>
+              What has to stay true?
+            </label>
+            <textarea
+              value={constraint}
+              onChange={(e) => setConstraint(e.target.value)}
+              rows={3}
+              style={{
+                width: "100%", padding: "0.75rem", borderRadius: 0,
+                border: "3px solid var(--ink)", background: "var(--bg-elevated)",
+                color: "var(--text-primary)", fontFamily: "inherit", fontSize: "0.95rem", resize: "vertical",
+              }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.75rem" }}>
+              <button
+                onClick={() => setConstraintSet(true)}
+                disabled={!constraint.trim()}
+                style={{
+                  padding: "0.45rem 1rem", background: "var(--ink)", border: "3px solid var(--ink)", borderRadius: 0,
+                  color: "var(--ticket)", fontFamily: "var(--font-hud), VT323, monospace", fontSize: "1.25rem",
+                  cursor: constraint.trim() ? "pointer" : "default", opacity: constraint.trim() ? 1 : 0.5,
+                }}
+              >
+                Build from this
+              </button>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Two-column quiz layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+        <div className="sprint-boards">
           {/* Group A panel */}
           <div style={{
-            background: team === "GroupA" ? "var(--bg-elevated)" : "var(--glass-surface)",
-            border: team === "GroupA" ? "2px solid #6366f1" : "1px solid var(--glass-border)",
-            borderRadius: "var(--radius-md)", padding: "1.5rem",
+            background: "var(--bg-elevated)",
+            border: "3px solid var(--ink)",
+            boxShadow: team === "GroupA" ? "4px 4px 0 var(--ticket)" : "4px 4px 0 var(--accent-indigo)",
+            borderRadius: 0, padding: "1.5rem",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
-              <Code2 size={16} color="#6366f1" />
-              <span style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group A</span>
+              <Code2 size={16} color="var(--ink)" />
+              <span style={{ color: "var(--ink)", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group A</span>
               <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupA.role}</span>
               {groupAResult.completed && (
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
@@ -404,22 +453,24 @@ export default function SprintPage() {
             <QuizChallenge
               questions={mission.groupA.questions}
               onComplete={handleGroupAComplete}
-              teamColor="#6366f1"
+              teamColor="var(--ink)"
               teamName="Group A"
               isActive={team === "GroupA" && !groupAResult.completed}
               isCompleted={groupAResult.completed}
+              topic={mission.topicKey}
             />
           </div>
 
           {/* Group B panel */}
           <div style={{
-            background: team === "GroupB" ? "var(--bg-elevated)" : "var(--glass-surface)",
-            border: team === "GroupB" ? "2px solid #3b82f6" : "1px solid var(--glass-border)",
-            borderRadius: "var(--radius-md)", padding: "1.5rem",
+            background: "var(--bg-elevated)",
+            border: "3px solid var(--ink)",
+            boxShadow: team === "GroupB" ? "4px 4px 0 var(--ticket)" : "4px 4px 0 var(--accent-indigo)",
+            borderRadius: 0, padding: "1.5rem",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
-              <Users size={16} color="#3b82f6" />
-              <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group B</span>
+              <Users size={16} color="var(--accent-indigo)" />
+              <span style={{ color: "var(--accent-indigo)", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group B</span>
               <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupB.role}</span>
               {groupBResult.completed && (
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
@@ -430,10 +481,11 @@ export default function SprintPage() {
             <QuizChallenge
               questions={mission.groupB.questions}
               onComplete={handleGroupBComplete}
-              teamColor="#3b82f6"
+              teamColor="var(--accent-indigo)"
               teamName="Group B"
               isActive={team === "GroupB" && groupBUnlocked && !groupBResult.completed}
               isCompleted={groupBResult.completed}
+              topic={mission.topicKey}
             />
           </div>
         </div>
@@ -441,8 +493,8 @@ export default function SprintPage() {
         {/* Status footer & Handoff Banner */}
         <div style={{
           marginTop: "1.5rem", padding: "1.5rem",
-          background: "var(--glass-surface)", borderRadius: "var(--radius-md)",
-          border: "1px solid var(--glass-border)",
+          background: "var(--bg-elevated)", borderRadius: 0,
+          border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--ticket)",
           display: "flex", flexDirection: "column", gap: "1rem"
         }}>
           {/* Handoff Message (Shown only when A is done and B hasn't finished) */}
@@ -454,16 +506,15 @@ export default function SprintPage() {
                 exit={{ opacity: 0, height: 0, scale: 0.95 }}
                 transition={{ type: "spring", bounce: 0.4 }}
                 style={{
-                   background: "linear-gradient(to right, rgba(99,102,241,0.15), rgba(59,130,246,0.15))",
-                   borderLeft: "4px solid #6366f1",
-                   borderRight: "4px solid #3b82f6",
-                   boxShadow: "0 4px 20px -5px rgba(99,102,241,0.3)",
+                   background: "var(--ticket)",
+                   border: "3px solid var(--ink)",
+                   boxShadow: "4px 4px 0 var(--ink)",
                    padding: "1.25rem 1.5rem",
-                   borderRadius: "var(--radius-sm)",
+                   borderRadius: 0,
                    marginBottom: "1rem"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#818cf8", fontWeight: 800, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--ink)", fontWeight: 800, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
                   <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ display: "inline-flex" }}>
                     <Zap size={16} />
                   </motion.div>
@@ -491,6 +542,8 @@ export default function SprintPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </motion.div>
     </>
   );

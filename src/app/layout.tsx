@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, VT323 } from "next/font/google";
+import { Atkinson_Hyperlegible, VT323 } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
-import MouseSpotlight from "@/components/MouseSpotlight";
+import RunTicket from "@/components/RunTicket";
 import { ProgressProvider } from "@/context/ProgressContext";
 import QueryProvider from "@/components/QueryProvider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const vt323 = VT323({ weight: "400", subsets: ["latin"], variable: "--font-vt323" });
+const body = Atkinson_Hyperlegible({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-body",
+});
+const hud = VT323({ weight: "400", subsets: ["latin"], variable: "--font-hud" });
 
 export const metadata: Metadata = {
-  title: "codedash - Middle School Coding Platform",
-  description: "Learn to code by solving real-world problems.",
+  title: "codedash — Critical thinking",
+  description: "Trace a change in the code, then say why the result follows.",
 };
 
 export default function RootLayout({
@@ -21,20 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${vt323.variable} ${inter.className}`}>
+      <body className={`${body.variable} ${hud.variable} ${body.className}`}>
         <QueryProvider>
           <ProgressProvider>
             <div className="app-container">
-              <div style={{ 
-                position: 'fixed', top: 0, left: 250, right: 0, bottom: 0, zIndex: -1, 
-                backgroundImage: "url('/landscape.png')", backgroundSize: "cover", 
-                backgroundPosition: "bottom center" 
-              }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.4)' }} />
-              </div>
-              <MouseSpotlight />
               <Navigation />
               <main className="main-content">
+                <RunTicket />
                 {children}
               </main>
             </div>

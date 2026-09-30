@@ -1,368 +1,361 @@
 import { SprintMission } from "./types";
 
 export const MISSIONS: SprintMission[] = [
-  // ── MISSION 1: Real-World Scenario: Space Solar Salvage ───────────────────────
   {
     id: "variables",
-    title: "Space Solar Salvage",
+    title: "Hackathon Seats",
     topic: "Variables",
-    topicIcon: "🛸",
+    topicKey: "variables",
+    topicIcon: "🎟️",
     topicColor: "#a855f7",
-    description: "A satellite's energy is low! Group A sets the base power level. Group B must calculate the boost needed to save the mission.",
+    description: "Your school's hackathon has a hard cap. Group A initializes remaining seats. Group B updates the count as teams check in.",
     xpReward: 400,
     groupA: {
-      role: "Mission Control",
-      challenge: "Initialize the satellite's power core",
+      role: "Check-in Lead",
+      challenge: "Initialize remaining seats for the venue",
       questions: [
         {
-          prompt: "We need a way to 'remember' the current power level throughout the flight. Why do programmers use variables instead of just writing the number 100 everywhere?",
+          prompt: "Why store remaining seats in a variable instead of writing 120 in every print and if-statement?",
           options: [
             "It looks cooler",
             "To make the code longer",
-            "So we can easily update the value in one place if it changes",
-            "Variables are required by law"
+            "So one update changes the value everywhere it is used",
+            "Variables are required by the school handbook"
           ],
-          answer: "So we can easily update the value in one place if it changes",
-          explanation: "Coding is about logical efficiency! Variables allow one name ('power') to represent a changing value, keeping our logic consistent.",
+          answer: "So one update changes the value everywhere it is used",
+          explanation: "A variable is a single source of truth. When a team checks in, you change remaining once — not every hardcoded 120.",
         },
         {
-          prompt: "Which variable name is most logical for 'Current Oxygen Level'?",
-          options: ["COL", "oxygen_level", "x", "blue_stuff"],
-          answer: "oxygen_level",
-          explanation: "Logical thinking starts with clear names! Someone else should be able to read your 'Logic Cube' and understand what it does.",
+          prompt: "Which name is most useful for someone else on the robotics/CS club reading this?",
+          options: ["RS", "remaining_seats", "x", "blue_stuff"],
+          answer: "remaining_seats",
+          explanation: "High school group projects die on cryptic names. remaining_seats tells the next person what the state actually is.",
         },
         {
-          prompt: "Code the power core startup. Setting the power level variable to 100.",
-          code: `# Initialize Power Core`,
+          prompt: "Start the check-in script with 120 open seats.",
+          code: `# venue capacity leftover`,
           options: [
-            "power = 100",
-            "100 = power",
-            "set core to 100",
-            "power == 100"
+            "remaining_seats = 120",
+            "120 = remaining_seats",
+            "set seats to 120",
+            "remaining_seats == 120"
           ],
-          answer: "power = 100",
-          explanation: "In Python logic, the variable on the left takes on the value on the right.",
+          answer: "remaining_seats = 120",
+          explanation: "Assignment is left ← right. == would ask a question, not store a value.",
         },
-        // Critical thinking question: Edge case - what happens at boundary?
         {
-          prompt: "Critical Thinking: If we start at power = 100 and subtract 40 twice (power = power - 40), what's the final value?",
-          code: `power = 100\npower = power - 40\npower = power - 40`,
-          options: [
-            "20",
-            "60",
-            "10",
-            "0"
-          ],
-          answer: "20",
-          explanation: "Trace it step by step: 100 - 40 = 60, then 60 - 40 = 20. This tests careful mental tracing of state changes!",
+          prompt: "Trace: remaining_seats starts at 120. Two teams of 8 check in: remaining_seats = remaining_seats - 8, twice. What's left?",
+          code: `remaining_seats = 120\nremaining_seats = remaining_seats - 8\nremaining_seats = remaining_seats - 8`,
+          options: ["104", "112", "8", "0"],
+          answer: "104",
+          explanation: "120 − 8 = 112, then 112 − 8 = 104. Tracing state is the AP CS skill — not guessing.",
         },
       ],
     },
-    handoffMessage: "Mission Control (A) successfully initialized: `power = 100`. Engineers (B), the satellite is entering shadow! You must recalculate the power.",
+    handoffMessage: "Check-in Lead set `remaining_seats = 120`. Door crew: walk-ins just hit. Update the count without losing the invariant.",
     groupB: {
-      role: "Satellite Engineers",
-      challenge: "Modify the variables as the environment changes",
+      role: "Door Crew",
+      challenge: "Update remaining seats as teams arrive",
       questions: [
         {
-          prompt: "The satellite entered a shadow. Power dropped by 40%. How do you mathematically update the power variable in Python?",
-          code: `# Current: power = 100
+          prompt: "A team of 12 checks in. How do you actually change remaining_seats in Python?",
+          code: `# Current: remaining_seats = 120
 # Update:`,
           options: [
-            "power - 40",
-            "power = 60",
-            "power = power - 40",
-            "minus 40"
+            "remaining_seats - 12",
+            "remaining_seats = 108",
+            "remaining_seats = remaining_seats - 12",
+            "minus 12"
           ],
-          answer: "power = power - 40",
-          explanation: "This is a logic bridge: Take the OLD power, subtract 40, and store it back into the NEW power level.",
+          answer: "remaining_seats = remaining_seats - 12",
+          explanation: "Hardcoding 108 only works this once. Read-modify-write keeps the script correct for any team size.",
         },
         {
-          prompt: "Critical Thinking: If you run `power = power - 40` three times, and you started at 100, what happens?",
+          prompt: "If you run remaining_seats = remaining_seats - 40 three times from 120, what happens?",
           options: [
-            "Power stays at 60",
-            "Power becomes -20",
-            "Program crashes",
+            "It stays at 80",
+            "It becomes 0",
+            "The program crashes",
             "Nothing"
           ],
-          answer: "Power becomes -20",
-          explanation: "Variables have memory! Each line of code changes the state of your system. 100 -> 60 -> 20 -> -20.",
+          answer: "It becomes 0",
+          explanation: "State accumulates: 120 → 80 → 40 → 0. No crash — just a sold-out venue.",
         },
         {
-          prompt: "You found a solar flare! Triple the remaining power instantly.",
+          prompt: "A sponsor unlocks overflow seating: triple remaining seats.",
           options: [
-            "power = power * 3",
-            "power = 3",
-            "power + power + power",
-            "power = power + 3"
+            "remaining_seats = remaining_seats * 3",
+            "remaining_seats = 3",
+            "remaining_seats + remaining_seats + remaining_seats",
+            "remaining_seats = remaining_seats + 3"
           ],
-          answer: "power = power * 3",
-          explanation: "Multiplying variables is how we scale logic quickly in a real-world system.",
+          answer: "remaining_seats = remaining_seats * 3",
+          explanation: "Scale with operators. Adding 3 is a different (wrong) story.",
         },
       ],
     },
-    successMessage: "Satellite Saved! You used dynamic memory to navigate a changing environment. That's real coding logic!",
+    successMessage: "Doors closed clean. You tracked live venue state with variables — the same pattern as inventory, GPA credits, and game scores.",
   },
 
-  // ── MISSION 2: Real-World Scenario: Cyber-Greenhouse ──────────────────────────
   {
     id: "conditionals",
-    title: "The Smart Greenhouse",
+    title: "Honor Roll Gate",
     topic: "If / Else Logic",
-    topicIcon: "🌿",
+    topicKey: "logic",
+    topicIcon: "📜",
     topicColor: "#3b82f6",
-    description: "Build the logic to keep rare plants alive! Group A sets the safety rules. Group B builds the emergency systems.",
+    description: "Counseling wants a script: honor roll if GPA and attendance both pass. Group A writes the rules. Group B wires the outcomes.",
     xpReward: 450,
     groupA: {
-      role: "Logic Architects",
-      challenge: "Define the rules for temperature control",
+      role: "Policy Coders",
+      challenge: "Define honor-roll eligibility",
       questions: [
         {
-          prompt: "Logical Question: If we want to turn on the fan only when it is 'Too Hot', which comparison check do we need?",
+          prompt: "Honor roll needs GPA strictly above 3.5. Which check is that?",
           options: [
-            "temp < 30",
-            "temp > 30",
-            "temp == 30",
-            "temp != 30"
+            "gpa < 3.5",
+            "gpa > 3.5",
+            "gpa == 3.5",
+            "gpa != 3.5"
           ],
-          answer: "temp > 30",
-          explanation: "Coding is about making decisions based on data. '>' checks if our limit has been exceeded.",
+          answer: "gpa > 3.5",
+          explanation: "3.5 even is not 'above' 3.5. If policy includes 3.5, you'd use >= — that's a real counseling bug.",
         },
         {
-          prompt: "We need both HEAT and WATER. Which keyword ensures BOTH logical cubes are True?",
+          prompt: "You also need absences under 5. Which keyword requires BOTH GPA and attendance?",
           options: ["or", "and", "plus", "also"],
           answer: "and",
-          explanation: "The 'and' operator creates a stricter logical gate. Both conditions must pass to move forward.",
+          explanation: "and is a stricter gate. One failing condition blocks honor roll.",
         },
         {
-          prompt: "Write a check for 'If humidity is less than 20% OR it is Sunday'.",
+          prompt: "Write: absences under 5 OR the student has a counselor waiver.",
           options: [
-            "if humidity < 20 and day == 'Sunday':",
-            "if humidity < 20 or day == 'Sunday':",
-            "if humidity < 20:",
-            "if humidity < 20 || day == 'Sunday':"
+            "if absences < 5 and waiver == True:",
+            "if absences < 5 or waiver == True:",
+            "if absences < 5:",
+            "if absences < 5 || waiver == True:"
           ],
-          answer: "if humidity < 20 or day == 'Sunday':",
-          explanation: "'or' is an inclusive logic gate. If either one is true, the plants get water!",
+          answer: "if absences < 5 or waiver == True:",
+          explanation: "or is inclusive. Python uses or, not ||.",
         },
       ],
     },
-    handoffMessage: "Logic set: `if temp > 30 or humidity < 10:`. Emergency Response (B), you must define the hardware actions!",
+    handoffMessage: "Policy is `if gpa > 3.5 and absences < 5:`. Transcripts team: attach the actions — print honor roll vs ineligible.",
     groupB: {
-      role: "Hardware Engineers",
-      challenge: "Connect actions to the Logic Architect's rules",
+      role: "Transcripts",
+      challenge: "Attach actions to the eligibility rules",
       questions: [
         {
-          prompt: "Architects gave you the trigger. If it's too hot, we must open the vents. Why is the indentation (4 spaces) required here?",
-          code: `if temp > 30:
-    open_vents()`,
+          prompt: "Why does the indented body of an if matter?",
+          code: `if gpa > 3.5:
+    print("honor roll")`,
           options: [
             "To make it look like steps",
-            "It tells Python that open_vents() ONLY happens if the 'if' is True",
+            "It tells Python print only runs when the if is True",
             "It's just for style",
             "It makes the code run faster"
           ],
-          answer: "It tells Python that open_vents() ONLY happens if the 'if' is True",
-          explanation: "Indentation IS logic in Python. It defines the 'scope'—what code belongs to which decision.",
+          answer: "It tells Python print only runs when the if is True",
+          explanation: "Indentation is scope in Python. Mis-indent and you ship honor roll to everyone.",
         },
         {
-          prompt: "Critical Thinking: What happens if `temp` is exactly 30 and our logic is `if temp > 30:`?",
+          prompt: "gpa is exactly 3.5 and the check is `if gpa > 3.5:`. Do they get honor roll?",
           options: [
-            "Vents open",
-            "Vents stay closed",
+            "Yes",
+            "No — 3.5 is not greater than 3.5",
             "Error",
-            "Vents open halfway"
+            "Half credit"
           ],
-          answer: "Vents stay closed",
-          explanation: "In strict logic, 30 is NOT greater than 30. It is equal! To include 30, we'd need >=.",
+          answer: "No — 3.5 is not greater than 3.5",
+          explanation: "Boundary bugs fail AP FRQs and fail real students. >= if policy includes 3.5.",
         },
         {
-          prompt: "The rule changed: If it's > 30, vents open. OTHERWISE, turn on the heater. What's the keyword for 'Otherwise'?",
+          prompt: "If they miss honor roll, print ineligible. What's the keyword for the other branch?",
           options: ["expect:", "else:", "otherwise:", "stop:"],
           answer: "else:",
-          explanation: "Else is our logical default. It handles everything that didn't pass the first check.",
+          explanation: "else is the default path when the first condition fails.",
         },
-        // Critical thinking: boundary condition
         {
-          prompt: "Critical Thinking: Which of these is a LOGIC BUG (code runs, wrong output) for checking 'age 13 or older'?",
-          code: `if age > 13:\n    grant_access()`,
+          prompt: "Work-permit script for 16+. Which is a logic bug?",
+          code: `if age > 16:\n    approve_permit()`,
           options: [
-            "if age > 13: (misses exactly 13)",
-            "if age >= 13: (correct - includes 13)",
-            "if age == 13:",
-            "if age is 13:"
+            "if age > 16: (skips exactly 16)",
+            "if age >= 16: (includes 16)",
+            "if age == 16:",
+            "if age is 16:"
           ],
-          answer: "if age > 13: (misses exactly 13)",
-          explanation: "This is a boundary bug! age=13 is NOT > 13, it's EQUAL. The student aged exactly 13 would be denied access. This teaches edge case precision.",
+          answer: "if age > 16: (skips exactly 16)",
+          explanation: "A 16-year-old is eligible in most states. > 16 quietly denies them. That's an off-by-boundary bug.",
         },
       ],
     },
-    successMessage: "Greenhouse Optimized! You built a self-thinking system using conditional logic.",
+    successMessage: "Honor roll script ships. You encoded school policy in conditionals — including the boundary that usually bites people.",
   },
 
-  // ── MISSION 3: Real-World Scenario: Automated Supply Chain ───────────────────
   {
     id: "loops",
-    title: "Droid Delivery Loop",
+    title: "Saturday Shift",
     topic: "Loops & Iteration",
-    topicIcon: "🤖",
+    topicKey: "loops",
+    topicIcon: "⏰",
     topicColor: "#10b981",
-    description: "A delivery droid has 100 packages! Group A starts the delivery engine. Group B ensures the droid doesn't loop forever.",
+    description: "You work the school store on Saturday. Group A starts the checkout loop. Group B makes sure it actually terminates.",
     xpReward: 500,
     groupA: {
-      role: "System Planners",
-      challenge: "Start the repetitive delivery process",
+      role: "Shift Leads",
+      challenge: "Start processing the checkout line",
       questions: [
         {
-          prompt: "Loops are about dealing with patterns. Why use a 'while' loop instead of writing 'deliver()' 100 times?",
+          prompt: "Why a while loop instead of writing charge() 40 times for a long line?",
           options: [
             "Typing is hard",
-            "It is more efficient and handles any number of packages",
+            "It scales to any line length with the same logic",
             "Computers prefer loops",
-            "It uses less battery"
+            "It uses less battery on the register"
           ],
-          answer: "It is more efficient and handles any number of packages",
-          explanation: "Logic scales! A loop can handle 5 packages or 5 million with the same two lines of code.",
+          answer: "It scales to any line length with the same logic",
+          explanation: "Friday night game vs empty Saturday morning: same loop, different n.",
         },
         {
-          prompt: "What marks the start of a loop block in Python?",
+          prompt: "What starts a loop block in Python?",
           options: [")", ";", ":", "{"],
           answer: ":",
-          explanation: "The colon (:) is common in all Python structures. It says 'Logical block begins now!'",
+          explanation: "Colon opens the indented block — same as if and def.",
         },
         {
-          prompt: "Critical Thinking: `while battery > 0:` means the droid works until...",
+          prompt: "`while tickets > 0:` keeps selling until...",
           options: [
-            "It hits a wall",
-            "It finishes all boxes",
-            "The battery variable hits 0",
-            "Never stops"
+            "The bell rings",
+            "Inventory hits zero",
+            "The tickets variable hits 0",
+            "It never stops"
           ],
-          answer: "The battery variable hits 0",
-          explanation: "The condition is a gatekeeper. Once it becomes False, the loop breaks.",
+          answer: "The tickets variable hits 0",
+          explanation: "The condition is the only gate. When tickets is 0, the loop stops — unless you forget to decrement.",
         },
       ],
     },
-    handoffMessage: "Droid Engine started: `while packages > 0:`. Loop Breakers (B), you must ensure the droid actually delivers them!",
+    handoffMessage: "Register started: `while tickets > 0:`. Closers: make sure each sale actually reduces tickets.",
     groupB: {
-      role: "Loop Breakers",
-      challenge: "Prevent infinite loops and manage state",
+      role: "Closers",
+      challenge: "Prevent infinite loops and update state",
       questions: [
         {
-          prompt: "Group A set the loop to run while `packages > 0`. If you don't subtract from `packages` inside the loop, what happens?",
+          prompt: "The loop is while tickets > 0. If you never subtract from tickets inside, what happens?",
           options: [
-            "Droid stops instantly",
-            "Infinite loop (The computer gets stuck forever)",
+            "Register stops instantly",
+            "Infinite loop — the register never closes",
             "It works fine",
-            "Packages disappear"
+            "Tickets vanish"
           ],
-          answer: "Infinite loop (The computer gets stuck forever)",
-          explanation: "Infinite loops are logic errors. The computer blindly follows instructions—if the condition stays True, it never leaves!",
+          answer: "Infinite loop — the register never closes",
+          explanation: "If the condition never becomes False, Python will not 'notice' you're done. That's a real freeze.",
         },
         {
-          prompt: "Deliver one package and update the count properly in Python logic.",
+          prompt: "Sell one ticket and update the count.",
           options: [
-            "packages = 1",
-            "packages - 1",
-            "packages -= 1",
-            "del packages"
+            "tickets = 1",
+            "tickets - 1",
+            "tickets -= 1",
+            "del tickets"
           ],
-          answer: "packages -= 1",
-          explanation: "This is the 'Escape Route'. Every delivery brings us one step closer to finishing the loop.",
+          answer: "tickets -= 1",
+          explanation: "tickets -= 1 is the escape hatch. tickets - 1 with no assignment does nothing useful.",
         },
         {
-          prompt: "Trace the Logic: If `packages = 3`, how many times does `print('Delivered!')` run in a `while packages > 0:` loop?",
+          prompt: "tickets = 3. How many times does print('sold') run in while tickets > 0: with a decrement each pass?",
           options: ["2", "3", "4", "Infinite"],
           answer: "3",
-          explanation: "Pass 1: count is 3 (Deliver). Pass 2: count is 2 (Deliver). Pass 3: count is 1 (Deliver). Then it hits 0 and stops.",
+          explanation: "3, then 2, then 1, then 0 and stop. Off-by-one if you use >= 0 without care.",
         },
       ],
     },
-    successMessage: "Logistics Mastered! You controlled repetitive chaos with structured iteration.",
+    successMessage: "Shift closed. You controlled a live queue with iteration — same idea as SAT timers, roster scans, and bot polling.",
   },
 
-  // ── MISSION 4: Real-World Scenario: The Logic Dungeon ────────────────────────
   {
     id: "debugging",
-    title: "The Logic Dungeon",
+    title: "Club Bot Meltdown",
     topic: "Debugging & Tracing",
-    topicIcon: "🕵️‍♂️",
+    topicKey: "debugging",
+    topicIcon: "🛰️",
     topicColor: "#ef4444",
-    description: "The code isn't crashing, but the robot is going the wrong way! Trace the error and fix the logic.",
+    description: "The CS club Discord bot runs, but attendance is wrong. Trace the logic — it isn't a syntax error.",
     xpReward: 550,
     groupA: {
-      role: "Bug Hunters",
-      challenge: "Spot errors that break the logic",
+      role: "On-call",
+      challenge: "Name the class of bug",
       questions: [
         {
-          prompt: "A 'Logic Bug' is when code runs perfectly but gives the wrong answer. Which is a logic bug?",
+          prompt: "The bot doesn't crash, but it marks seniors as juniors. What kind of bug is that?",
           options: [
             "Missing a colon",
-            "Spelling 'print' as 'prnt'",
-            "Adding two numbers instead of multiplying them",
+            "Spelling print as prnt",
+            "Adding instead of multiplying (or the wrong comparison)",
             "Forgetting to indent"
           ],
-          answer: "Adding two numbers instead of multiplying them",
-          explanation: "The computer did exactly what you said, but your 'plan' was wrong. This is the hardest bug to find!",
+          answer: "Adding instead of multiplying (or the wrong comparison)",
+          explanation: "Syntax errors explode. Logic bugs smile and lie. Those are the ones internships actually test.",
         },
         {
-          prompt: "Trace the bug: You want to check if a player is ELIGIBLE (Age 13+). Why is `if age > 13:` a bug for a 13-year-old?",
+          prompt: "You want 16+ for late-night hackathon access. Why is `if age > 16:` wrong for a 16-year-old?",
           options: [
             "It's not a bug",
-            "Because '>' doesn't include 13. It should be '>='.",
+            "Because '>' doesn't include 16. It should be '>='.",
             "Age needs to be a string",
-            "13 is an unlucky number"
+            "16 is unlucky"
           ],
-          answer: "Because '>' doesn't include 13. It should be '>='.",
-          explanation: "Precision is everything. Logical operators define the boundaries of your digital world.",
+          answer: "Because '>' doesn't include 16. It should be '>='.",
+          explanation: "Same boundary bug as honor roll. Graders and users both notice.",
         },
         {
-          prompt: "What is the best way to find a logic bug while the code is running?",
+          prompt: "Fastest way to see why attendance_count is 12 when 11 people signed in?",
           options: [
-            "Restart the computer",
-            "Stare at the screen really hard",
-            "Use print() statements to see what's happening to variables",
-            "Delete the code and start over"
+            "Restart the Chromebook",
+            "Stare at the screen",
+            "print() the variables at each step",
+            "Delete the bot and start over"
           ],
-          answer: "Use print() statements to see what's happening to variables",
-          explanation: "Print debugging lets you 'see' into the computer's brain. If the variable says 5 but you expected 10, you found your bug!",
+          answer: "print() the variables at each step",
+          explanation: "Print tracing is still the move before a debugger. If the counter is 12 after the loop, you found the off-by-one.",
         },
       ],
     },
-    handoffMessage: "Syntax clear! But the navigation math is off. Group B, trace the algorithm!",
+    handoffMessage: "Syntax is clean. Attendance math is lying. Tracers: walk the algorithm like the interpreter.",
     groupB: {
-      role: "Code Tracers",
-      challenge: "Walk through the code like a computer",
+      role: "Tracers",
+      challenge: "Execute the code by hand",
       questions: [
         {
-          prompt: "Why do we call it 'Tracing'?",
+          prompt: "What does tracing mean here?",
           options: [
-            "Because we draw pictures",
-            "Following the execution line-by-line to find where logic deviates",
-            "Looking for missing colons",
-            "Searching for old abandoned code"
+            "Drawing the Discord logo",
+            "Following execution line-by-line until the value goes wrong",
+            "Hunting missing colons",
+            "Deleting old comments"
           ],
-          answer: "Following the execution line-by-line to find where logic deviates",
-          explanation: "Tracing is a critical thinking skill. It trains your brain to think as strictly as a processor.",
+          answer: "Following execution line-by-line until the value goes wrong",
+          explanation: "You are the CPU for a minute. That's how AP CS free-response is graded.",
         },
         {
-          prompt: "Mental Trace: `x = 10`, `x = x + 5`, `if x > 12: x = 0`. What is `x` now?",
+          prompt: "Mental trace: `n = 10`, `n = n + 5`, `if n > 12: n = 0`. What is n?",
           options: ["15", "0", "10", "12"],
           answer: "0",
-          explanation: "Walkthrough: x=10. Then x becomes 15. 15 is > 12, so x becomes 0. Logical sequence matters!",
+          explanation: "10 → 15 → 15 > 12 so n becomes 0. Sequence, then branch.",
         },
         {
-          prompt: "You are given a huge block of messy code. What is 'Decomposition' in logic?",
+          prompt: "The bot file is 400 lines. What's decomposition?",
           options: [
-            "Deleting the code until it works",
-            "Breaking a big, scary problem into small, manageable 'Cubes'",
-            "Renaming all variables to letters",
+            "Deleting until it works",
+            "Splitting check-in, scoring, and DMs into separate functions",
+            "Renaming everything to a, b, c",
             "Adding more loops"
           ],
-          answer: "Breaking a big, scary problem into small, manageable 'Cubes'",
-          explanation: "This is the secret of pro coders. Don't solve the whole app at once—solve the movement, then the score, then the graphics.",
+          answer: "Splitting check-in, scoring, and DMs into separate functions",
+          explanation: "Don't debug the whole club platform at once. Isolate the attendance function, then the rest.",
         },
       ],
     },
-    successMessage: "Logic Dungeon Cleared! You've learned to think like a debugger.",
+    successMessage: "Bot's honest again. You debug like a high schooler who ships: trace, isolate, fix the boundary.",
   },
 ];

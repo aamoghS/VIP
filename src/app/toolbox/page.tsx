@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import { CheckCircle, XCircle, Loader2, ArrowRight, Sparkles, Target, Zap, User as UserIcon } from "lucide-react";
-import TypewriterText from "@/components/TypewriterText";
 
 type Question = {
   id: number;
@@ -23,8 +23,10 @@ type EvaluationResult = {
   correctAnswer?: string;
 };
 
-async function fetchQuestion(): Promise<Question> {
-  const res = await fetch("/api/questions");
+async function fetchQuestion(topic: string | null): Promise<Question> {
+  const params = new URLSearchParams({ critical: "1" });
+  if (topic) params.set("topic", topic);
+  const res = await fetch(`/api/questions?${params}`);
   if (!res.ok) throw new Error("Failed to fetch question");
   return res.json();
 }
@@ -44,18 +46,20 @@ function renderTrophyIcon(iconKey: string, size: number = 24) {
   return Icon ? <Icon /> : null;
 }
 
-const topicColors: Record<string, { main: string; glow: string; bg: string }> = {
-  variables:  { main: '#a855f7', glow: 'rgba(168, 85, 247, 0.4)', bg: 'rgba(168, 85, 247, 0.15)' },
-  logic:      { main: '#3b82f6', glow: 'rgba(59, 130, 246, 0.4)', bg: 'rgba(59, 130, 246, 0.15)' },
-  loops:      { main: '#10b981', glow: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(16, 185, 129, 0.15)' },
-  functions:  { main: '#f59e0b', glow: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(245, 158, 11, 0.15)' },
-  debugging:  { main: '#ef4444', glow: 'rgba(239, 68, 68, 0.4)',  bg: 'rgba(239, 68, 68, 0.15)'  },
-  algorithms: { main: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)',  bg: 'rgba(6, 182, 212, 0.15)'  },
-};
+const topicColors = { main: "var(--ink)", glow: "rgba(26, 35, 50, 0.2)", bg: "var(--ticket)" };
 
 export default function ToolboxPage() {
+  return (
+    <Suspense fallback={null}>
+      <Toolbox />
+    </Suspense>
+  );
+}
+
+function Toolbox() {
   const queryClient = useQueryClient();
-  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer } = useProgress();
+  const topic = useSearchParams().get("topic");
+  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer, saveExplanation } = useProgress();
   const [attempts, setAttempts] = useState(0);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -65,14 +69,16 @@ export default function ToolboxPage() {
   const [evalMessage, setEvalMessage] = useState("");
   const [reasoningText, setReasoningText] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [why, setWhy] = useState("");
+  const [whySaved, setWhySaved] = useState(false);
 
   const { data: question, isLoading, refetch } = useQuery({
-    queryKey: ["question"],
-    queryFn: fetchQuestion,
+    queryKey: ["question", topic],
+    queryFn: () => fetchQuestion(topic),
     staleTime: Infinity,
   });
 
-  const colors = question ? (topicColors[question.topic] || topicColors.variables) : topicColors.variables;
+  const colors = topicColors;
 
   const evaluateMutation = useMutation({
     mutationFn: async ({ questionId, answer }: { questionId: number; answer: string }): Promise<EvaluationResult> => {
@@ -141,7 +147,15 @@ export default function ToolboxPage() {
     setAttempts(0);
     setReasoningText("");
     setShowConfetti(false);
+    setWhy("");
+    setWhySaved(false);
     refetch();
+  };
+
+  const handleSaveWhy = () => {
+    if (!question || !why.trim()) return;
+    saveExplanation(question.topic, why);
+    setWhySaved(true);
   };
 
   const handleEvaluate = (answer: string) => {
@@ -246,16 +260,17 @@ export default function ToolboxPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem', maxWidth: '900px', margin: '0 auto' }}>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: "2.25rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", marginBottom: "0.5rem", lineHeight: 1 }}>
-            The Toolbox
+            Practice
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.5 }}>
-            Interactive coding challenges.
+            Change one line in your head, pick what happens, then say why.
           </p>
         </div>
-        <div className="status-chip live" style={{
-          background: colors.bg,
-          borderColor: colors.main,
-          color: colors.main,
+        <div className="status-chip" style={{
+          background: "var(--ticket)",
+          border: "2px solid var(--ink)",
+          borderRadius: 0,
+          color: "var(--ink)",
         }}
         >
           <Sparkles size={14} style={{ marginRight: '0.25rem' }} />
@@ -337,7 +352,7 @@ export default function ToolboxPage() {
             color: 'var(--text-primary)',
             fontWeight: 500
           }}>
-            <TypewriterText text={question.question} speed={12} />
+            {question.question}
           </h2>
 
 
@@ -412,11 +427,12 @@ export default function ToolboxPage() {
                     background: selectedAnswer === opt
                       ? (evaluated ? (isCorrect ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)') : 'rgba(0,0,0,0.05)')
                       : 'var(--glass-surface)',
-                    border: '1px solid',
+                    border: '3px solid',
                     borderColor: evaluated && selectedAnswer === opt
-                      ? isCorrect ? '#10b981' : '#ef4444'
-                      : (selectedAnswer === opt && evaluateMutation.isPending ? colors.main : 'var(--glass-border)'),
-                    borderRadius: 'var(--radius-sm)',
+                      ? isCorrect ? 'var(--accent-emerald)' : 'var(--accent-rose)'
+                      : 'var(--ink)',
+                    borderRadius: 0,
+                    boxShadow: '3px 3px 0 var(--ink)',
                     color: 'var(--text-primary)',
                     fontSize: '1rem',
                     cursor: evaluated || evaluateMutation.isPending ? 'default' : 'pointer',
@@ -470,9 +486,38 @@ export default function ToolboxPage() {
                     </motion.div>
                     <div style={{ flex: 1 }}>
                       <strong style={{ display: 'block', color: 'var(--text-primary)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>
-                        {evalMessage}
+                        {!whySaved && !isCorrect && attempts >= 2
+                          ? "Incorrect. Say why you picked that."
+                          : evalMessage}
                       </strong>
-                      {reasoningText && (
+                      {(isCorrect || attempts >= 2) && !whySaved && (
+                        <div style={{ margin: '0.75rem 0' }}>
+                          <label style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '0.5rem' }}>
+                            Why does that happen?
+                          </label>
+                          <textarea
+                            value={why}
+                            onChange={(e) => setWhy(e.target.value)}
+                            rows={3}
+                            style={{
+                              width: '100%', padding: '0.75rem',
+                              border: '3px solid var(--ink)', background: 'var(--bg-elevated)', borderRadius: 0,
+                              color: 'var(--text-primary)', fontFamily: 'inherit', fontSize: '0.95rem', resize: 'vertical',
+                            }}
+                          />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+                            <button
+                              className="btn-primary"
+                              onClick={handleSaveWhy}
+                              disabled={!why.trim()}
+                              style={{ padding: '0.5rem 1rem', opacity: why.trim() ? 1 : 0.5 }}
+                            >
+                              Use this reason
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {whySaved && reasoningText && (
                         <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: isCorrect ? '0.5rem' : '0' }}>
                           {reasoningText}
                         </p>
@@ -488,7 +533,7 @@ export default function ToolboxPage() {
                       )}
                     </div>
 
-                    {(isCorrect || attempts >= 2) && (
+                    {(isCorrect || attempts >= 2) && whySaved && (
                       <motion.button
                         className="btn-primary"
                         onClick={handleNextQuestion}

@@ -1,309 +1,46 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Code2, Users, ArrowRight, Sparkles, Zap } from "lucide-react";
-import { useProgress } from "@/context/ProgressContext";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { ArrowRight } from "lucide-react";
+import { useProgress } from "@/context/ProgressContext";
+
+const MOVES = [
+  { label: "Trace", text: "Run the code in your head before you touch it." },
+  { label: "Change", text: "Ask what happens if one line is different." },
+  { label: "Say why", text: "A guess is not an answer until you can explain it." },
+];
 
 export default function Home() {
-  const { questionsSolved, teamMissionsCompleted } = useProgress();
-  const { xp, currentLevel, xpPerLevel, levelProgress } = useProgress();
-  const [mounted, setMounted] = useState(false);
-  const [dateData, setDateData] = useState<{ weekOf: string, days: { label: string, fill: number }[] }>({
-    weekOf: "",
-    days: []
-  });
-
-  useEffect(() => {
-    setMounted(true);
-
-    // Dynamic Date Calculation
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(now.setDate(diffToMonday));
-
-    const weekOfStr = monday.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-
-    const todayIdx = (new Date().getDay() + 6) % 7; // Sync with Mon=0
-
-    const days = [...Array(6)].map((_, i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      const dayName = d.toLocaleDateString("en-US", { weekday: 'short' });
-      const dateNum = d.toLocaleDateString("en-US", { month: '2-digit', day: '2-digit' });
-
-      // If it's today, height reflects total questionsSolved (capped)
-      // Others use a deterministic seed based on the date to look 'recorded'
-      let fill;
-      if (i === todayIdx) {
-        fill = Math.min(100, Math.max(10, (questionsSolved / 5) * 100));
-      } else {
-        const seed = d.getDate();
-        fill = 10 + (seed * 11) % 65;
-      }
-
-      return { label: `${dayName} ${dateNum}`, fill };
-    });
-
-    setDateData({ weekOf: weekOfStr, days });
-  }, [questionsSolved]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as const } }
-  };
-
-  if (!mounted || !dateData.weekOf) return null;
+  const { questionsSolved, explanations, teamMissionsCompleted } = useProgress();
+  const next =
+    questionsSolved === 0 ? { href: "/toolbox", label: "Try a question" }
+    : explanations.length === 0 ? { href: "/toolbox", label: "Say why the answer works" }
+    : teamMissionsCompleted === 0 ? { href: "/sprint", label: "Build a scenario" }
+    : { href: "/metrics", label: "See what still fails" };
 
   return (
-    <div style={{ position: "relative", minHeight: "100%", width: "100%" }}>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants}>
+    <div style={{ maxWidth: "960px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-1px", lineHeight: 1.05, marginBottom: "0.75rem" }}>
+        Change one line. Then prove you know what happens.
+      </h1>
+      <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: "38rem", marginBottom: "1.5rem" }}>
+        Critical thinking here means tracing the code, testing a change, and saying why the result follows.
+      </p>
 
-        {/* Header Section */}
-        <motion.div variants={itemVariants} style={{ marginBottom: '2rem', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
-          <h1 style={{
-            fontFamily: "var(--font-vt323)",
-            fontSize: "5rem",
-            fontWeight: '800',
-            color: "var(--text-primary)",
-            marginBottom: "1.25rem",
-            lineHeight: 0.95,
-            letterSpacing: '-1px',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            Welcome back!
-          </h1>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '0.5rem', justifyContent: 'center' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(59, 130, 246, 0.04))',
-              backdropFilter: 'blur(12px)',
-              padding: '0.8rem 1.25rem',
-              borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.6rem',
-              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 2px 12px var(--accent-indigo-dim)',
-              transition: 'all 0.2s ease'
-            }}>
-              <Code2 size={16} color="var(--accent-cyan)" />
-              <span>{questionsSolved} Questions solved</span>
+      <section className="level-board" style={{ padding: "1.5rem", marginBottom: "1.25rem" }}>
+        <dl style={{ display: "grid", gap: "0.85rem", margin: 0 }}>
+          {MOVES.map((move) => (
+            <div key={move.label}>
+              <dt style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>{move.label}</dt>
+              <dd style={{ margin: "0.2rem 0 0", color: "var(--text-primary)", lineHeight: 1.5 }}>{move.text}</dd>
             </div>
+          ))}
+        </dl>
+      </section>
 
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(59, 130, 246, 0.04))',
-              backdropFilter: 'blur(12px)',
-              padding: '0.8rem 1.25rem',
-              borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.6rem',
-              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 2px 12px var(--accent-emerald-dim)',
-              transition: 'all 0.2s ease'
-            }}>
-              <Users size={16} color="var(--accent-blue)" />
-              <span>{teamMissionsCompleted} Sprints completed</span>
-            </div>
-
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(99, 102, 241, 0.05))',
-              backdropFilter: 'blur(12px)',
-              padding: '0.8rem 1.25rem',
-              borderRadius: '999px',
-              display: 'flex', alignItems: 'center', gap: '0.6rem',
-              color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
-              border: '1px solid var(--glass-border)',
-              boxShadow: '0 2px 12px var(--accent-amber-dim)',
-              transition: 'all 0.2s ease'
-            }}>
-              <Sparkles size={16} color="var(--accent-amber)" />
-              <span>Level {currentLevel}</span>
-              <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
-                {xp} / {xpPerLevel} XP
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <Link href="/toolbox" style={{ textDecoration: 'none' }}>
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
-                  color: 'white',
-                  border: '2px solid var(--glass-border)',
-                  padding: '0.85rem 1.75rem',
-                  borderRadius: '999px',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 20px var(--accent-indigo-glow), inset 0 1px 0 rgba(255,255,255,0.15)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Start Learning <ArrowRight size={18} />
-              </motion.button>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Dashboard Glass Pane */}
-        <motion.div variants={itemVariants} style={{
-          background: 'var(--glass-surface)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid var(--glass-border)',
-          borderRadius: '24px',
-          padding: '2.5rem',
-          boxShadow: 'var(--glass-glow)',
-          marginTop: '4rem',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <div style={{
-              position: 'absolute', top: '-50%', left: '-50%', width: '300%', height: '300%',
-              background: 'radial-gradient(circle at 40% 30%, rgba(99, 102, 241, 0.05), transparent 50%)',
-              borderRadius: '50%'
-            }} />
-          </div>
-
-          <h2 style={{
-            textAlign: 'center',
-            fontSize: '1.875rem',
-            fontWeight: 800,
-            color: 'var(--text-primary)',
-            marginBottom: '3rem',
-            letterSpacing: '-0.5px'
-          }}>
-            Week of {dateData.weekOf}
-          </h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(50px, 1fr))', alignItems: 'flex-end', gap: '1.5rem', justifyContent: 'center' }}>
-            {dateData.days.map((day, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + idx * 0.07, duration: 0.5 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}
-              >
-                <motion.div style={{ position: 'relative', width: '100%', height: '180px', display: 'flex', justifyContent: 'center' }}>
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(to top, rgba(99, 102, 241, 0.15), rgba(59, 130, 246, 0.05))',
-                    borderRadius: 'var(--radius-sm)',
-                    overflow: 'hidden'
-                  }} />
-                  <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: `${day.fill}%` }}
-                    transition={{ delay: 0.9 + idx * 0.07, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    style={{
-                      width: '100%',
-                      background: 'linear-gradient(to top, var(--accent-cyan), var(--accent-blue))',
-                      borderRadius: 'var(--radius-sm)',
-                      boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)'
-                    }}
-                  />
-                </motion.div>
-                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                  {day.label}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Philosophy / Why Code Section */}
-        <motion.div variants={itemVariants} style={{
-          marginTop: '4rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '2rem'
-        }}>
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '24px',
-            padding: '2rem',
-            boxShadow: 'var(--glass-glow)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-              <div style={{
-                position: 'absolute', top: '-30%', left: '-30%', width: '180%', height: '180%',
-                background: 'radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.04), transparent 40%)',
-                borderRadius: '50%'
-              }} />
-            </div>
-
-            <h3 style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Sparkles size={22} color="var(--accent-amber)" />
-              Why Logic Matters
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.95rem' }}>
-              Coding isn&apos;t just about building websites. It&apos;s about <strong>Logic Blocks</strong>. When you learn to code, you&apos;re teaching your brain to break down scary, complex problems into small, manageable cubes.
-            </p>
-            <ul style={{ marginTop: '1.5rem', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {[
-                { icon: <Code2 size={20} color="var(--text-primary)" />, title: 'Critical Thinking', text: 'Analyze any situation with a clear, structured mind.' },
-                { icon: <Users size={20} color="var(--text-primary)" />, title: 'Better Decisions', text: 'Use logic to weigh your options in the real world.' },
-                { icon: <Zap size={20} color="var(--text-primary)" />, title: 'Create Anything', text: 'Once you master the logic, you can build any future you imagine.' }
-              ].map((item, i) => (
-                <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.85rem' }}>{item.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.text}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div style={{
-            background: 'linear-gradient(135deg, var(--accent-indigo), var(--accent-blue))',
-            borderRadius: '24px',
-            padding: '2rem',
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            boxShadow: '0 20px 40px var(--accent-indigo-glow)'
-          }}>
-            <h3 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.75rem', letterSpacing: '-0.5px' }}>
-              Your Superpower.
-            </h3>
-            <p style={{ fontSize: '1rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '1.5rem' }}>
-              We don&apos;t just teach you the &quot;web route.&quot; We teach you how to think like an engineer. Logical thinking is the foundation of every great invention in history.
-            </p>
-            <div style={{ background: 'rgba(255,255,255,0.15)', padding: '1.25rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontFamily: 'var(--font-vt323)', fontSize: '1.5rem', marginBottom: '0.4rem' }}>The Mission:</div>
-              <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
-                To transform 6th-8th graders from consumers of technology into the <strong>Architects</strong> of the future through pure logical grit.
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-      </motion.div>
+      <Link href={next.href} className="play-btn">
+        {next.label} <ArrowRight size={18} />
+      </Link>
     </div>
   );
 }

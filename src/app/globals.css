@@ -8,57 +8,55 @@
 
 @layer base {
   :root {
-    /* Core palette - Modern, accessible color scheme */
-    --bg-primary: #f8fafc;
-    --bg-secondary: #f1f5f9;
-    --bg-elevated: #ffffff;
-    --bg-card: #fafafa;
+    /* Lab sheet + ticket stub. Ink rail, cool paper playfield. */
+    --bg-primary: #e4ebf0;
+    --bg-secondary: #d5e0e8;
+    --bg-elevated: #f7fbfc;
+    --bg-card: #f7fbfc;
+    --ink: #1a2332;
+    --ticket: #e3a008;
 
-    /* Accent colors - Modern, accessible */
-    --accent-indigo: #6366f1;
-    --accent-indigo-glow: rgba(99, 102, 241, 0.3);
-    --accent-indigo-dim: rgba(99, 102, 241, 0.1);
-    --accent-blue: #3b82f6;
-    --accent-blue-glow: rgba(59, 130, 246, 0.3);
-    --accent-blue-dim: rgba(59, 130, 246, 0.1);
-    --accent-amber: #f59e0b;
-    --accent-amber-glow: rgba(245, 158, 11, 0.25);
-    --accent-amber-dim: rgba(245, 158, 11, 0.1);
-    --accent-emerald: #10b981;
-    --accent-emerald-glow: rgba(16, 185, 129, 0.3);
-    --accent-emerald-dim: rgba(16, 185, 129, 0.1);
-    --accent-rose: #f43f5e;
-    --accent-rose-glow: rgba(244, 63, 94, 0.3);
-    --accent-rose-dim: rgba(244, 63, 94, 0.1);
-    --accent-purple: #8b5cf6;
-    --accent-purple-glow: rgba(139, 92, 246, 0.3);
-    --accent-purple-dim: rgba(139, 92, 246, 0.1);
-    --accent-cyan: #06b6d4;
-    --accent-cyan-glow: rgba(6, 182, 212, 0.3);
-    --accent-cyan-dim: rgba(6, 182, 212, 0.1);
-    --accent-lime: #84cc16;
-    --accent-lime-glow: rgba(132, 204, 22, 0.3);
-    --accent-lime-dim: rgba(132, 204, 22, 0.1);
+    --accent-indigo: #1e4d8c;
+    --accent-indigo-glow: rgba(30, 77, 140, 0.28);
+    --accent-indigo-dim: rgba(30, 77, 140, 0.1);
+    --accent-blue: #1e4d8c;
+    --accent-blue-glow: rgba(30, 77, 140, 0.28);
+    --accent-blue-dim: rgba(30, 77, 140, 0.1);
+    --accent-amber: #e3a008;
+    --accent-amber-glow: rgba(227, 160, 8, 0.35);
+    --accent-amber-dim: rgba(227, 160, 8, 0.16);
+    --accent-emerald: #0e7c66;
+    --accent-emerald-glow: rgba(14, 124, 102, 0.28);
+    --accent-emerald-dim: rgba(14, 124, 102, 0.12);
+    --accent-rose: #c5363a;
+    --accent-rose-glow: rgba(197, 54, 58, 0.28);
+    --accent-rose-dim: rgba(197, 54, 58, 0.12);
+    --accent-purple: #1e4d8c;
+    --accent-purple-glow: rgba(30, 77, 140, 0.28);
+    --accent-purple-dim: rgba(30, 77, 140, 0.1);
+    --accent-cyan: #0e7c66;
+    --accent-cyan-glow: rgba(14, 124, 102, 0.28);
+    --accent-cyan-dim: rgba(14, 124, 102, 0.12);
+    --accent-lime: #0e7c66;
+    --accent-lime-glow: rgba(14, 124, 102, 0.28);
+    --accent-lime-dim: rgba(14, 124, 102, 0.12);
 
-    /* Text colors - high contrast for accessibility */
-    --text-primary: #0f172a;
-    --text-secondary: #334155;
-    --text-muted: #475569;
-    --text-inverted: #ffffff;
+    --text-primary: #1a2332;
+    --text-secondary: #314052;
+    --text-muted: #5c6b7a;
+    --text-inverted: #f7fbfc;
 
-    /* Glass & borders - Clean, modern look */
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --glass-border-hover: rgba(0, 0, 0, 0.12);
-    --glass-surface: rgba(255, 255, 255, 0.95);
-    --glass-glow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    --glass-border-pixel: 1px solid var(--glass-border);
+    --glass-border: #c5d2dc;
+    --glass-border-hover: #1a2332;
+    --glass-surface: #f7fbfc;
+    --glass-glow: 4px 4px 0 #1a2332;
+    --glass-border-pixel: 2px solid #1a2332;
 
-    /* Radii - Clean corners */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    --radius-xl: 24px;
-    --radius-2xl: 32px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-2xl: 14px;
 
   }
 }
@@ -67,6 +65,28 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.hud {
+  font-family: var(--font-hud), "VT323", monospace;
+  letter-spacing: 0.04em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ticket);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Pixelated containers - apply pixel rendering to specific elements */
@@ -78,19 +98,18 @@
 
 /* Glass Sidebar Navigation - Modern Style */
 .glass-sidebar {
-  width: 250px;
-  background: var(--bg-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-right: var(--pixel-border);
-  padding: 2rem 1.25rem;
+  width: 232px;
+  background: var(--ink);
+  color: var(--text-inverted);
+  border-right: 6px solid var(--ticket);
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.5rem;
   position: fixed;
   height: 100vh;
   z-index: 50;
-  box-shadow: var(--glass-glow);
+  box-shadow: none;
 }
 
 /* Logo */
@@ -217,10 +236,152 @@
 /* Main Content Area */
 .main-content {
   flex: 1;
-  margin-left: 250px;
-  padding: 3rem 3.5rem;
+  margin-left: 232px;
+  padding: 1.75rem 2.5rem 3rem;
   min-height: 100vh;
   position: relative;
+}
+
+.run-ticket {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1.5rem;
+  align-items: end;
+  max-width: 960px;
+  margin: 0 auto 1.5rem;
+  padding: 0.9rem 1.1rem 0.75rem;
+  background: var(--ticket);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.run-ticket-kicker {
+  font-family: var(--font-hud), "VT323", monospace;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.run-ticket-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.run-ticket-score {
+  display: flex;
+  gap: 1rem;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.run-ticket-track {
+  grid-column: 1 / -1;
+  height: 8px;
+  background: rgba(26, 35, 50, 0.2);
+  margin-top: 0.35rem;
+}
+
+.run-ticket-track span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+
+.run-ticket-stamp {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.level-board {
+  background: var(--bg-elevated);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ticket);
+  border-radius: 0;
+}
+
+.play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--ticket);
+  text-decoration: none;
+  font-family: var(--font-hud), "VT323", monospace;
+  font-size: 1.45rem;
+  letter-spacing: 0.03em;
+  padding: 0.45rem 1rem 0.35rem;
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ticket);
+}
+
+.play-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ticket);
+}
+
+.sprint-boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 860px) {
+  .sprint-boards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .glass-sidebar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-right: none;
+    border-bottom: 6px solid var(--ticket);
+  }
+
+  .glass-sidebar .logo {
+    margin-bottom: 0 !important;
+  }
+
+  .glass-sidebar .nav-foot {
+    width: 100%;
+    margin-top: 0.35rem !important;
+    padding-top: 0.55rem !important;
+  }
+
+  .app-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .nav-links {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .glass-sidebar .nav-item {
+    padding: 0.35rem 0.55rem !important;
+  }
+
+  .run-ticket {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Clean Cards - Modern, Minimal */
@@ -390,18 +551,17 @@ body.dark .glass-card:hover {
 
 /* Modern Buttons */
 .btn-primary {
-  background: var(--accent-indigo);
-  color: white;
-  border: 2px solid var(--accent-indigo);
-  padding: 0.875rem 1.75rem;
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  font-weight: 600;
+  background: var(--ink);
+  color: var(--ticket);
+  border: 3px solid var(--ink);
+  padding: 0.7rem 1.2rem;
+  border-radius: 0;
+  font-size: 1.15rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Space Grotesk', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: var(--font-hud), "VT323", monospace;
+  letter-spacing: 0.03em;
+  box-shadow: 3px 3px 0 var(--ticket);
 }
 
 .btn-primary:hover {
@@ -731,30 +891,29 @@ body.dark .btn-primary:hover {
 /* Terminal Chrome — wraps code-entry sections */
 .terminal-chrome {
   background: var(--bg-elevated);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border: 3px solid var(--ink);
+  border-radius: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: var(--glass-glow);
+  box-shadow: 6px 6px 0 var(--ticket);
 }
 
 .terminal-titlebar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: rgba(255,255,255,0.03);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
+  padding: 0.45rem 1rem 0.35rem;
+  background: var(--ticket);
+  border-bottom: 3px solid var(--ink);
+  font-family: var(--font-hud), "VT323", monospace;
+  font-size: 1.25rem;
+  color: var(--ink);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .terminal-dots {
-  display: flex;
-  gap: 5px;
+  display: none;
 }
 
 .terminal-dots span {
@@ -776,7 +935,40 @@ body.dark .btn-primary:hover {
 
 /* Sidebar text - improved contrast */
 .glass-sidebar h1 {
-  color: #0f172a;
+  color: var(--text-inverted);
+  font-family: var(--font-hud), "VT323", monospace;
+  font-weight: 400;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+}
+
+.glass-sidebar .nav-item,
+.glass-sidebar .nav-item:hover,
+.glass-sidebar .nav-item.active {
+  color: #d5e0e8;
+  background: transparent;
+  border-color: transparent;
+  font-family: var(--font-body), "Atkinson Hyperlegible", sans-serif;
+}
+
+.glass-sidebar .nav-item::before,
+.glass-sidebar .nav-item.active::before {
+  display: none;
+}
+
+.glass-sidebar .nav-item:hover {
+  background: rgba(247, 251, 252, 0.08);
+}
+
+.glass-sidebar .nav-item.active {
+  background: var(--ticket);
+  color: var(--ink);
+}
+
+.glass-sidebar .nav-level {
+  color: var(--ticket);
+  font-family: var(--font-hud), "VT323", monospace;
+  font-size: 1.35rem;
 }
 
 .glass-sidebar div[style*="Level"] {

@@ -10,6 +10,7 @@ export type SprintMission = {
   id: string;
   title: string;
   topic: string;
+  topicKey: string;
   topicIcon: string;
   topicColor: string;
   description: string;

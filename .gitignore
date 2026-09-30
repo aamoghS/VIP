@@ -26,6 +26,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# local notes
+decisions.tsv
+
 # vercel
 .vercel
 

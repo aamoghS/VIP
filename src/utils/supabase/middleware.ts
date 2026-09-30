@@ -15,6 +15,11 @@ export const createClient = async (request: NextRequest) => {
     return supabaseResponse;
   }
 
+  const hasSession = request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-"));
+  if (!hasSession) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
     supabaseUrl!,
     supabaseKey!,
