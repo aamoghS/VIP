@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Code2, ArrowRight, Users, Flame } from "lucide-react";
 import { SprintMission } from "./types";
+import { TopicMark } from "./TopicMark";
 
 export function TeamPicker({
   mission, onSelectTeam, onBack
@@ -16,7 +17,7 @@ export function TeamPicker({
       {/* Back button - chunky border */}
       <button
         onClick={onBack}
-        style={{ background: "transparent", border: "2px solid rgba(255,255,255,0.12)", color: "var(--text-muted)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.375rem", fontFamily: "'JetBrains Mono', monospace", textTransform: "uppercase", letterSpacing: "0.5px" }}
+        style={{ background: "transparent", border: "2px solid var(--ink)", color: "var(--text-primary)", cursor: "pointer", fontSize: "0.82rem", marginBottom: "1.5rem", padding: "0.4rem 0.7rem", display: "flex", alignItems: "center", gap: "0.375rem", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.5px" }}
       >
         ← Back to missions
       </button>
@@ -24,16 +25,16 @@ export function TeamPicker({
       {/* Mission header */}
       <div style={{ marginBottom: "2rem", position: "relative" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-          <span style={{ fontSize: "2.5rem" }}>{mission.topicIcon}</span>
+          <TopicMark topicKey={mission.topicKey} size={26} />
           <div>
             <h1 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-1px", lineHeight: 1.1 }}>
               {mission.title}
             </h1>
             <span style={{
               fontSize: "0.75rem", fontFamily: "'JetBrains Mono', monospace",
-              color: mission.topicColor, background: `${mission.topicColor}15`,
-              padding: "0.25rem 0.75rem", borderRadius: "var(--radius-sm)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              color: "var(--ink)", background: "var(--ticket)",
+              padding: "0.2rem 0.55rem", borderRadius: 0,
+              border: "2px solid var(--ink)",
               letterSpacing: "0.5px",
             }}>{mission.topic}</span>
           </div>
@@ -49,22 +50,21 @@ export function TeamPicker({
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
         {/* Group A - chunky borders */}
-        <motion.div
+        <motion.button
+          type="button"
           onClick={() => onSelectTeam("GroupA")}
-          whileHover={{ scale: 1.015, x: 0, boxShadow: "4px 4px 0px rgba(99,102,241,0.25)" }}
-          whileTap={{ scale: 0.98, x: 0, boxShadow: "2px 2px 0px rgba(99,102,241,0.25)" }}
+          whileHover={{ y: -2 }}
           style={{
-            padding: "1.75rem", background: "var(--glass-surface)", backdropFilter: "blur(16px)",
-            border: "3px solid rgba(99,102,241,0.35)", borderRadius: "var(--radius-lg)",
-            cursor: "pointer", position: "relative", overflow: "hidden",
-            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: "4px 4px 0px rgba(99,102,241,0.15)"
+            padding: "1.25rem", background: "var(--bg-elevated)",
+            border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--ticket)",
+            borderRadius: 0, cursor: "pointer", textAlign: "left", width: "100%",
+            color: "inherit", font: "inherit",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ width: "52px", height: "52px", borderRadius: "var(--radius-sm)", background: "rgba(99,102,241,0.15)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(99,102,241,0.25)" }}>
-                <Code2 size={26} color="var(--accent-indigo)" />
+              <div style={{ width: "52px", height: "52px", background: "var(--ticket)", display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid var(--ink)", flexShrink: 0 }}>
+                <Code2 size={26} color="var(--ink)" />
               </div>
               <div>
                 <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px", lineHeight: 1.2 }}>
@@ -77,40 +77,28 @@ export function TeamPicker({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
               <span style={{ color: "var(--text-muted)", fontSize: "0.825rem", fontWeight: 700 }}>{mission.groupA.questions.length} Qs</span>
-              <ArrowRight size={19} color="#94a3b8" />
+              <ArrowRight size={19} color="var(--ink)" />
             </div>
           </div>
 
-          {/* Corner accents */}
-          <div style={{
-            position: "absolute", top: "-2px", right: "-2px", width: "24px", height: "24px",
-            background: "linear-gradient(135deg, rgba(99,102,241,0.3), transparent)",
-            borderRadius: "4px"
-          }} />
-          <div style={{
-            position: "absolute", bottom: "-2px", left: "-2px", width: "20px", height: "20px",
-            background: "radial-gradient(circle, rgba(99,102,241,0.15), transparent)",
-            borderRadius: "4px"
-          }} />
-        </motion.div>
+        </motion.button>
 
         {/* Group B - chunky borders */}
-        <motion.div
+        <motion.button
+          type="button"
           onClick={() => onSelectTeam("GroupB")}
-          whileHover={{ scale: 1.015, x: 0, boxShadow: "4px 4px 0px rgba(59,130,246,0.25)" }}
-          whileTap={{ scale: 0.98, x: 0, boxShadow: "2px 2px 0px rgba(59,130,246,0.25)" }}
+          whileHover={{ y: -2 }}
           style={{
-            padding: "1.75rem", background: "var(--glass-surface)", backdropFilter: "blur(16px)",
-            border: "3px solid rgba(59,130,246,0.35)", borderRadius: "var(--radius-lg)",
-            cursor: "pointer", position: "relative", overflow: "hidden",
-            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-            boxShadow: "4px 4px 0px rgba(59,130,246,0.15)"
+            padding: "1.25rem", background: "var(--bg-elevated)",
+            border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--accent-indigo)",
+            borderRadius: 0, cursor: "pointer", textAlign: "left", width: "100%",
+            color: "inherit", font: "inherit",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ width: "52px", height: "52px", borderRadius: "var(--radius-sm)", background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(59,130,246,0.25)" }}>
-                <Users size={26} color="var(--accent-blue)" />
+              <div style={{ width: "52px", height: "52px", background: "var(--ticket)", display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid var(--ink)", flexShrink: 0 }}>
+                <Users size={26} color="var(--ink)" />
               </div>
               <div>
                 <h3 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem", letterSpacing: "-0.25px", lineHeight: 1.2 }}>
@@ -123,26 +111,15 @@ export function TeamPicker({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
               <span style={{ color: "var(--text-muted)", fontSize: "0.825rem", fontWeight: 700 }}>{mission.groupB.questions.length} Qs</span>
-              <ArrowRight size={19} color="#94a3b8" />
+              <ArrowRight size={19} color="var(--ink)" />
             </div>
           </div>
 
-          {/* Corner accents */}
-          <div style={{
-            position: "absolute", top: "-2px", right: "-2px", width: "24px", height: "24px",
-            background: "linear-gradient(135deg, rgba(59,130,246,0.3), transparent)",
-            borderRadius: "4px"
-          }} />
-          <div style={{
-            position: "absolute", bottom: "-2px", left: "-2px", width: "20px", height: "20px",
-            background: "radial-gradient(circle, rgba(59,130,246,0.15), transparent)",
-            borderRadius: "4px"
-          }} />
-        </motion.div>
+        </motion.button>
       </div>
 
-      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "var(--glass-surface)", borderRadius: "var(--radius-sm)", border: "2px solid rgba(255,255,255,0.12)", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: "0.5rem", lineHeight: 1.4 }}>
-        <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "#f59e0b", filter: "drop-shadow(0 0 4px rgba(245,158,11,0.5))" }} />
+      <div style={{ marginTop: "1.5rem", padding: "0.875rem 1.25rem", background: "var(--bg-elevated)", borderRadius: 0, border: "2px solid var(--ink)", fontSize: "0.8rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace", display: "flex", alignItems: "center", gap: "0.5rem", lineHeight: 1.4 }}>
+        <Flame size={13} style={{ display: "inline", marginRight: "0.375rem", verticalAlign: "-2px", color: "var(--ticket)" }} />
         Group A goes first — Group B unlocks after Group A finishes.
       </div>
     </motion.div>

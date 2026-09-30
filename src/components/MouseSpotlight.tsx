@@ -5,14 +5,23 @@ export default function MouseSpotlight() {
   const [position, setPosition] = useState({ x: -1000, y: -1000 });
   
   useEffect(() => {
+    let frame = 0;
+    let x = -1000;
+    let y = -1000;
     const handleMove = (e: MouseEvent) => {
-      // Using requestAnimationFrame for absolute zero-lag buttery smoothness
-      requestAnimationFrame(() => {
-        setPosition({ x: e.clientX, y: e.clientY });
+      x = e.clientX;
+      y = e.clientY;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        setPosition({ x, y });
       });
     };
     window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (

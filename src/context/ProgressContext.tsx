@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 
 type UnlockedItem = {
   id: string;
@@ -16,6 +16,11 @@ export type TopicStat = {
 
 export type TopicStats = Record<string, TopicStat>;
 
+export type Explanation = {
+  topic: string;
+  text: string;
+};
+
 type ProgressContextType = {
   xp: number;
   addXp: (amount: number) => void;
@@ -29,9 +34,16 @@ type ProgressContextType = {
   incrementTeamMissions: () => void;
   topicStats: TopicStats;
   recordAnswer: (topic: string, correct: boolean) => void;
+  explanations: Explanation[];
+  saveExplanation: (topic: string, text: string) => void;
   resetProgress: () => void;
+  playerName: string | null;
+  signIn: (name: string, password: string) => Promise<string | null>;
+  signUp: (name: string, password: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
   currentLevel: number;
   xpPerLevel: number;
+  xpToNext: number;
   levelProgress: number;
 };
 
@@ -44,6 +56,7 @@ type SavedProgress = {
   questionsSolved: number;
   teamMissionsCompleted: number;
   topicStats: TopicStats;
+  explanations: Explanation[];
 };
 
 const defaultProgress = (): SavedProgress => ({
@@ -53,6 +66,7 @@ const defaultProgress = (): SavedProgress => ({
   questionsSolved: 0,
   teamMissionsCompleted: 0,
   topicStats: {},
+  explanations: [],
 });
 
 // XP requirements increase with level (exponential curve)
@@ -63,28 +77,36 @@ function getXpForLevel(level: number): number {
 }
 
 function getLevelFromXp(xp: number): number {
-  // Reverse calculation to find current level
+  if (!Number.isFinite(xp) || xp <= 0) return 1;
   let level = 1;
   let cumulativeXp = 0;
-  while (true) {
+  while (level < 100) {
     const xpForLevel = getXpForLevel(level);
-    if (xp < cumulativeXp + xpForLevel) {
-      break;
-    }
+    if (xp < cumulativeXp + xpForLevel) break;
     cumulativeXp += xpForLevel;
     level++;
   }
   return level;
 }
 
+function xpAtStartOfLevel(level: number): number {
+  let sum = 0;
+  for (let i = 1; i < level; i++) sum += getXpForLevel(i);
+  return sum;
+}
+
 function getXpProgressForLevel(xp: number, level: number): number {
-  // Calculate progress within current level
-  const xpForLevel = getXpForLevel(level);
-  const xpNeededForNextLevel = getXpForLevel(level + 1);
-  const cumulativeXpBelowLevel = xp - getXpForLevel(level);
-  const progressWithinLevel = xp - cumulativeXpBelowLevel;
-  const totalNeeded = xpNeededForNextLevel - cumulativeXpBelowLevel;
-  return Math.min(100, Math.round((progressWithinLevel / totalNeeded) * 100));
+  if (!Number.isFinite(xp) || xp <= 0) return 0;
+  const span = getXpForLevel(level);
+  if (span <= 0) return 0;
+  const into = xp - xpAtStartOfLevel(level);
+  return Math.min(100, Math.max(0, Math.round((into / span) * 100)));
+}
+
+function getXpToNext(xp: number, level: number): number {
+  if (!Number.isFinite(xp) || xp < 0) return getXpForLevel(1);
+  const into = Math.max(0, xp - xpAtStartOfLevel(level));
+  return Math.max(0, getXpForLevel(level) - into);
 }
 
 function readProgress(): SavedProgress | null {
@@ -113,29 +135,68 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [questionsSolved, setQuestionsSolved] = useState(0);
   const [teamMissionsCompleted, setTeamMissionsCompleted] = useState(0);
   const [topicStats, setTopicStats] = useState<TopicStats>({});
+  const [explanations, setExplanations] = useState<Explanation[]>([]);
+  const [playerName, setPlayerName] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const snapshotRef = useRef<SavedProgress>(defaultProgress());
 
   // Calculate level and XP progress
   const currentLevel = getLevelFromXp(xp);
   const xpPerLevel = getXpForLevel(currentLevel);
+  const xpToNext = getXpToNext(xp, currentLevel);
   const levelProgress = getXpProgressForLevel(xp, currentLevel);
 
-  useEffect(() => {
-    const saved = readProgress() ?? defaultProgress();
-    setXp(saved.xp);
+  const applyProgress = (saved: SavedProgress) => {
+    setXp(Number.isFinite(saved.xp) ? saved.xp : 0);
     setUnlockedItems(saved.unlockedItems || []);
     setSprintStage(saved.sprintStage || 1);
     setQuestionsSolved(saved.questionsSolved || 0);
     setTeamMissionsCompleted(saved.teamMissionsCompleted || 0);
     setTopicStats(saved.topicStats || {});
-    setHydrated(true);
+    setExplanations(saved.explanations || []);
+  };
+
+  snapshotRef.current = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth");
+        const data = await res.json();
+        if (cancel) return;
+        if (data.player) {
+          applyProgress(data.player.progress);
+          setPlayerName(data.player.name);
+        } else {
+          applyProgress(readProgress() ?? defaultProgress());
+          setPlayerName(null);
+        }
+      } catch {
+        if (!cancel) applyProgress(readProgress() ?? defaultProgress());
+      } finally {
+        if (!cancel) setHydrated(true);
+      }
+    })();
+    return () => { cancel = true; };
   }, []);
 
   useEffect(() => {
-    if (hydrated) {
-      writeProgress({ xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats });
+    if (!hydrated) return;
+    const snapshot = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
+    if (!playerName) {
+      writeProgress(snapshot);
+      return;
     }
-  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, hydrated]);
+    const timer = setTimeout(() => {
+      void fetch("/api/auth", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(snapshot),
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations, hydrated, playerName]);
 
   const addXp = (amount: number) => setXp(prev => prev + amount);
 
@@ -165,22 +226,58 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const resetProgress = () => {
+  const saveExplanation = (topic: string, text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setExplanations((prev) => {
+      const rest = prev.filter((item) => item.topic !== topic);
+      return [...rest, { topic, text: trimmed }];
+    });
+  };
+
+  const resetProgress = () => applyProgress(defaultProgress());
+
+  const signIn = async (name: string, password: string) => {
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ mode: "login", name, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) return data.error || "Could not sign in.";
+    applyProgress(data.player.progress);
+    setPlayerName(data.player.name);
+    return null;
+  };
+
+  const signUp = async (name: string, password: string) => {
+    const res = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ mode: "create", name, password, progress: snapshotRef.current }),
+    });
+    const data = await res.json();
+    if (!res.ok) return data.error || "Could not create that player.";
+    applyProgress(data.player.progress);
+    setPlayerName(data.player.name);
+    return null;
+  };
+
+  const signOut = async () => {
+    await fetch("/api/auth", { method: "DELETE" });
     const fresh = defaultProgress();
-    setXp(fresh.xp);
-    setUnlockedItems(fresh.unlockedItems);
-    setSprintStage(fresh.sprintStage);
-    setQuestionsSolved(fresh.questionsSolved);
-    setTeamMissionsCompleted(fresh.teamMissionsCompleted);
-    setTopicStats(fresh.topicStats);
+    writeProgress(fresh);
+    applyProgress(fresh);
+    setPlayerName(null);
   };
 
   return (
     <ProgressContext.Provider value={{
       xp, addXp, unlockedItems, unlockItem, sprintStage, advanceSprint,
       questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions,
-      topicStats, recordAnswer, resetProgress,
-      currentLevel, xpPerLevel, levelProgress,
+      topicStats, recordAnswer, explanations, saveExplanation, resetProgress,
+      playerName, signIn, signUp, signOut,
+      currentLevel, xpPerLevel, xpToNext, levelProgress,
     }}>
       {children}
     </ProgressContext.Provider>
