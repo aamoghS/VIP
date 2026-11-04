@@ -72,6 +72,37 @@ async function main() {
   const crew: Record<"A" | "B", User[]> = { A: [a1, a2], B: [b1, b2] };
   console.log(`accounts created: e2e_${run}_{teacher,teacher2,a1,a2,b1,b2,outsider}`);
 
+  // Multi-device: the same account signed in from two cookie jars; signing out one keeps the other.
+  const signInJar = async (name: string) => {
+    const res = await fetch(`${base}/api/auth`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ mode: "login", name, password: "e2e-pass-1" }),
+    });
+    if (!res.ok) throw new Error(`sign-in failed for ${name}: ${res.status}`);
+    return res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+  };
+  const authMe = async (cookie: string) => ((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).player?.name ?? null) as string | null;
+  const jarApi = (cookie: string) =>
+    createTRPCClient<AppRouter>({ links: [httpBatchLink({ url: `${base}/api/trpc`, transformer: superjson, headers: () => ({ cookie }) })] });
+  const jar1 = await signInJar(outsider.name);
+  const jar2 = await signInJar(outsider.name);
+  check("two sign-ins give different cookies", jar1 !== jar2);
+  check("both jars GET /api/auth as the account", (await authMe(jar1)) === outsider.name && (await authMe(jar2)) === outsider.name);
+  const fakeRoom = "ZZZZZZ";
+  const roomGet = async (cookie: string) => {
+    try {
+      await jarApi(cookie).room.get.query({ code: fakeRoom });
+      return "ok";
+    } catch (e) {
+      return (e as { data?: { code?: string } }).data?.code ?? "error";
+    }
+  };
+  check("both jars pass room.get auth", (await roomGet(jar1)) !== "UNAUTHORIZED" && (await roomGet(jar2)) !== "UNAUTHORIZED");
+  await fetch(`${base}/api/auth`, { method: "DELETE", headers: { cookie: jar1 } });
+  check("signing out jar 1 signs it out", (await authMe(jar1)) === null && (await roomGet(jar1)) === "UNAUTHORIZED");
+  check("jar 2 stays signed in", (await authMe(jar2)) === outsider.name && (await roomGet(jar2)) !== "UNAUTHORIZED");
+
   await rejectsWith("anonymous create rejected", "UNAUTHORIZED", anonymous.room.create.mutate({ className: "x" }));
   await rejectsWith("student create FORBIDDEN", "FORBIDDEN", a1.api.room.create.mutate({ className: "x" }));
 

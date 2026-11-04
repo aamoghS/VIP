@@ -1,10 +1,10 @@
 import { initTRPC, TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { SESSION_COOKIE } from "@/server/auth/players";
 import { getDb } from "@/server/db";
-import { players } from "@/server/db/schema";
+import { players, sessions } from "@/server/db/schema";
 
 export type SessionPlayer = { id: string; name: string; role: "student" | "teacher" };
 
@@ -18,8 +18,9 @@ async function playerFromHeaders(headers: Headers): Promise<SessionPlayer | null
   if (!token) return null;
   const [row] = await getDb()
     .select({ id: players.id, name: players.name, role: players.role })
-    .from(players)
-    .where(eq(players.sessionToken, token))
+    .from(sessions)
+    .innerJoin(players, eq(players.id, sessions.playerId))
+    .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date())))
     .limit(1);
   return row ? { id: row.id, name: row.name, role: row.role as SessionPlayer["role"] } : null;
 }

@@ -7,10 +7,20 @@ export const players = pgTable("players", {
   nameKey: text("name_key").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").$type<"student" | "teacher">().notNull().default("student"),
-  sessionToken: text("session_token").unique(),
   progress: jsonb("progress").$type<Record<string, unknown>>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const sessions = pgTable(
+  "sessions",
+  {
+    token: text("token").primaryKey(),
+    playerId: text("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("sessions_player_id_idx").on(t.playerId)],
+);
 
 export const rooms = pgTable("rooms", {
   code: text("code").primaryKey(),

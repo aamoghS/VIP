@@ -1,8 +1,8 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq, gt, lte } from "drizzle-orm";
 import { getDb } from "@/server/db";
-import { players } from "@/server/db/schema";
+import { players, sessions } from "@/server/db/schema";
 
 export const SESSION_COOKIE = "vip_session";
 const COOKIE = SESSION_COOKIE;
@@ -62,7 +62,13 @@ function readProgress(value: unknown): PlayerProgress {
   };
 }
 
-async function setSession(token: string) {
+const SESSION_MS = 60 * 60 * 24 * 30 * 1000;
+
+async function setSession(playerId: string) {
+  const token = randomBytes(24).toString("hex");
+  const db = getDb();
+  await db.delete(sessions).where(and(eq(sessions.playerId, playerId), lte(sessions.expiresAt, new Date())));
+  await db.insert(sessions).values({ token, playerId, expiresAt: new Date(Date.now() + SESSION_MS) });
   const jar = await cookies();
   jar.set(COOKIE, token, {
     httpOnly: true,
@@ -77,7 +83,13 @@ export async function currentPlayer() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
-  const [row] = await getDb().select().from(players).where(eq(players.sessionToken, token)).limit(1);
+  const [found] = await getDb()
+    .select({ player: players })
+    .from(sessions)
+    .innerJoin(players, eq(players.id, sessions.playerId))
+    .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date())))
+    .limit(1);
+  const row = found?.player;
   if (!row) return null;
   return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
 }
@@ -88,8 +100,9 @@ export async function currentPlayerId() {
   if (!token) return null;
   const [row] = await getDb()
     .select({ id: players.id })
-    .from(players)
-    .where(eq(players.sessionToken, token))
+    .from(sessions)
+    .innerJoin(players, eq(players.id, sessions.playerId))
+    .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date())))
     .limit(1);
   return row?.id ?? null;
 }
@@ -98,15 +111,14 @@ export async function signUp(name: string, password: string, progress: PlayerPro
   const display = nameKey(name);
   if (display.length < 2 || display.length > 24) return { error: "Use a name, 2 to 24 characters." };
   if (password.length < 4 || password.length > 72) return { error: "Password needs at least 4 characters." };
-  const token = randomBytes(24).toString("hex");
+  const id = randomUUID();
   try {
     await getDb().insert(players).values({
-      id: randomUUID(),
+      id,
       name: display,
       nameKey: display.toLowerCase(),
       passwordHash: hashPassword(password),
       role,
-      sessionToken: token,
       progress: readProgress(progress),
     });
   } catch (error) {
@@ -114,7 +126,7 @@ export async function signUp(name: string, password: string, progress: PlayerPro
     if (code === "23505") return { error: "That name is taken." };
     throw error;
   }
-  await setSession(token);
+  await setSession(id);
   return { name: display, role, progress: readProgress(progress) };
 }
 
@@ -127,9 +139,7 @@ export async function signIn(name: string, password: string) {
     .where(eq(players.nameKey, display.toLowerCase()))
     .limit(1);
   if (!row || !checkPassword(password, row.passwordHash)) return { error: "Wrong name or password." };
-  const token = randomBytes(24).toString("hex");
-  await getDb().update(players).set({ sessionToken: token, updatedAt: new Date() }).where(eq(players.id, row.id));
-  await setSession(token);
+  await setSession(row.id);
   return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
 }
 
@@ -137,7 +147,7 @@ export async function signOut() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (token) {
-      await getDb().update(players).set({ sessionToken: null }).where(eq(players.sessionToken, token));
+    await getDb().delete(sessions).where(eq(sessions.token, token));
   }
   jar.set(COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
 }
@@ -146,10 +156,16 @@ export async function saveProgress(progress: PlayerProgress) {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return false;
+  const [session] = await getDb()
+    .select({ playerId: sessions.playerId })
+    .from(sessions)
+    .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date())))
+    .limit(1);
+  if (!session) return false;
   const updated = await getDb()
     .update(players)
     .set({ progress: readProgress(progress), updatedAt: new Date() })
-    .where(eq(players.sessionToken, token))
+    .where(eq(players.id, session.playerId))
     .returning({ id: players.id });
   return updated.length > 0;
 }
