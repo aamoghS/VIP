@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Printer, ArrowRight } from "lucide-react";
 import { MISSIONS } from "@/app/sprint/missions";
-import { getMission, teamOf } from "@/lib/sprint/mission";
+import { getMission, storyTitle, teamOf, userStoryText } from "@/lib/sprint/mission";
 import { ROLES, ROLE_DUTIES } from "@/lib/sprint/roles";
 import { traceLayout } from "@/lib/sprint/trace";
 import type { TeamId } from "@/lib/sprint/types";
@@ -89,16 +89,14 @@ function Sheets({ id }: { id: string }) {
         <h2 id="p-stories" style={{ fontSize: "1.6rem", margin: "0 0 0.75rem" }}>Story cards</h2>
         <div className="print-grid">
           {stories.map(({ team, q, i }) => {
-            const t = teamOf(mission, team);
-            const goal = t.challenge.charAt(0).toLowerCase() + t.challenge.slice(1);
             return (
               <article key={`${team}${i}`} className="print-card">
                 <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
                   <span>Team {team} - Story {i + 1}</span>
                   <span>{q.points} pts</span>
                 </div>
-                <h3 style={{ fontSize: "1.2rem", margin: "0.5rem 0" }}>{q.prompt.split(/(?<=[.?])\s/)[0]}</h3>
-                <p style={{ margin: "0 0 0.5rem" }}>As the {t.role}, we want to {goal}, so we can finish &quot;{mission.title}&quot;.</p>
+                <h3 style={{ fontSize: "1.2rem", margin: "0.5rem 0" }}>{storyTitle(q)}</h3>
+                <p style={{ margin: "0 0 0.5rem" }}>{userStoryText(mission, team, q)}</p>
                 <p style={{ margin: 0, fontSize: "0.95rem" }}>Objective {q.objective}: {OBJECTIVE_LABEL[q.objective]}</p>
               </article>
             );

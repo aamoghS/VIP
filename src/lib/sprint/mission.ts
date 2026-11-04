@@ -13,13 +13,15 @@ export const questionsFor = (mission: SprintMission, team: TeamId): QuizQuestion
   teamOf(mission, team).questions;
 
 /** Short card title: the first sentence of the prompt, capped. */
-function storyTitle(q: QuizQuestion): string {
+export function storyTitle(q: QuizQuestion): string {
+  if (q.title) return q.title;
   const first = q.prompt.split(/(?<=[.?])\s/)[0];
   return first.length > 70 ? `${first.slice(0, 67)}...` : first;
 }
 
 /** "As the Check-in Lead, we want to ... so we can finish ...", as the user story for a question. */
 export function userStoryText(mission: SprintMission, team: TeamId, q: QuizQuestion): string {
+  if (q.story) return q.story;
   const { role, challenge } = teamOf(mission, team);
   const goal = challenge.charAt(0).toLowerCase() + challenge.slice(1);
   return `As the ${role}, we want to ${goal}, so we can finish "${mission.title}".`;

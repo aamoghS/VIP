@@ -2,6 +2,10 @@ export type Objective = 1 | 2 | 3 | 4;
 export type Points = 1 | 2 | 3 | 5 | 8;
 
 export type QuizQuestion = {
+  /** Short story card title (48 chars max). Falls back to the prompt's first sentence. */
+  title?: string;
+  /** Per-question user story ("As the ..., we need ..., so that ..."). Falls back to a team-level sentence. */
+  story?: string;
   prompt: string;
   code?: string;
   options: string[];

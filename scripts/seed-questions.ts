@@ -26,8 +26,8 @@ const rows = [
     bloomLevel: q.bloomLevel ?? null,
     critical: false,
   })),
-  ...CRITICAL_THINKING_QUESTIONS.map((q, i) => ({
-    id: 900 + i,
+  ...CRITICAL_THINKING_QUESTIONS.map((q) => ({
+    id: q.id,
     topic: q.topic,
     type: q.type,
     prompt: q.question,
