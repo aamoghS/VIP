@@ -1,44 +1,18 @@
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { questions } from "../src/server/db/schema";
 import { CRITICAL_THINKING_QUESTIONS, QUESTIONS } from "../src/server/questions/bank";
 
-const raw = process.env.DATABASE_URL;
+// Table comes from the Drizzle migration (npm run db:push). Direct URL for bulk writes.
+const raw = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
 if (!raw) throw new Error("DATABASE_URL is not set");
 
-const url = new URL(raw);
-const sql = postgres({
-  host: url.hostname,
-  port: Number(url.port || 5432),
-  database: url.pathname.replace(/^\//, ""),
-  username: decodeURIComponent(url.username),
-  password: decodeURIComponent(url.password),
-  prepare: false,
-  max: 1,
-  ssl: "require",
-});
+const pool = new Pool({ connectionString: raw, max: 1 });
 
 async function main() {
-await sql.unsafe(`
-  create table if not exists public.questions (
-    id integer primary key,
-    topic text not null,
-    type text not null,
-    prompt text not null,
-    options jsonb not null,
-    current_answer text not null,
-    reasoning text not null,
-    complexity integer,
-    bloom_level text,
-    critical boolean not null default false
-  );
-  alter table public.questions enable row level security;
-  revoke all on public.questions from anon, authenticated;
-`);
+await pool.query("truncate public.questions");
 
-await sql`truncate public.questions`;
-
-const db = drizzle(sql);
+const db = drizzle(pool);
 const rows = [
   ...QUESTIONS.map((q) => ({
     id: q.id,
@@ -70,10 +44,11 @@ for (let i = 0; i < rows.length; i += 40) {
   await db.insert(questions).values(rows.slice(i, i + 40));
 }
 
-const [{ count }] = await sql<{ count: string }[]>`select count(*) from public.questions`;
-const [{ critical }] = await sql<{ critical: string }[]>`select count(*) as critical from public.questions where critical`;
+const { rows: [{ count, critical }] } = await pool.query<{ count: string; critical: string }>(
+  "select count(*) as count, count(*) filter (where critical) as critical from public.questions",
+);
 console.log(JSON.stringify({ questions: Number(count), critical: Number(critical) }));
-await sql.end();
+await pool.end();
 }
 
 main().catch((error) => {

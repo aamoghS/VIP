@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wrench, Zap, Trophy, BarChart3, Home } from "lucide-react";
+import { Wrench, Zap, Trophy, BarChart3, Home, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import PlayerLogin from "@/components/PlayerLogin";
@@ -17,6 +17,7 @@ export default function Navigation() {
     { href: '/sprint', icon: Zap, label: 'Build' },
     { href: '/room', icon: Trophy, label: 'Locker' },
     { href: '/metrics', icon: BarChart3, label: 'Score' },
+    { href: '/teacher', icon: GraduationCap, label: 'Teach' },
   ];
 
   return (

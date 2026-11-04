@@ -1269,3 +1269,19 @@ body.dark .btn-primary:hover {
   background: var(--accent-indigo);
   color: white;
 }
+/* Teacher and print pages */
+.print-sheet { background: #fff; color: #000; }
+.print-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.print-card { border: 3px solid #000; padding: 1rem; background: #fff; color: #000; break-inside: avoid; page-break-inside: avoid; }
+.print-section { margin-bottom: 2rem; }
+
+@media print {
+  .glass-sidebar, .run-ticket, .no-print { display: none !important; }
+  html, body { background: #fff !important; color: #000 !important; }
+  .app-container { display: block !important; }
+  .main-content { margin: 0 !important; padding: 0 !important; min-height: 0 !important; }
+  .print-sheet { font-size: 14pt; }
+  .print-section { break-before: page; page-break-before: always; margin-bottom: 0; }
+  .print-section:first-of-type { break-before: auto; page-break-before: auto; }
+  .print-card { box-shadow: none !important; }
+}

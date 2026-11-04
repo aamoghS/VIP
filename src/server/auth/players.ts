@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { players } from "@/server/db/schema";
 
@@ -25,28 +25,6 @@ const emptyProgress = (): PlayerProgress => ({
   topicStats: {},
   explanations: [],
 });
-
-let tableReady: Promise<void> | null = null;
-
-function ensureTable() {
-  tableReady ??= (async () => {
-    const db = getDb();
-    await db.execute(sql`
-      create table if not exists public.players (
-        id text primary key,
-        name text not null,
-        name_key text not null unique,
-        password_hash text not null,
-        session_token text unique,
-        progress jsonb not null default '{}'::jsonb,
-        updated_at timestamptz not null default now()
-      )
-    `);
-    await db.execute(sql`alter table public.players enable row level security`);
-    await db.execute(sql`revoke all on public.players from anon, authenticated`);
-  })();
-  return tableReady;
-}
 
 function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -93,7 +71,6 @@ async function setSession(token: string) {
 }
 
 export async function currentPlayer() {
-  await ensureTable();
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
@@ -102,11 +79,22 @@ export async function currentPlayer() {
   return { name: row.name, progress: readProgress(row.progress) };
 }
 
+export async function currentPlayerId() {
+  const jar = await cookies();
+  const token = jar.get(COOKIE)?.value;
+  if (!token) return null;
+  const [row] = await getDb()
+    .select({ id: players.id })
+    .from(players)
+    .where(eq(players.sessionToken, token))
+    .limit(1);
+  return row?.id ?? null;
+}
+
 export async function signUp(name: string, password: string, progress: PlayerProgress) {
   const display = nameKey(name);
   if (display.length < 2 || display.length > 24) return { error: "Use a name, 2 to 24 characters." };
   if (password.length < 4 || password.length > 72) return { error: "Password needs at least 4 characters." };
-  await ensureTable();
   const token = randomBytes(24).toString("hex");
   try {
     await getDb().insert(players).values({
@@ -129,7 +117,6 @@ export async function signUp(name: string, password: string, progress: PlayerPro
 export async function signIn(name: string, password: string) {
   const display = nameKey(name);
   if (!display || !password) return { error: "Name and password." };
-  await ensureTable();
   const [row] = await getDb()
     .select()
     .from(players)
@@ -146,14 +133,12 @@ export async function signOut() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (token) {
-    await ensureTable();
-    await getDb().update(players).set({ sessionToken: null }).where(eq(players.sessionToken, token));
+      await getDb().update(players).set({ sessionToken: null }).where(eq(players.sessionToken, token));
   }
   jar.set(COOKIE, "", { httpOnly: true, path: "/", maxAge: 0 });
 }
 
 export async function saveProgress(progress: PlayerProgress) {
-  await ensureTable();
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return false;

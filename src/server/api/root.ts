@@ -1,8 +1,8 @@
-import { sprintRouter } from "@/server/api/routers/sprint";
+import { roomRouter } from "@/server/api/routers/room";
 import { createTRPCRouter } from "@/server/api/trpc";
 
 export const appRouter = createTRPCRouter({
-  sprint: sprintRouter,
+  room: roomRouter,
 });
 
 export type AppRouter = typeof appRouter;

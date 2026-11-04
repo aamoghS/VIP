@@ -16,6 +16,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "Why store remaining seats in a variable instead of writing 120 in every print and if-statement?",
+          objective: 3,
+          points: 1,
           options: [
             "It looks cooler",
             "To make the code longer",
@@ -27,12 +29,16 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "Which name is most useful for someone else on the robotics/CS club reading this?",
+          objective: 3,
+          points: 1,
           options: ["RS", "remaining_seats", "x", "blue_stuff"],
           answer: "remaining_seats",
           explanation: "High school group projects die on cryptic names. remaining_seats tells the next person what the state actually is.",
         },
         {
           prompt: "Start the check-in script with 120 open seats.",
+          objective: 1,
+          points: 2,
           code: `# venue capacity leftover`,
           options: [
             "remaining_seats = 120",
@@ -45,6 +51,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "Trace: remaining_seats starts at 120. Two teams of 8 check in: remaining_seats = remaining_seats - 8, twice. What's left?",
+          objective: 1,
+          points: 3,
           code: `remaining_seats = 120\nremaining_seats = remaining_seats - 8\nremaining_seats = remaining_seats - 8`,
           options: ["104", "112", "8", "0"],
           answer: "104",
@@ -59,6 +67,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "A team of 12 checks in. How do you actually change remaining_seats in Python?",
+          objective: 1,
+          points: 2,
           code: `# Current: remaining_seats = 120
 # Update:`,
           options: [
@@ -72,6 +82,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "If you run remaining_seats = remaining_seats - 40 three times from 120, what happens?",
+          objective: 1,
+          points: 3,
           options: [
             "It stays at 80",
             "It becomes 0",
@@ -83,6 +95,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "A sponsor unlocks overflow seating: triple remaining seats.",
+          objective: 1,
+          points: 2,
           options: [
             "remaining_seats = remaining_seats * 3",
             "remaining_seats = 3",
@@ -92,7 +106,28 @@ export const MISSIONS: SprintMission[] = [
           answer: "remaining_seats = remaining_seats * 3",
           explanation: "Scale with operators. Adding 3 is a different (wrong) story.",
         },
+        {
+          prompt: "The venue has 0 seats left, but the script still admits one more team and shows -1. Which fix is right?",
+          objective: 2,
+          points: 3,
+          code: `if remaining_seats >= 0:
+    remaining_seats = remaining_seats - 1`,
+          options: [
+            "if remaining_seats > 0:",
+            "if remaining_seats >= -1:",
+            "if remaining_seats == 120:",
+            "Leave it. -1 seats is fine"
+          ],
+          answer: "if remaining_seats > 0:",
+          explanation: "At 0 seats nobody else fits. >= 0 lets one extra team in and the count drops below zero. A boundary check should use > 0.",
+        },
       ],
+    },
+    exitTicket: {
+      prompt: "After this code runs, what is seats? Write one sentence on how you know.",
+      code: `seats = 50
+seats = seats - 5
+seats = seats - 5`,
     },
     successMessage: "Doors closed clean. You tracked live venue state with variables — the same pattern as inventory, GPA credits, and game scores.",
   },
@@ -112,6 +147,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "Honor roll needs GPA strictly above 3.5. Which check is that?",
+          objective: 2,
+          points: 2,
           options: [
             "gpa < 3.5",
             "gpa > 3.5",
@@ -123,12 +160,16 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "You also need absences under 5. Which keyword requires BOTH GPA and attendance?",
+          objective: 3,
+          points: 1,
           options: ["or", "and", "plus", "also"],
           answer: "and",
           explanation: "and is a stricter gate. One failing condition blocks honor roll.",
         },
         {
           prompt: "Write: absences under 5 OR the student has a counselor waiver.",
+          objective: 1,
+          points: 2,
           options: [
             "if absences < 5 and waiver == True:",
             "if absences < 5 or waiver == True:",
@@ -147,6 +188,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "Why does the indented body of an if matter?",
+          objective: 3,
+          points: 2,
           code: `if gpa > 3.5:
     print("honor roll")`,
           options: [
@@ -160,6 +203,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "gpa is exactly 3.5 and the check is `if gpa > 3.5:`. Do they get honor roll?",
+          objective: 2,
+          points: 3,
           options: [
             "Yes",
             "No — 3.5 is not greater than 3.5",
@@ -171,12 +216,16 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "If they miss honor roll, print ineligible. What's the keyword for the other branch?",
+          objective: 1,
+          points: 1,
           options: ["expect:", "else:", "otherwise:", "stop:"],
           answer: "else:",
           explanation: "else is the default path when the first condition fails.",
         },
         {
           prompt: "Work-permit script for 16+. Which is a logic bug?",
+          objective: 2,
+          points: 3,
           code: `if age > 16:\n    approve_permit()`,
           options: [
             "if age > 16: (skips exactly 16)",
@@ -188,6 +237,15 @@ export const MISSIONS: SprintMission[] = [
           explanation: "A 16-year-old is eligible in most states. > 16 quietly denies them. That's an off-by-boundary bug.",
         },
       ],
+    },
+    exitTicket: {
+      prompt: "What is status when this code finishes? Write one sentence on why.",
+      code: `gpa = 3.5
+absences = 2
+if gpa > 3.5 and absences < 5:
+    status = "honor roll"
+else:
+    status = "not yet"`,
     },
     successMessage: "Honor roll script ships. You encoded school policy in conditionals — including the boundary that usually bites people.",
   },
@@ -207,6 +265,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "Why a while loop instead of writing charge() 40 times for a long line?",
+          objective: 3,
+          points: 1,
           options: [
             "Typing is hard",
             "It scales to any line length with the same logic",
@@ -218,12 +278,16 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "What starts a loop block in Python?",
+          objective: 1,
+          points: 1,
           options: [")", ";", ":", "{"],
           answer: ":",
           explanation: "Colon opens the indented block — same as if and def.",
         },
         {
           prompt: "`while tickets > 0:` keeps selling until...",
+          objective: 3,
+          points: 2,
           options: [
             "The bell rings",
             "Inventory hits zero",
@@ -242,6 +306,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "The loop is while tickets > 0. If you never subtract from tickets inside, what happens?",
+          objective: 3,
+          points: 2,
           options: [
             "Register stops instantly",
             "Infinite loop — the register never closes",
@@ -253,6 +319,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "Sell one ticket and update the count.",
+          objective: 1,
+          points: 2,
           options: [
             "tickets = 1",
             "tickets - 1",
@@ -264,11 +332,40 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "tickets = 3. How many times does print('sold') run in while tickets > 0: with a decrement each pass?",
+          code: `tickets = 3
+while tickets > 0:
+    print("sold")
+    tickets -= 1`,
+          objective: 1,
+          points: 3,
           options: ["2", "3", "4", "Infinite"],
           answer: "3",
           explanation: "3, then 2, then 1, then 0 and stop. Off-by-one if you use >= 0 without care.",
         },
+        {
+          prompt: "This register should sell exactly 3 tickets but prints 'sold' 4 times. Which loop line fixes the boundary?",
+          objective: 2,
+          points: 3,
+          code: `tickets = 3
+while tickets >= 0:
+    print("sold")
+    tickets -= 1`,
+          options: [
+            "while tickets > 0:",
+            "while tickets >= -1:",
+            "while tickets == 0:",
+            "tickets = 4"
+          ],
+          answer: "while tickets > 0:",
+          explanation: "With >= 0 the loop still runs when tickets is 0, so it sells one ticket that does not exist. > 0 stops at the right moment.",
+        },
       ],
+    },
+    exitTicket: {
+      prompt: "What is count when this loop stops? Write one sentence on why it stops there.",
+      code: `count = 0
+while count < 3:
+    count += 1`,
     },
     successMessage: "Shift closed. You controlled a live queue with iteration — same idea as SAT timers, roster scans, and bot polling.",
   },
@@ -288,6 +385,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "The bot doesn't crash, but it marks seniors as juniors. What kind of bug is that?",
+          objective: 3,
+          points: 2,
           options: [
             "Missing a colon",
             "Spelling print as prnt",
@@ -299,6 +398,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "You want 16+ for late-night hackathon access. Why is `if age > 16:` wrong for a 16-year-old?",
+          objective: 2,
+          points: 3,
           options: [
             "It's not a bug",
             "Because '>' doesn't include 16. It should be '>='.",
@@ -310,6 +411,8 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "Fastest way to see why attendance_count is 12 when 11 people signed in?",
+          objective: 3,
+          points: 2,
           options: [
             "Restart the Chromebook",
             "Stare at the screen",
@@ -328,6 +431,8 @@ export const MISSIONS: SprintMission[] = [
       questions: [
         {
           prompt: "What does tracing mean here?",
+          objective: 3,
+          points: 1,
           options: [
             "Drawing the Discord logo",
             "Following execution line-by-line until the value goes wrong",
@@ -339,12 +444,20 @@ export const MISSIONS: SprintMission[] = [
         },
         {
           prompt: "Mental trace: `n = 10`, `n = n + 5`, `if n > 12: n = 0`. What is n?",
+          code: `n = 10
+n = n + 5
+if n > 12:
+    n = 0`,
+          objective: 1,
+          points: 3,
           options: ["15", "0", "10", "12"],
           answer: "0",
           explanation: "10 → 15 → 15 > 12 so n becomes 0. Sequence, then branch.",
         },
         {
           prompt: "The bot file is 400 lines. What's decomposition?",
+          objective: 3,
+          points: 2,
           options: [
             "Deleting until it works",
             "Splitting check-in, scoring, and DMs into separate functions",
@@ -355,6 +468,13 @@ export const MISSIONS: SprintMission[] = [
           explanation: "Don't debug the whole club platform at once. Isolate the attendance function, then the rest.",
         },
       ],
+    },
+    exitTicket: {
+      prompt: "What is n at the end? Write one sentence on how you know.",
+      code: `n = 4
+n = n * 2
+if n > 6:
+    n = n - 1`,
     },
     successMessage: "Bot's honest again. You debug like a high schooler who ships: trace, isolate, fix the boundary.",
   },

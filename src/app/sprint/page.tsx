@@ -1,550 +1,154 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { useProgress } from "@/context/ProgressContext";
-import {
-  CheckCircle, Lock, ArrowRight, Play, Sparkles,
-  Trophy, Code2, RotateCcw, Crown, Medal, Flame, Zap,
-  BookOpen, Terminal, XCircle, Users, ChevronDown,
-} from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { LogOut } from "lucide-react";
+import { api } from "@/trpc/react";
+import type { TeamId } from "@/lib/sprint/types";
+import { Btn, ErrorLine, HUD, Panel, hint } from "./ui";
+import { JoinForm } from "./JoinForm";
+import { Lobby } from "./Lobby";
+import { Planning } from "./Planning";
+import { Work } from "./Work";
+import { Standup } from "./Standup";
+import { Review } from "./Review";
+import { Retro } from "./Retro";
 
-import { MISSIONS } from "./missions";
-import { SprintMission, TeamResult, freshTeam } from "./types";
-import { QuizChallenge } from "./QuizChallenge";
-import { XpBurst } from "./XpBurst";
-import { MissionSelector } from "./MissionSelector";
-import { TeamPicker } from "./TeamPicker";
-import { TopicMark } from "./TopicMark";
+const KEY = "sprint-session";
+type Session = { code: string; team: TeamId };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
-export default function SprintPage() {
-  const { addXp, incrementTeamMissions } = useProgress();
-
-  // Which mission the teacher selected
-  const [selectedMission, setSelectedMission] = useState<SprintMission | null>(null);
-  // Which team the student picked
-  const [team, setTeam] = useState<"GroupA" | "GroupB" | null>(null);
-
-  const [groupAResult, setGroupAResult] = useState<TeamResult>(freshTeam());
-  const [groupBResult, setGroupBResult] = useState<TeamResult>(freshTeam());
-
-  const [showFinalEnd, setShowFinalEnd] = useState(false);
-  const [showXpBurst, setShowXpBurst] = useState(false);
-  const [xpAmount, setXpAmount] = useState(0);
-  const [constraint, setConstraint] = useState("");
-  const [constraintSet, setConstraintSet] = useState(false);
-
-  const mission = selectedMission;
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
-  if (
-    supabaseRef.current === null &&
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  ) {
-    supabaseRef.current = createClient();
+function load(): Session | null {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw) as Session;
+    return typeof s.code === "string" && (s.team === "A" || s.team === "B") ? s : null;
+  } catch {
+    return null;
   }
-  const supabase = supabaseRef.current;
+}
 
-  const applyRoom = (data: {
-    selected_mission_id?: string | null;
-    group_a_result?: TeamResult;
-    group_b_result?: TeamResult;
-  }) => {
-    if (data.selected_mission_id) {
-      const m = MISSIONS.find((item) => item.id === data.selected_mission_id);
-      if (m) setSelectedMission(m);
-    } else if (data.selected_mission_id === null) {
-      setSelectedMission(null);
-    }
-    if (data.group_a_result && Object.keys(data.group_a_result).length > 0) {
-      setGroupAResult(data.group_a_result);
-    }
-    if (data.group_b_result && Object.keys(data.group_b_result).length > 0) {
-      setGroupBResult(data.group_b_result);
-    }
-  };
+function save(s: Session | null) {
+  try {
+    if (s) localStorage.setItem(KEY, JSON.stringify(s));
+    else localStorage.removeItem(KEY);
+  } catch {
+    /* storage unavailable: page still works */
+  }
+}
+
+const focusCss = `
+.sprint-root button:focus-visible,.sprint-root input:focus-visible,.sprint-root textarea:focus-visible,.sprint-root pre:focus-visible,.sprint-root a:focus-visible{outline:3px solid var(--ink);outline-offset:2px;box-shadow:0 0 0 6px var(--ticket)}
+.sprint-root textarea,.sprint-root input[type=text]{box-sizing:border-box}
+`;
+
+function SprintApp() {
+  const params = useSearchParams();
+  const [session, setSession] = useState<Session | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
-    let active = true;
-    supabase
-      .from("sprint_rooms")
-      .select("selected_mission_id, group_a_result, group_b_result")
-      .eq("id", "default")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (active && data) applyRoom(data);
-      });
+    setSession(load());
+    setReady(true);
+  }, []);
 
-    const channel = supabase
-      .channel("sprint-default")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "sprint_rooms", filter: "id=eq.default" },
-        (payload) => applyRoom(payload.new as {
-          selected_mission_id?: string | null;
-          group_a_result?: TeamResult;
-          group_b_result?: TeamResult;
-        })
-      )
-      .subscribe();
+  const join = useCallback((s: Session) => {
+    save(s);
+    setSession(s);
+  }, []);
+  const leave = useCallback(() => {
+    save(null);
+    setSession(null);
+  }, []);
 
-    return () => {
-      active = false;
-      supabase.removeChannel(channel);
-    };
-  }, [supabase]);
+  return (
+    <div className="sprint-root" style={{ maxWidth: 1000, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
+      <style>{focusCss}</style>
+      {!ready ? null : session ? (
+        <Room session={session} onLeave={leave} />
+      ) : (
+        <JoinForm initialCode={params.get("code") ?? ""} onJoined={join} />
+      )}
+    </div>
+  );
+}
 
-  const selectMissionInDb = async (m: SprintMission) => {
-    const groupA = freshTeam();
-    const groupB = freshTeam();
-    setSelectedMission(m);
-    setGroupAResult(groupA);
-    setGroupBResult(groupB);
-    if (!supabase) return;
-    await supabase.from("sprint_rooms").upsert({
-      id: "default",
-      selected_mission_id: m.id,
-      group_a_result: groupA,
-      group_b_result: groupB,
-    });
-  };
+function Room({ session, onLeave }: { session: Session; onLeave: () => void }) {
+  const { code, team } = session;
+  const utils = api.useUtils();
+  const query = api.room.get.useQuery({ code }, { refetchInterval: 2000, retry: false });
+  const refresh = useCallback(() => void utils.room.get.invalidate({ code }), [utils, code]);
 
-  // ── Quiz completion handlers ──────────────────────────────────────────────
-  const handleGroupAComplete = async (correct: number, total: number) => {
-    if (!mission) return;
-    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
-    addXp(pts);
-    setXpAmount(pts);
-    setShowXpBurst(true);
-    const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
-    setGroupAResult(result);
-    if (supabase) await supabase.from("sprint_rooms").upsert({ id: "default", group_a_result: result });
-  };
+  const data = query.data;
+  const leaveBtn = (
+    <Btn variant="ghost" onClick={onLeave} style={{ fontSize: "1.1rem", minHeight: "2.5rem" }}>
+      <LogOut size={16} aria-hidden /> Leave room
+    </Btn>
+  );
 
-  const handleGroupBComplete = async (correct: number, total: number) => {
-    if (!mission) return;
-    const pts = Math.round((correct / total) * mission.xpReward * 0.5);
-    addXp(pts);
-    setXpAmount(pts);
-    setShowXpBurst(true);
-    const result = { questionsAnswered: total, questionsCorrect: correct, points: pts, completed: true };
-    setGroupBResult(result);
-    if (supabase) await supabase.from("sprint_rooms").upsert({ id: "default", group_b_result: result });
-  };
-
-  // Auto-show final when both done
-  useEffect(() => {
-    if (groupAResult.completed && groupBResult.completed && !showFinalEnd) {
-      const t = setTimeout(() => setShowFinalEnd(true), 600);
-      return () => clearTimeout(t);
-    }
-  }, [groupAResult.completed, groupBResult.completed, showFinalEnd]);
-
-  const handlePlayAgain = async () => {
-    setTeam(null);
-    setShowFinalEnd(false);
-    const groupA = freshTeam();
-    const groupB = freshTeam();
-    setGroupAResult(groupA);
-    setGroupBResult(groupB);
-    if (!supabase) return;
-    await supabase.from("sprint_rooms").upsert({
-      id: "default",
-      group_a_result: groupA,
-      group_b_result: groupB,
-    });
-  };
-
-  const handleNewMission = async () => {
-    setTeam(null);
-    setShowFinalEnd(false);
-    setSelectedMission(null);
-    setConstraint("");
-    setConstraintSet(false);
-    const groupA = freshTeam();
-    const groupB = freshTeam();
-    setGroupAResult(groupA);
-    setGroupBResult(groupB);
-    if (!supabase) return;
-    await supabase.from("sprint_rooms").upsert({
-      id: "default",
-      selected_mission_id: null,
-      group_a_result: groupA,
-      group_b_result: groupB,
-    });
-  };
-
-  const getWinner = () => {
-    const a = groupAResult.points, b = groupBResult.points;
-    return a > b ? "GroupA" : b > a ? "GroupB" : "tie";
-  };
-
-  // Group B unlocks after Group A is done
-  const groupBUnlocked = groupAResult.completed;
-  const isMyTurnActive = team === "GroupA"
-    ? !groupAResult.completed
-    : (groupBUnlocked && !groupBResult.completed);
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER: Mission Selector
-  // ─────────────────────────────────────────────────────────────────────────
-  if (!selectedMission) {
-    return <MissionSelector onSelectMission={selectMissionInDb} />;
+  if (!data) {
+    return (
+      <Panel>
+        {query.error ? (
+          <>
+            <h1 style={{ fontFamily: HUD, fontSize: "1.9rem", fontWeight: 400, margin: 0 }}>Cannot reach room {code}</h1>
+            <ErrorLine message={query.error.message} />
+            <div style={{ marginTop: "1rem" }}>{leaveBtn}</div>
+          </>
+        ) : (
+          <p style={hint} role="status">Loading room {code}...</p>
+        )}
+      </Panel>
+    );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER: Team picker
-  // ─────────────────────────────────────────────────────────────────────────
-  if (!mission) return null;
-
-  if (!team) {
-    return <TeamPicker mission={mission} onSelectTeam={setTeam} onBack={handleNewMission} />;
+  const { state, mission } = data;
+  const common = { code, team, state, mission, refresh };
+  let view;
+  switch (state.phase) {
+    case "lobby":
+      view = <Lobby className={data.className} {...common} />;
+      break;
+    case "planning":
+      view = <Planning {...common} />;
+      break;
+    case "teamA":
+    case "teamB":
+      view = <Work {...common} />;
+      break;
+    case "standup":
+      view = <Standup {...common} />;
+      break;
+    case "review":
+      view = <Review {...common} />;
+      break;
+    case "retro":
+      view = <Retro {...common} />;
+      break;
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER: Game view
-  // ─────────────────────────────────────────────────────────────────────────
-  const teamColor = team === "GroupA" ? "var(--ink)" : "var(--accent-indigo)";
-  const myLabel = team === "GroupA" ? "Group A" : "Group B";
-  const myResult = team === "GroupA" ? groupAResult : groupBResult;
-  const myAccuracy = myResult.questionsAnswered > 0 ? myResult.questionsCorrect / myResult.questionsAnswered : 0;
 
   return (
     <>
-      {/* XP Burst */}
-      <AnimatePresence>
-        {showXpBurst && (
-          <XpBurst amount={xpAmount} onDone={() => setShowXpBurst(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* Final Results Modal */}
-      <AnimatePresence>
-        {showFinalEnd && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: "fixed", inset: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "1rem" }}>
-            <motion.div initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }}
-              style={{ background: "var(--bg-elevated)", borderRadius: 0, padding: "2rem", maxWidth: "520px", width: "100%", textAlign: "center", border: "3px solid var(--ink)", boxShadow: "6px 6px 0 var(--ticket)" }}>
-              {(() => {
-                const winner = getWinner();
-                return (
-                  <>
-                    <motion.div initial={{ scale: 0, rotate: -15 }} animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: "spring", delay: 0.15 }} style={{ marginBottom: "1.5rem" }}>
-                      {winner === "tie"
-                        ? <Crown size={72} color="var(--ticket)" />
-                        : <Crown size={72} color="#f59e0b" style={{ filter: "drop-shadow(0 0 20px rgba(245,158,11,0.5))" }} />}
-                    </motion.div>
-                    <h2 style={{ fontSize: "2.25rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
-                      Sprint Complete!
-                    </h2>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: "0.5rem" }}>
-                      {mission.successMessage}
-                    </p>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginBottom: myAccuracy < 0.7 ? "0.75rem" : "2rem" }}>
-                      {winner === "tie" ? "Both teams tied." : `${winner === "GroupA" ? "Group A" : "Group B"} wins this round.`}
-                    </p>
-
-                    {myAccuracy < 0.7 && (
-                      <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "2rem" }}>
-                        This run still misses the constraint.{" "}
-                        <Link href={`/toolbox?topic=${mission.topicKey}`} style={{ color: "var(--accent-blue)", fontWeight: 700 }}>
-                          Practice {mission.topic}
-                        </Link>
-                      </p>
-                    )}
-
-                    {/* Scores */}
-                    <div style={{ display: "flex", gap: "1.25rem", marginBottom: "2rem", justifyContent: "center" }}>
-                      {(["GroupA", "GroupB"] as const).map(t => {
-                        const result = t === "GroupA" ? groupAResult : groupBResult;
-                        const isWin = winner === t;
-                        return (
-                          <div key={t} style={{
-                            flex: 1, padding: "1.5rem", borderRadius: "var(--radius-md)",
-                            background: "var(--bg-elevated)",
-                            border: isWin ? "3px solid var(--ink)" : "3px solid var(--ink)",
-                            boxShadow: isWin ? "4px 4px 0 var(--ticket)" : "none",
-                          }}>
-                            {isWin && <Crown size={20} color="#f59e0b" style={{ marginBottom: "0.5rem" }} />}
-                            <div style={{ color: t === "GroupA" ? "var(--accent-indigo)" : "var(--accent-blue)", fontWeight: 700, marginBottom: "0.5rem" }}>
-                              {t === "GroupA" ? "Group A" : "Group B"}
-                            </div>
-                            <div style={{ fontSize: "2.5rem", fontWeight: 900, color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
-                              {result.points}
-                            </div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                              {result.questionsCorrect}/{result.questionsAnswered} correct
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-                      <motion.button onClick={() => { incrementTeamMissions(); handlePlayAgain(); }}
-                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        className="play-btn"
-                        style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-                        <RotateCcw size={16} /> Play Again
-                      </motion.button>
-                      <motion.button onClick={() => { incrementTeamMissions(); handleNewMission(); }}
-                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                        style={{ background: "var(--bg-elevated)", border: "3px solid var(--ink)", borderRadius: 0, padding: "0.55rem 1.1rem", cursor: "pointer", color: "var(--ink)", fontWeight: 700, fontSize: "0.95rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
-                        <ChevronDown size={16} /> New Mission
-                      </motion.button>
-                    </div>
-                  </>
-                );
-              })()}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── GAME UI ── */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ maxWidth: "820px", margin: "0 auto" }}>
-
-        {/* Top bar */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.75rem", flexWrap: "wrap", gap: "0.75rem" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
-              <TopicMark topicKey={mission.topicKey} size={18} />
-              <h1 style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-                {mission.title}
-              </h1>
-            </div>
-            <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", fontFamily: "'JetBrains Mono', monospace" }}>
-              {myLabel} — {team === "GroupA" ? mission.groupA.role : mission.groupB.role}
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.75rem",
-              borderRadius: 0, fontSize: "0.75rem", fontWeight: 700,
-              background: "var(--ticket)", color: "var(--ink)", border: "2px solid var(--ink)",
-            }}>
-              <Users size={12} /> {myLabel}
-            </div>
-            <button
-              onClick={() => setTeam(null)}
-              style={{ background: "var(--bg-elevated)", border: "2px solid var(--ink)", borderRadius: 0, color: "var(--ink)", cursor: "pointer", fontSize: "0.75rem", fontWeight: 700, padding: "0.375rem 0.75rem" }}
-            >
-              Switch
-            </button>
-          </div>
+      <header style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+        <div>
+          <h1 style={{ fontFamily: HUD, fontSize: "2.2rem", fontWeight: 400, margin: 0 }}>
+            {data.className}
+          </h1>
+          <p style={{ ...hint, margin: 0 }}>
+            Room {code} - Team {team}: {state.teams[team].name || "unnamed"} - Round {state.round}
+          </p>
         </div>
-
-        {/* Mission Briefing / Context */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }} 
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            background: "var(--bg-elevated)",
-            border: "3px solid var(--ink)",
-            borderRadius: 0,
-            padding: "1.25rem 1.75rem",
-            marginBottom: "1.75rem",
-            display: "flex",
-            gap: "1.25rem",
-            alignItems: "center",
-            boxShadow: "4px 4px 0 var(--ticket)"
-          }}
-        >
-          <TopicMark topicKey={mission.topicKey} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "0.7rem", color: "var(--ink)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.25rem" }}>
-              Mission Scenario
-            </div>
-            <p style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6, fontWeight: 500 }}>
-              {mission.description}
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Score strip */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: "2rem",
-          background: "var(--bg-elevated)", padding: "0.875rem 1.5rem",
-          borderRadius: 0, marginBottom: "1.75rem",
-          border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--ticket)",
-        }}>
-          {(["GroupA", "GroupB"] as const).map((t, i) => {
-            const result = t === "GroupA" ? groupAResult : groupBResult;
-            const tColor = t === "GroupA" ? "var(--ink)" : "var(--accent-indigo)";
-            return (
-              <div key={t} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                {i === 1 && <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>vs</div>}
-                <div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.65rem", textTransform: "uppercase" }}>
-                    {t === "GroupA" ? "Group A" : "Group B"}
-                  </div>
-                  <div style={{ color: result.completed ? tColor : "var(--text-primary)", fontWeight: 800, fontSize: "1.25rem", fontFamily: "'JetBrains Mono', monospace" }}>
-                    {result.completed ? `${result.points} pts` : "—"}
-                  </div>
-                  <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
-                    {result.completed ? `${result.questionsCorrect}/${result.questionsAnswered} correct` : "In progress"}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {!constraintSet ? (
-          <div style={{
-            background: "var(--bg-elevated)", border: "3px solid var(--ink)",
-            boxShadow: "4px 4px 0 var(--ticket)", borderRadius: 0, padding: "1.5rem",
-          }}>
-            <label style={{ display: "block", color: "var(--text-primary)", fontWeight: 700, fontSize: "1rem", marginBottom: "0.5rem" }}>
-              What has to stay true?
-            </label>
-            <textarea
-              value={constraint}
-              onChange={(e) => setConstraint(e.target.value)}
-              rows={3}
-              style={{
-                width: "100%", padding: "0.75rem", borderRadius: 0,
-                border: "3px solid var(--ink)", background: "var(--bg-elevated)",
-                color: "var(--text-primary)", fontFamily: "inherit", fontSize: "0.95rem", resize: "vertical",
-              }}
-            />
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.75rem" }}>
-              <button
-                onClick={() => setConstraintSet(true)}
-                disabled={!constraint.trim()}
-                style={{
-                  padding: "0.45rem 1rem", background: "var(--ink)", border: "3px solid var(--ink)", borderRadius: 0,
-                  color: "var(--ticket)", fontFamily: "var(--font-hud), VT323, monospace", fontSize: "1.25rem",
-                  cursor: constraint.trim() ? "pointer" : "default", opacity: constraint.trim() ? 1 : 0.5,
-                }}
-              >
-                Build from this
-              </button>
-            </div>
-          </div>
-        ) : (
-        <>
-        {/* Two-column quiz layout */}
-        <div className="sprint-boards">
-          {/* Group A panel */}
-          <div style={{
-            background: "var(--bg-elevated)",
-            border: "3px solid var(--ink)",
-            boxShadow: team === "GroupA" ? "4px 4px 0 var(--ticket)" : "4px 4px 0 var(--accent-indigo)",
-            borderRadius: 0, padding: "1.5rem",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
-              <Code2 size={16} color="var(--ink)" />
-              <span style={{ color: "var(--ink)", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group A</span>
-              <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupA.role}</span>
-              {groupAResult.completed && (
-                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
-                  <Zap size={12} />+{groupAResult.points} XP
-                </div>
-              )}
-            </div>
-            <QuizChallenge
-              questions={mission.groupA.questions}
-              onComplete={handleGroupAComplete}
-              teamColor="var(--ink)"
-              teamName="Group A"
-              isActive={team === "GroupA" && !groupAResult.completed}
-              isCompleted={groupAResult.completed}
-              topic={mission.topicKey}
-            />
-          </div>
-
-          {/* Group B panel */}
-          <div style={{
-            background: "var(--bg-elevated)",
-            border: "3px solid var(--ink)",
-            boxShadow: team === "GroupB" ? "4px 4px 0 var(--ticket)" : "4px 4px 0 var(--accent-indigo)",
-            borderRadius: 0, padding: "1.5rem",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "1.25rem" }}>
-              <Users size={16} color="var(--accent-indigo)" />
-              <span style={{ color: "var(--accent-indigo)", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "1px" }}>Group B</span>
-              <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>— {mission.groupB.role}</span>
-              {groupBResult.completed && (
-                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", color: "#10b981", fontSize: "0.75rem" }}>
-                  <Zap size={12} />+{groupBResult.points} XP
-                </div>
-              )}
-            </div>
-            <QuizChallenge
-              questions={mission.groupB.questions}
-              onComplete={handleGroupBComplete}
-              teamColor="var(--accent-indigo)"
-              teamName="Group B"
-              isActive={team === "GroupB" && groupBUnlocked && !groupBResult.completed}
-              isCompleted={groupBResult.completed}
-              topic={mission.topicKey}
-            />
-          </div>
-        </div>
-
-        {/* Status footer & Handoff Banner */}
-        <div style={{
-          marginTop: "1.5rem", padding: "1.5rem",
-          background: "var(--bg-elevated)", borderRadius: 0,
-          border: "3px solid var(--ink)", boxShadow: "4px 4px 0 var(--ticket)",
-          display: "flex", flexDirection: "column", gap: "1rem"
-        }}>
-          {/* Handoff Message (Shown only when A is done and B hasn't finished) */}
-          <AnimatePresence>
-            {groupAResult.completed && !groupBResult.completed && (
-              <motion.div
-                initial={{ opacity: 0, height: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, height: "auto", scale: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                transition={{ type: "spring", bounce: 0.4 }}
-                style={{
-                   background: "var(--ticket)",
-                   border: "3px solid var(--ink)",
-                   boxShadow: "4px 4px 0 var(--ink)",
-                   padding: "1.25rem 1.5rem",
-                   borderRadius: 0,
-                   marginBottom: "1rem"
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--ink)", fontWeight: 800, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "0.5rem" }}>
-                  <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ repeat: Infinity, duration: 2 }} style={{ display: "inline-flex" }}>
-                    <Zap size={16} />
-                  </motion.div>
-                  Baton Pass
-                </div>
-                <div style={{ color: "var(--text-primary)", fontSize: "0.95rem", lineHeight: 1.6 }}>
-                  {mission.handoffMessage}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-              <Flame size={13} color="#f59e0b" />
-              <span>Group A acts as the foundation — Group B inherits their work.</span>
-            </div>
-            <div style={{ display: "flex", gap: "1rem", fontSize: "0.78rem", fontFamily: "'JetBrains Mono', monospace" }}>
-              <span style={{ color: groupAResult.completed ? "#10b981" : "var(--text-muted)" }}>
-                A: {groupAResult.completed ? "✓ Done" : `${groupAResult.questionsAnswered}/${mission.groupA.questions.length}`}
-              </span>
-              <span style={{ color: groupBResult.completed ? "#10b981" : groupBUnlocked ? "var(--accent-blue)" : "var(--text-muted)" }}>
-                B: {groupBResult.completed ? "✓ Done" : groupBUnlocked ? `${groupBResult.questionsAnswered}/${mission.groupB.questions.length}` : "Locked"}
-              </span>
-            </div>
-          </div>
-        </div>
-        </>
-        )}
-      </motion.div>
+        {leaveBtn}
+      </header>
+      {view}
     </>
+  );
+}
+
+export default function SprintPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "1.5rem" }}>Loading...</div>}>
+      <SprintApp />
+    </Suspense>
   );
 }
