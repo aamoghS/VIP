@@ -3,8 +3,8 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { SignInGate, SignedInAs } from "@/components/SignInGate";
 import { api } from "@/trpc/react";
-import type { TeamId } from "@/lib/sprint/types";
 import { Btn, ErrorLine, HUD, Panel, hint } from "./ui";
 import { JoinForm } from "./JoinForm";
 import { Lobby } from "./Lobby";
@@ -14,23 +14,20 @@ import { Standup } from "./Standup";
 import { Review } from "./Review";
 import { Retro } from "./Retro";
 
-const KEY = "sprint-session";
-type Session = { code: string; team: TeamId };
+const KEY = "sprint-room";
 
-function load(): Session | null {
+function load(): string | null {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw) as Session;
-    return typeof s.code === "string" && (s.team === "A" || s.team === "B") ? s : null;
+    return raw && raw.length === 6 ? raw : null;
   } catch {
     return null;
   }
 }
 
-function save(s: Session | null) {
+function save(code: string | null) {
   try {
-    if (s) localStorage.setItem(KEY, JSON.stringify(s));
+    if (code) localStorage.setItem(KEY, code);
     else localStorage.removeItem(KEY);
   } catch {
     /* storage unavailable: page still works */
@@ -44,37 +41,38 @@ const focusCss = `
 
 function SprintApp() {
   const params = useSearchParams();
-  const [session, setSession] = useState<Session | null>(null);
+  const [code, setCode] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setSession(load());
+    setCode(load());
     setReady(true);
   }, []);
 
-  const join = useCallback((s: Session) => {
-    save(s);
-    setSession(s);
+  const enter = useCallback((next: string) => {
+    save(next);
+    setCode(next);
   }, []);
   const leave = useCallback(() => {
     save(null);
-    setSession(null);
+    setCode(null);
   }, []);
 
   return (
     <div className="sprint-root" style={{ maxWidth: 1000, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
       <style>{focusCss}</style>
-      {!ready ? null : session ? (
-        <Room session={session} onLeave={leave} />
-      ) : (
-        <JoinForm initialCode={params.get("code") ?? ""} onJoined={join} />
-      )}
+      <SignInGate defaultRole="student">
+        {!ready ? null : code ? (
+          <Room code={code} onLeave={leave} />
+        ) : (
+          <JoinForm initialCode={params.get("code") ?? ""} onJoined={enter} />
+        )}
+      </SignInGate>
     </div>
   );
 }
 
-function Room({ session, onLeave }: { session: Session; onLeave: () => void }) {
-  const { code, team } = session;
+function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
   const utils = api.useUtils();
   const query = api.room.get.useQuery({ code }, { refetchInterval: 2000, retry: false });
   const refresh = useCallback(() => void utils.room.get.invalidate({ code }), [utils, code]);
@@ -102,8 +100,12 @@ function Room({ session, onLeave }: { session: Session; onLeave: () => void }) {
     );
   }
 
-  const { state, mission } = data;
-  const common = { code, team, state, mission, refresh };
+  const { state, mission, members, me } = data;
+  if (!me) {
+    return <JoinForm initialCode={code} onJoined={refresh} />;
+  }
+  const team = me.team;
+  const common = { code, team, state, mission, members, me, refresh };
   let view;
   switch (state.phase) {
     case "lobby":
@@ -140,6 +142,7 @@ function Room({ session, onLeave }: { session: Session; onLeave: () => void }) {
         </div>
         {leaveBtn}
       </header>
+      <div style={{ marginBottom: "1rem" }}><SignedInAs /></div>
       {view}
     </>
   );

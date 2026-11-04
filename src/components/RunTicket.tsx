@@ -1,14 +1,17 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useProgress } from "@/context/ProgressContext";
 
 export default function RunTicket() {
+  const pathname = usePathname();
   const { xp, currentLevel, levelProgress, questionsSolved, explanations, teamMissionsCompleted, playerName } = useProgress();
   const stamp =
     questionsSolved === 0 ? "Not started"
     : explanations.length === 0 ? "Say why"
     : teamMissionsCompleted === 0 ? "Ready to build"
     : "Check the score";
+  if (pathname.startsWith("/sprint") || pathname.startsWith("/teacher") || pathname.startsWith("/print")) return null;
   const filled = Number.isFinite(levelProgress) ? levelProgress : 0;
 
   return (

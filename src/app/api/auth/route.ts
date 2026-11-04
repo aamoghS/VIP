@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const name = String(body.name ?? "");
     const password = String(body.password ?? "");
     const result = body.mode === "create"
-      ? await signUp(name, password, body.progress as PlayerProgress)
+      ? await signUp(name, password, body.progress as PlayerProgress, body.role === "teacher" ? "teacher" : "student")
       : await signIn(name, password);
     if ("error" in result && result.error) return NextResponse.json(result, { status: 400 });
     return NextResponse.json({ player: result });

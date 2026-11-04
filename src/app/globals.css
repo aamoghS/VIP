@@ -334,10 +334,9 @@ body {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 768px) {
   .glass-sidebar {
-    position: sticky;
-    top: 0;
+    position: static;
     width: 100%;
     height: auto;
     flex-direction: row !important;
@@ -354,9 +353,21 @@ body {
   }
 
   .glass-sidebar .nav-foot {
-    width: 100%;
-    margin-top: 0.35rem !important;
-    padding-top: 0.55rem !important;
+    display: none !important;
+  }
+
+  .story-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.25rem !important;
+  }
+
+  .story-row-status {
+    min-width: 0 !important;
+  }
+
+  .role-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .app-container {
@@ -372,7 +383,17 @@ body {
   .nav-links {
     flex-direction: row !important;
     flex-wrap: wrap;
-    width: 100%;
+    flex: 1 1 14rem;
+    margin: 0 !important;
+  }
+
+  .glass-sidebar .logo > div > div {
+    display: none;
+  }
+
+  .main-content {
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .glass-sidebar .nav-item {

@@ -51,10 +51,14 @@ function requirePhase(s: SprintState, ...phases: Phase[]) {
   if (!phases.includes(s.phase)) fail(`Not allowed during ${s.phase}.`);
 }
 
-export const joinTeam = (state: SprintState, team: TeamId, name: string): SprintState =>
+/** Keeps `joined` in line with real members. A team with nobody loses its name; a first name sticks. */
+export const syncTeams = (state: SprintState, has: Record<TeamId, boolean>, names: Partial<Record<TeamId, string>> = {}): SprintState =>
   edit(state, (s) => {
-    s.teams[team].name = name.trim();
-    s.teams[team].joined = true;
+    for (const t of ["A", "B"] as const) {
+      s.teams[t].joined = has[t];
+      if (!has[t]) s.teams[t].name = "";
+      else if (!s.teams[t].name) s.teams[t].name = (names[t] ?? "").trim();
+    }
   });
 
 /** lobby -> planning. suggested = mission points per story for each team. */

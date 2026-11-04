@@ -15,7 +15,7 @@ const field = {
 } as const;
 
 export default function PlayerLogin() {
-  const { playerName, signIn, signUp, signOut } = useProgress();
+  const { playerName, playerRole, signIn, signUp, signOut } = useProgress();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +24,7 @@ export default function PlayerLogin() {
   if (playerName) {
     return (
       <div style={{ marginBottom: "0.9rem" }}>
-        <div style={{ color: "var(--ticket)", fontWeight: 700, fontSize: "0.95rem" }}>{playerName}</div>
+        <div style={{ color: "var(--ticket)", fontWeight: 700, fontSize: "0.95rem" }}>{playerName}{playerRole === "teacher" ? " (Teacher)" : ""}</div>
         <button
           type="button"
           onClick={() => void signOut()}

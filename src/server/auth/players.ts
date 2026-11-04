@@ -4,7 +4,10 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { players } from "@/server/db/schema";
 
-const COOKIE = "vip_session";
+export const SESSION_COOKIE = "vip_session";
+const COOKIE = SESSION_COOKIE;
+
+export type Role = "student" | "teacher";
 
 export type PlayerProgress = {
   xp: number;
@@ -76,7 +79,7 @@ export async function currentPlayer() {
   if (!token) return null;
   const [row] = await getDb().select().from(players).where(eq(players.sessionToken, token)).limit(1);
   if (!row) return null;
-  return { name: row.name, progress: readProgress(row.progress) };
+  return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
 }
 
 export async function currentPlayerId() {
@@ -91,7 +94,7 @@ export async function currentPlayerId() {
   return row?.id ?? null;
 }
 
-export async function signUp(name: string, password: string, progress: PlayerProgress) {
+export async function signUp(name: string, password: string, progress: PlayerProgress, role: Role = "student") {
   const display = nameKey(name);
   if (display.length < 2 || display.length > 24) return { error: "Use a name, 2 to 24 characters." };
   if (password.length < 4 || password.length > 72) return { error: "Password needs at least 4 characters." };
@@ -102,6 +105,7 @@ export async function signUp(name: string, password: string, progress: PlayerPro
       name: display,
       nameKey: display.toLowerCase(),
       passwordHash: hashPassword(password),
+      role,
       sessionToken: token,
       progress: readProgress(progress),
     });
@@ -111,7 +115,7 @@ export async function signUp(name: string, password: string, progress: PlayerPro
     throw error;
   }
   await setSession(token);
-  return { name: display, progress: readProgress(progress) };
+  return { name: display, role, progress: readProgress(progress) };
 }
 
 export async function signIn(name: string, password: string) {
@@ -126,7 +130,7 @@ export async function signIn(name: string, password: string) {
   const token = randomBytes(24).toString("hex");
   await getDb().update(players).set({ sessionToken: token, updatedAt: new Date() }).where(eq(players.id, row.id));
   await setSession(token);
-  return { name: row.name, progress: readProgress(row.progress) };
+  return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
 }
 
 export async function signOut() {

@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, ClipboardCheck, Flag, XCircle } from "lucide-reac
 import { api } from "@/trpc/react";
 import { ROLE_DUTIES, roleFor } from "@/lib/sprint/roles";
 import type { PublicStory, StoryState, TeamId } from "@/lib/sprint/types";
+import type { Member } from "./phaseProps";
 import { Btn, CodeBlock, ErrorLine, MONO, OBJECTIVE_LABEL, Panel, Tag, fieldStyle, heading, hint, labelStyle } from "./ui";
 
 type Props = {
@@ -13,10 +14,21 @@ type Props = {
   story: PublicStory;
   storyState: StoryState;
   total: number;
+  estimate?: number;
+  members: Member[];
+  mySeat: number;
   onChanged: () => void;
 };
 
 const MIN_REASON = 10;
+
+// Set when Mark Done succeeds so the next story card focuses its heading on mount.
+let focusNextHeading = false;
+
+// Code-looking options: operators/brackets, a trailing colon, a line starting with a
+// Python keyword, or a bare literal. Prose that only mentions "print" stays in the prose font.
+const CODE_LIKE = /[=()[\]{}<>+*/%]|:\s*$|^\s*(def|while|for|if|elif|else|return|print|del)\b|^(True|False|None|-?\d+(\.\d+)?)$/;
+const looksLikeCode = (opt: string) => CODE_LIKE.test(opt);
 
 function emptyMat(story: PublicStory): string[][] {
   const t = story.trace;
@@ -24,7 +36,7 @@ function emptyMat(story: PublicStory): string[][] {
   return t.lines.map(() => t.variables.map(() => ""));
 }
 
-export function StoryCard({ code, team, story, storyState, total, onChanged }: Props) {
+export function StoryCard({ code, team, story, storyState, total, estimate, members, mySeat, onChanged }: Props) {
   const mat = story.trace && story.trace.variables.length > 0 ? story.trace : null;
   const [answer, setAnswer] = useState(storyState.answer ?? "");
   const [reason, setReason] = useState(storyState.reason);
@@ -34,14 +46,39 @@ export function StoryCard({ code, team, story, storyState, total, onChanged }: P
     return saved.length === blank.length && saved.every((r) => r.length === blank[0]?.length) && saved.length > 0 ? saved : blank;
   });
   const [result, setResult] = useState<{ correct: boolean; explanation: string } | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const justChecked = useRef(false);
+
+  useEffect(() => {
+    if (focusNextHeading) {
+      focusNextHeading = false;
+      headingRef.current?.focus();
+      headingRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (result && justChecked.current) {
+      justChecked.current = false;
+      resultRef.current?.focus();
+      resultRef.current?.scrollIntoView({ block: "center" });
+    }
+  }, [result]);
 
   const check = api.room.checkAnswer.useMutation({
     onSuccess: (r) => {
+      justChecked.current = true;
       setResult({ correct: r.correct, explanation: r.explanation });
       onChanged();
     },
   });
-  const complete = api.room.completeStory.useMutation({ onSuccess: onChanged });
+  const complete = api.room.completeStory.useMutation({
+    onSuccess: () => {
+      focusNextHeading = true;
+      onChanged();
+    },
+  });
 
   // After a reload the story may already be checked on the server: fetch the explanation again.
   const refetched = useRef(false);
@@ -84,20 +121,21 @@ export function StoryCard({ code, team, story, storyState, total, onChanged }: P
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
         <Tag>Story {story.index + 1} of {total}</Tag>
         <Tag>Objective {story.objective}: {OBJECTIVE_LABEL[story.objective]}</Tag>
-        <Tag>{story.points} pts suggested</Tag>
+        <Tag>Our estimate: {estimate ?? story.points} pts</Tag>
       </div>
-      <h2 style={{ ...heading, margin: "0.5rem 0" }}>{story.title}</h2>
-      <p style={{ lineHeight: 1.6, margin: "0 0 1rem" }}>{story.userStory}</p>
+      <h2 ref={headingRef} tabIndex={-1} style={{ ...heading, margin: "0.5rem 0" }}>{story.title}</h2>
+      {story.userStory && story.userStory !== story.prompt ? <p style={{ lineHeight: 1.5, margin: "0 0 0.75rem" }}>{story.userStory}</p> : null}
 
-      <h3 style={{ ...labelStyle, fontSize: "1.1rem" }}>Roles for this story (they change every story)</h3>
-      <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "grid", gap: "0.5rem", gridTemplateColumns: "repeat(auto-fit, minmax(13rem, 1fr))" }}>
-        {[0, 1, 2, 3].map((seat) => {
+      <ul aria-label="Roles for this story (they change every story)" className="role-strip" style={{ listStyle: "none", padding: 0, margin: "0 0 1rem", display: "grid", gap: "0.4rem", gridTemplateColumns: "repeat(4, 1fr)" }}>
+        {Array.from({ length: Math.max(4, ...members.map((m) => m.seat)) }, (_, seat) => {
           const role = roleFor(seat, story.index);
+          const who = members.find((m) => m.seat === seat + 1);
           return (
-            <li key={seat} style={{ border: "3px solid var(--ink)", padding: "0.6rem 0.75rem", background: "var(--ticket)", color: "var(--ink)" }}>
-              <strong style={{ fontFamily: MONO, fontSize: "0.85rem" }}>Seat {seat + 1}</strong>
-              <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{role}</div>
-              <div style={{ fontSize: "0.9rem" }}>{ROLE_DUTIES[role]}</div>
+            <li key={seat} style={{ border: "2px solid var(--ink)", padding: "0.3rem 0.5rem", background: "var(--ticket)", color: "var(--ink)", outline: mySeat === seat + 1 ? "3px solid var(--ink)" : undefined, outlineOffset: 2 }}>
+              <strong style={{ fontSize: "0.9rem" }}>
+                Seat {seat + 1}{who ? ` - ${who.name}` : ""}: {role}{mySeat === seat + 1 ? " (You)" : ""}
+              </strong>
+              <div style={{ fontSize: "0.75rem", lineHeight: 1.3 }}>{ROLE_DUTIES[role]}</div>
             </li>
           );
         })}
@@ -110,7 +148,7 @@ export function StoryCard({ code, team, story, storyState, total, onChanged }: P
         <div style={{ margin: "1rem 0" }}>
           <h3 style={{ ...labelStyle, fontSize: "1.1rem" }}>Trace mat</h3>
           <p style={{ ...hint, margin: "0 0 0.5rem" }}>
-            Tracer: for each line, write the value of each variable after that line runs. Every cell needs something. Up and Down arrows move between rows.
+            Tracer: for each line, write the value of each variable after that line runs. Every cell needs something: if a variable has no value yet, or the line is skipped (an if or else that does not run), write a dash (-). Up and Down arrows move between rows.
           </p>
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", minWidth: "100%" }}>
@@ -166,7 +204,7 @@ export function StoryCard({ code, team, story, storyState, total, onChanged }: P
                 border: "3px solid var(--ink)",
                 background: answer === opt ? "var(--ticket)" : "var(--bg-elevated)",
                 color: answer === opt ? "var(--ink)" : "var(--text-primary)",
-                fontFamily: MONO,
+                fontFamily: looksLikeCode(opt) ? MONO : "inherit",
                 cursor: locked ? "default" : "pointer",
                 boxShadow: "3px 3px 0 var(--ink)",
               }}
@@ -217,7 +255,7 @@ export function StoryCard({ code, team, story, storyState, total, onChanged }: P
 
       <div aria-live="polite" style={{ marginTop: "1rem" }}>
         {result ? (
-          <div style={{ border: "3px solid var(--ink)", padding: "1rem", background: result.correct ? "var(--accent-emerald-dim)" : "var(--accent-rose-dim)" }}>
+          <div ref={resultRef} tabIndex={-1} style={{ outlineOffset: 2, border: "3px solid var(--ink)", padding: "1rem", background: result.correct ? "var(--accent-emerald-dim)" : "var(--accent-rose-dim)" }}>
             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", fontWeight: 800, fontSize: "1.2rem" }}>
               {result.correct ? <CheckCircle2 size={22} aria-hidden /> : <XCircle size={22} aria-hidden />}
               {result.correct ? "Correct" : "Not quite"}

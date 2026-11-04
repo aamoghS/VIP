@@ -8,6 +8,8 @@ import {
   Lock, Loader2, CheckCircle2, XCircle, Clock, AlertTriangle, Users, DoorOpen,
 } from "lucide-react";
 import { api } from "@/trpc/react";
+import { SignInGate, SignedInAs } from "@/components/SignInGate";
+import { useProgress } from "@/context/ProgressContext";
 import { MISSIONS } from "@/app/sprint/missions";
 import { velocity } from "@/lib/sprint/state";
 import type { Phase, TeamId } from "@/lib/sprint/types";
@@ -58,30 +60,6 @@ const BUDGET_MS = 45 * 60 * 1000;
 const WARN_MS = 5 * 60 * 1000;
 const TEAMS: TeamId[] = ["A", "B"];
 
-/* ---------- local storage ---------- */
-
-type StoredRoom = { code: string; teacherToken: string; className: string };
-const STORE_KEY = "vip-teacher-rooms";
-
-function readRooms(): StoredRoom[] {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? (parsed as StoredRoom[]).filter((r) => r && typeof r.code === "string" && typeof r.teacherToken === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRoom(room: StoredRoom) {
-  try {
-    const rest = readRooms().filter((r) => r.code !== room.code);
-    localStorage.setItem(STORE_KEY, JSON.stringify([room, ...rest]));
-  } catch {
-    /* storage unavailable */
-  }
-}
-
 /* ---------- helpers ---------- */
 
 const mmss = (ms: number) => {
@@ -114,17 +92,12 @@ function ErrorNote({ message }: { message?: string }) {
 
 /* ---------- landing: create / reopen ---------- */
 
-function Landing({ onOpen }: { onOpen: (r: StoredRoom) => void }) {
+function Landing({ onOpen }: { onOpen: (code: string) => void }) {
   const [name, setName] = useState("");
-  const [rooms, setRooms] = useState<StoredRoom[]>([]);
-  useEffect(() => setRooms(readRooms()), []);
+  const rooms = api.room.mine.useQuery().data ?? [];
 
   const create = api.room.create.useMutation({
-    onSuccess: (res) => {
-      const room = { code: res.code, teacherToken: res.teacherToken, className: name.trim() };
-      saveRoom(room);
-      onOpen(room);
-    },
+    onSuccess: (res) => onOpen(res.code),
   });
 
   return (
@@ -150,11 +123,11 @@ function Landing({ onOpen }: { onOpen: (r: StoredRoom) => void }) {
 
       {rooms.length > 0 && (
         <section style={card} aria-labelledby="my-rooms">
-          <h2 id="my-rooms" style={h2}>Rooms on this browser</h2>
+          <h2 id="my-rooms" style={h2}>Your rooms</h2>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.5rem" }}>
             {rooms.map((r) => (
               <li key={r.code}>
-                <button type="button" onClick={() => onOpen(r)} style={{ ...buttonAlt, width: "100%", justifyContent: "space-between" }}>
+                <button type="button" onClick={() => onOpen(r.code)} style={{ ...buttonAlt, width: "100%", justifyContent: "space-between" }}>
                   <span>{r.className || "Unnamed class"}</span>
                   <span className="hud" style={{ fontSize: "1.4rem", letterSpacing: "0.1em" }}>{r.code}</span>
                 </button>
@@ -169,11 +142,11 @@ function Landing({ onOpen }: { onOpen: (r: StoredRoom) => void }) {
 
 /* ---------- dashboard ---------- */
 
-function Dashboard({ code, token }: { code: string; token: string }) {
+function Dashboard({ code }: { code: string }) {
   const utils = api.useUtils();
-  const query = api.room.dashboard.useQuery({ code, teacherToken: token }, { refetchInterval: 3000, retry: false });
+  const query = api.room.dashboard.useQuery({ code }, { refetchInterval: 3000, retry: false });
   const refresh = () => utils.room.dashboard.invalidate();
-  const input = { code, teacherToken: token };
+  const input = { code };
 
   const setMission = api.room.setMission.useMutation({ onSuccess: refresh });
   const startPlanning = api.room.startPlanning.useMutation({ onSuccess: refresh });
@@ -197,7 +170,7 @@ function Dashboard({ code, token }: { code: string; token: string }) {
     return (
       <div style={card}>
         <ErrorNote message={query.error.message} />
-        <p>Room {code} could not be loaded with the saved teacher token.</p>
+        <p>Room {code} could not be loaded. Rooms can only be opened by the teacher who made them.</p>
       </div>
     );
   }
@@ -253,20 +226,25 @@ function Dashboard({ code, token }: { code: string; token: string }) {
       {/* stepper + timer */}
       <section style={card} aria-labelledby="phase-h">
         <h2 id="phase-h" style={h2}>Phase</h2>
-        <ol style={{ listStyle: "none", padding: 0, margin: "0 0 1rem", display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+        <ol style={{ listStyle: "none", padding: 0, margin: "0 0 1rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.25rem 0.5rem" }}>
           {PHASES.map((p, i) => {
             const current = i === phaseIndex;
+            const done = i < phaseIndex;
             return (
               <li
                 key={p.key}
                 aria-current={current ? "step" : undefined}
                 style={{
-                  padding: "0.4rem 0.8rem", border: "3px solid var(--ink)", fontWeight: 700,
-                  background: current ? "var(--ink)" : "var(--bg-elevated)", color: current ? "#fff" : "var(--ink)",
-                  opacity: i < phaseIndex ? 0.7 : 1,
+                  display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.1rem 0.35rem",
+                  fontWeight: current ? 800 : 400, color: "var(--ink)",
+                  background: current ? "var(--ticket)" : "transparent",
+                  textDecoration: current ? "underline" : "none", textUnderlineOffset: "0.25rem",
                 }}
               >
-                {i < phaseIndex ? "Done: " : current ? "Now: " : ""}{p.label}
+                {i + 1}. {p.label}
+                {done ? <><Check size={16} aria-hidden="true" /> <span style={{ fontSize: "0.85rem" }}>Done</span></> : null}
+                {current ? <span style={{ fontSize: "0.85rem" }}>(now)</span> : null}
+                {i < PHASES.length - 1 ? <span aria-hidden="true" style={{ marginLeft: "0.3rem" }}>/</span> : null}
               </li>
             );
           })}
@@ -396,6 +374,10 @@ function Dashboard({ code, token }: { code: string; token: string }) {
                 {" / "}
                 {t.planned ? "Planned" : "Not planned"}
               </p>
+              <p style={{ margin: "0 0 0.35rem" }}>
+                <strong>Members:</strong>{" "}
+                {data.members.filter((m) => m.team === id).map((m) => `Seat ${m.seat} ${m.name}`).join(", ") || "None yet"}
+              </p>
               <p style={{ margin: "0 0 0.35rem" }}><strong>Sprint goal:</strong> {t.goal || "Not written yet"}</p>
               <p style={{ margin: "0 0 0.75rem" }}><strong>Velocity:</strong> {velocity(t)} points</p>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.4rem" }}>
@@ -475,7 +457,7 @@ function Dashboard({ code, token }: { code: string; token: string }) {
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: "0.6rem" }}>
             {reflections.map((r, i) => (
               <li key={i} style={{ border: "2px solid var(--ink)", background: "#fff", padding: "0.7rem 0.9rem" }}>
-                <strong>{scope === "all" ? `Round ${r.round}, ` : ""}Team {r.team}, Seat {r.seat}</strong>
+                <strong>{scope === "all" ? `Round ${r.round}, ` : ""}{r.playerName}, Team {r.team}, Seat {r.seat}</strong>
                 <div><strong>Went well:</strong> {r.wentWell || "(blank)"}</div>
                 <div><strong>Improvement:</strong> {r.improvement}</div>
                 <div><strong>Exit ticket:</strong> {r.exitAnswer}</div>
@@ -500,8 +482,8 @@ function Dashboard({ code, token }: { code: string; token: string }) {
             type="button"
             disabled={reflections.length === 0}
             onClick={() =>
-              downloadCsv(`reflections-${code}.csv`, ["round", "team", "seat", "went_well", "improvement", "exit_answer"],
-                reflections.map((r) => [r.round, r.team, r.seat, r.wentWell, r.improvement, r.exitAnswer]))
+              downloadCsv(`reflections-${code}.csv`, ["round", "name", "team", "seat", "went_well", "improvement", "exit_answer"],
+                reflections.map((r) => [r.round, r.playerName, r.team, r.seat, r.wentWell, r.improvement, r.exitAnswer]))
             }
             style={{ ...buttonAlt, opacity: reflections.length === 0 ? 0.6 : 1 }}
           >
@@ -545,33 +527,29 @@ function TeacherInner() {
   const router = useRouter();
   const params = useSearchParams();
   const code = (params.get("code") ?? "").trim().toUpperCase();
-  const [token, setToken] = useState<string | null | undefined>(undefined);
+  const { playerRole } = useProgress();
 
-  useEffect(() => {
-    setToken(code ? readRooms().find((r) => r.code === code)?.teacherToken ?? null : undefined);
-  }, [code]);
-
-  const open = useCallback((r: StoredRoom) => router.push(`/teacher?code=${r.code}`), [router]);
+  const open = useCallback((next: string) => router.push(`/teacher?code=${next}`), [router]);
 
   return (
     <div style={{ maxWidth: 1100 }}>
       <h1 style={{ fontFamily: "var(--font-hud), monospace", fontWeight: 400, fontSize: "2.6rem", margin: "0 0 1rem" }}>Teacher dashboard</h1>
-      {code && (
-        <p><Link href="/teacher" style={{ color: "var(--ink)", fontWeight: 700 }}>Back to all rooms</Link></p>
-      )}
-      {!code ? (
-        <Landing onOpen={open} />
-      ) : token === undefined ? (
-        <p role="status">Loading...</p>
-      ) : token === null ? (
-        <div style={card}>
-          <p role="alert" style={{ margin: 0, fontWeight: 700 }}>
-            No teacher token for room {code} on this browser. Only the browser that created the room can control it.
-          </p>
-        </div>
-      ) : (
-        <Dashboard code={code} token={token} />
-      )}
+      <SignInGate defaultRole="teacher">
+        <div style={{ marginBottom: "1rem" }}><SignedInAs /></div>
+        {playerRole !== "teacher" ? (
+          <div style={card}>
+            <h2 style={h2}>Teacher accounts only</h2>
+            <p style={{ margin: 0 }}>This account is a student account. Sign out, then sign in or create an account as a teacher.</p>
+          </div>
+        ) : (
+          <>
+            {code && (
+              <p><Link href="/teacher" style={{ color: "var(--ink)", fontWeight: 700 }}>Back to all rooms</Link></p>
+            )}
+            {code ? <Dashboard code={code} /> : <Landing onOpen={open} />}
+          </>
+        )}
+      </SignInGate>
     </div>
   );
 }

@@ -1,10 +1,21 @@
 import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp, unique } from "drizzle-orm/pg-core";
 import type { SprintState } from "@/lib/sprint/types";
 
+export const players = pgTable("players", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  nameKey: text("name_key").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role").$type<"student" | "teacher">().notNull().default("student"),
+  sessionToken: text("session_token").unique(),
+  progress: jsonb("progress").$type<Record<string, unknown>>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export const rooms = pgTable("rooms", {
   code: text("code").primaryKey(),
   className: text("class_name").notNull(),
-  teacherToken: text("teacher_token").notNull(),
+  ownerId: text("owner_id").notNull().references(() => players.id, { onDelete: "cascade" }),
   missionId: text("mission_id"),
   state: jsonb("state").$type<SprintState>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -35,11 +46,28 @@ export const storyResults = pgTable(
   ],
 );
 
+export const roomMembers = pgTable(
+  "room_members",
+  {
+    id: serial("id").primaryKey(),
+    roomCode: text("room_code").notNull().references(() => rooms.code, { onDelete: "cascade" }),
+    playerId: text("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
+    team: text("team").notNull(),
+    seat: integer("seat").notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    unique().on(t.roomCode, t.playerId),
+    index("room_members_room_code_idx").on(t.roomCode),
+  ],
+);
+
 export const reflections = pgTable(
   "reflections",
   {
     id: serial("id").primaryKey(),
     roomCode: text("room_code").notNull().references(() => rooms.code, { onDelete: "cascade" }),
+    playerId: text("player_id").notNull().references(() => players.id, { onDelete: "cascade" }),
     round: integer("round").notNull(),
     team: text("team").notNull(),
     seat: integer("seat").notNull(),
@@ -49,20 +77,10 @@ export const reflections = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [
-    unique().on(t.roomCode, t.round, t.team, t.seat),
+    unique().on(t.roomCode, t.round, t.playerId),
     index("reflections_room_code_idx").on(t.roomCode),
   ],
 );
-
-export const players = pgTable("players", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  nameKey: text("name_key").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  sessionToken: text("session_token").unique(),
-  progress: jsonb("progress").$type<Record<string, unknown>>().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-});
 
 export const questions = pgTable("questions", {
   id: integer("id").primaryKey(),

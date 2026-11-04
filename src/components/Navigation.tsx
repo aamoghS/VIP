@@ -55,8 +55,9 @@ export default function Navigation() {
         })}
       </ul>
 
-      <div className="nav-foot" style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid rgba(247,251,252,0.15)' }}>
-        <PlayerLogin />
+      {pathname.startsWith("/print") ? null : <div className="nav-foot" style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid rgba(247,251,252,0.15)' }}>
+        {/* /sprint and /teacher have their own sign-in gate and header. */}
+        {pathname.startsWith("/sprint") || pathname.startsWith("/teacher") ? null : <PlayerLogin />}
         <div className="nav-level">LV {currentLevel}</div>
         <div style={{ fontSize: '0.8rem', color: '#d5e0e8', margin: '0.2rem 0 0.6rem' }}>
           {xp} XP · {xpToNext} to next
@@ -69,7 +70,7 @@ export default function Navigation() {
             style={{ height: '100%', background: 'var(--ticket)' }}
           />
         </div>
-      </div>
+      </div>}
     </nav>
   );
 }

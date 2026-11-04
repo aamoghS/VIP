@@ -12,7 +12,7 @@ const STATUS: Record<StoryState["status"], { word: string; Icon: typeof Lock }> 
   done: { word: "Done", Icon: CheckCircle2 },
 };
 
-export function Work({ code, team, state, mission, refresh }: PhaseProps) {
+export function Work({ code, team, state, mission, members, me, refresh }: PhaseProps) {
   if (!mission) return <Panel><p role="status">Waiting for the mission...</p></Panel>;
   const turn = state.phase === "teamA" ? "A" : "B";
   const mine = state.teams[team];
@@ -57,6 +57,7 @@ export function Work({ code, team, state, mission, refresh }: PhaseProps) {
             return (
               <li
                 key={s.index}
+                className="story-row"
                 style={{
                   display: "flex",
                   gap: "0.75rem",
@@ -68,10 +69,10 @@ export function Work({ code, team, state, mission, refresh }: PhaseProps) {
                   color: st === "doing" ? "var(--ink)" : "var(--text-primary)",
                 }}
               >
-                <span style={{ display: "inline-flex", gap: "0.4rem", alignItems: "center", fontWeight: 700, minWidth: "8.5rem" }}>
+                <span className="story-row-status" style={{ display: "inline-flex", gap: "0.4rem", alignItems: "center", fontWeight: 700, minWidth: "8.5rem" }}>
                   <Icon size={18} aria-hidden /> {word}
                 </span>
-                <span style={{ flex: 1 }}>Story {i + 1}: {s.title}</span>
+                <span className="story-row-title" style={{ flex: 1 }}>Story {i + 1}: {s.title}</span>
                 <Tag>{mine.estimates[i] ?? s.points} pts</Tag>
               </li>
             );
@@ -90,6 +91,9 @@ export function Work({ code, team, state, mission, refresh }: PhaseProps) {
           story={open}
           storyState={mine.stories[openIndex]}
           total={stories.length}
+          estimate={mine.estimates[openIndex]}
+          members={members.filter((m) => m.team === team)}
+          mySeat={me.seat}
           onChanged={refresh}
         />
       ) : null}

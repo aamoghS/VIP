@@ -21,6 +21,8 @@ export type Explanation = {
   text: string;
 };
 
+export type PlayerRole = "student" | "teacher";
+
 type ProgressContextType = {
   xp: number;
   addXp: (amount: number) => void;
@@ -38,8 +40,10 @@ type ProgressContextType = {
   saveExplanation: (topic: string, text: string) => void;
   resetProgress: () => void;
   playerName: string | null;
+  playerRole: PlayerRole | null;
+  authReady: boolean;
   signIn: (name: string, password: string) => Promise<string | null>;
-  signUp: (name: string, password: string) => Promise<string | null>;
+  signUp: (name: string, password: string, role?: PlayerRole) => Promise<string | null>;
   signOut: () => Promise<void>;
   currentLevel: number;
   xpPerLevel: number;
@@ -137,6 +141,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [explanations, setExplanations] = useState<Explanation[]>([]);
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const [playerRole, setPlayerRole] = useState<PlayerRole | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const snapshotRef = useRef<SavedProgress>(defaultProgress());
 
@@ -168,6 +173,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         if (data.player) {
           applyProgress(data.player.progress);
           setPlayerName(data.player.name);
+          setPlayerRole(data.player.role);
         } else {
           applyProgress(readProgress() ?? defaultProgress());
           setPlayerName(null);
@@ -247,19 +253,21 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     if (!res.ok) return data.error || "Could not sign in.";
     applyProgress(data.player.progress);
     setPlayerName(data.player.name);
+    setPlayerRole(data.player.role);
     return null;
   };
 
-  const signUp = async (name: string, password: string) => {
+  const signUp = async (name: string, password: string, role: PlayerRole = "student") => {
     const res = await fetch("/api/auth", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ mode: "create", name, password, progress: snapshotRef.current }),
+      body: JSON.stringify({ mode: "create", name, password, role, progress: snapshotRef.current }),
     });
     const data = await res.json();
     if (!res.ok) return data.error || "Could not create that player.";
     applyProgress(data.player.progress);
     setPlayerName(data.player.name);
+    setPlayerRole(data.player.role);
     return null;
   };
 
@@ -269,6 +277,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     writeProgress(fresh);
     applyProgress(fresh);
     setPlayerName(null);
+    setPlayerRole(null);
   };
 
   return (
@@ -276,7 +285,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       xp, addXp, unlockedItems, unlockItem, sprintStage, advanceSprint,
       questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions,
       topicStats, recordAnswer, explanations, saveExplanation, resetProgress,
-      playerName, signIn, signUp, signOut,
+      playerName, playerRole, authReady: hydrated, signIn, signUp, signOut,
       currentLevel, xpPerLevel, xpToNext, levelProgress,
     }}>
       {children}

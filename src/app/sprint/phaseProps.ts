@@ -1,10 +1,14 @@
 import type { PublicMission, SprintState, TeamId } from "@/lib/sprint/types";
 
+export type Member = { name: string; team: TeamId; seat: number };
+
 export type PhaseProps = {
   code: string;
   team: TeamId;
   state: SprintState;
   mission: PublicMission | null;
+  members: Member[];
+  me: { team: TeamId; seat: number };
   refresh: () => void;
 };
 

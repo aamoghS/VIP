@@ -1,81 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Send, UserPlus } from "lucide-react";
+import { CheckCircle2, Send } from "lucide-react";
+import { useProgress } from "@/context/ProgressContext";
 import { api } from "@/trpc/react";
 import { CodeBlock, Btn, ErrorLine, Panel, fieldStyle, heading, hint, labelStyle } from "./ui";
 import type { PhaseProps } from "./phaseProps";
 
-export function Retro({ code, team, mission }: PhaseProps) {
-  const [seat, setSeat] = useState<number | null>(null);
+export function Retro({ code, team, me, mission }: PhaseProps) {
+  const { playerName } = useProgress();
   const [wentWell, setWentWell] = useState("");
   const [improvement, setImprovement] = useState("");
   const [exitAnswer, setExitAnswer] = useState("");
-  const [sent, setSent] = useState<number | null>(null);
-  const submit = api.room.submitReflection.useMutation({ onSuccess: (_d, v) => setSent(v.seat) });
+  const submit = api.room.submitReflection.useMutation();
 
-  if (sent !== null) {
+  if (submit.isSuccess) {
     return (
       <Panel>
         <h2 style={heading}>
-          <CheckCircle2 size={26} style={{ verticalAlign: "-3px" }} aria-hidden /> Thank you, Seat {sent}
+          <CheckCircle2 size={26} style={{ verticalAlign: "-3px" }} aria-hidden /> Thank you, {playerName}
         </h2>
-        <p style={hint} role="status">Your answers went to your teacher. Pass the device to the next seat if they have not gone yet.</p>
-        <Btn
-          onClick={() => {
-            setSent(null);
-            setSeat(null);
-            setWentWell("");
-            setImprovement("");
-            setExitAnswer("");
-            submit.reset();
-          }}
-        >
-          <UserPlus size={18} aria-hidden /> Submit another seat
-        </Btn>
+        <p style={hint} role="status">Your answers went to your teacher.</p>
       </Panel>
     );
   }
 
-  const missing = [seat === null && "seat", !improvement.trim() && "one improvement", !exitAnswer.trim() && "exit ticket answer"].filter(Boolean) as string[];
+  const missing = [!improvement.trim() && "one improvement", !exitAnswer.trim() && "exit ticket answer"].filter(Boolean) as string[];
 
   return (
     <Panel>
       <h2 style={heading}>Retrospective</h2>
-      <p style={hint}>Each person fills this in on their own, one seat at a time. It goes to your teacher with your team and seat number, never your name.</p>
+      <p style={hint}>Each person fills this in on their own. Submitting as {playerName} (Team {team}, Seat {me.seat}). Your teacher sees your name with your answers.</p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (seat !== null && missing.length === 0) {
-            submit.mutate({ code, team, seat, wentWell: wentWell.trim(), improvement: improvement.trim(), exitAnswer: exitAnswer.trim() });
+          if (missing.length === 0) {
+            submit.mutate({ code, wentWell: wentWell.trim(), improvement: improvement.trim(), exitAnswer: exitAnswer.trim() });
           }
         }}
       >
-        <fieldset style={{ border: "none", padding: 0, margin: "0 0 1rem" }}>
-          <legend style={labelStyle}>Your seat</legend>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            {[1, 2, 3, 4].map((n) => (
-              <label
-                key={n}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.6rem 1rem",
-                  border: "3px solid var(--ink)",
-                  background: seat === n ? "var(--ticket)" : "var(--bg-elevated)",
-                  color: seat === n ? "var(--ink)" : "var(--text-primary)",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                <input type="radio" name="seat" value={n} checked={seat === n} onChange={() => setSeat(n)} />
-                Seat {n}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
         <div style={{ marginBottom: "1rem" }}>
           <label htmlFor="went-well" style={labelStyle}>What went well (optional)</label>
           <textarea id="went-well" rows={2} maxLength={500} value={wentWell} onChange={(e) => setWentWell(e.target.value)} style={{ ...fieldStyle, resize: "vertical" }} />
