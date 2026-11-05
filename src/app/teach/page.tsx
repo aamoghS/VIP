@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
@@ -69,6 +69,8 @@ ${sprintCss}
 `;
 
 /* ---------- helpers ---------- */
+
+const subscribeNever = () => () => {};
 
 const mmss = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -187,9 +189,8 @@ function Dashboard({ code }: { code: string }) {
   const [confirmNew, setConfirmNew] = useState(false);
   const [copied, setCopied] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const [origin, setOrigin] = useState("");
+  const origin = useSyncExternalStore(subscribeNever, () => window.location.origin, () => "");
   useEffect(() => {
-    setOrigin(window.location.origin);
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);

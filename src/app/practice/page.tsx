@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,6 +77,23 @@ function renderTrophyIcon(iconKey: string, size: number = 24) {
   return Icon ? <Icon /> : null;
 }
 
+function ConfettiPiece({ index }: { index: number }) {
+  const [t] = useState(() => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    rotate: Math.random() * 360,
+    duration: 1 + Math.random(),
+  }));
+  return (
+    <motion.div
+      initial={{ x: window.innerWidth / 2, y: window.innerHeight / 2, scale: 0 }}
+      animate={{ x: t.x, y: t.y, scale: 1, rotate: t.rotate }}
+      transition={{ duration: t.duration, ease: "easeOut" }}
+      style={{ position: 'absolute', width: 10, height: 10, borderRadius: '50%', background: ['var(--ink)', 'var(--ticket)', 'var(--ok)'][index % 3] }}
+    />
+  );
+}
+
 export default function ToolboxPage() {
   return (
     <Suspense fallback={null}>
@@ -95,7 +112,9 @@ function Toolbox() {
   const [evaluated, setEvaluated] = useState(false);
   const [round, setRound] = useState(0);
   const statsRef = useRef(topicStats);
-  statsRef.current = topicStats;
+  useEffect(() => {
+    statsRef.current = topicStats;
+  });
   const [isCorrect, setIsCorrect] = useState(false);
   const [evalMessage, setEvalMessage] = useState("");
   const [reasoningText, setReasoningText] = useState("");
@@ -232,13 +251,7 @@ function Toolbox() {
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 100 }}
           >
             {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ x: window.innerWidth / 2, y: window.innerHeight / 2, scale: 0 }}
-                animate={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight, scale: 1, rotate: Math.random() * 360 }}
-                transition={{ duration: 1 + Math.random(), ease: "easeOut" }}
-                style={{ position: 'absolute', width: 10, height: 10, borderRadius: '50%', background: ['var(--ink)', 'var(--ticket)', 'var(--ok)'][i % 3] }}
-              />
+              <ConfettiPiece key={i} index={i} />
             ))}
           </motion.div>
         )}

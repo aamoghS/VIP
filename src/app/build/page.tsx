@@ -47,6 +47,7 @@ function SprintApp() {
     const fromLink = (params.get("code") ?? "").trim().toUpperCase();
     const next = fromLink.length === 6 ? fromLink : load();
     if (next) save(next);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is client-only, read after hydration
     setCode(next);
     setReady(true);
   }, [params]);
