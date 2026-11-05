@@ -31,6 +31,7 @@ export default function PlayerLogin() {
   const { playerName, playerRole, signIn, signUp, signOut } = useProgress();
   const [error, setError] = useState("");
   const mode = useRef<"login" | "create">("login");
+  const [open, setOpen] = useState(false);
 
   const form = useForm({
     defaultValues: { name: "", password: "" },
@@ -44,7 +45,7 @@ export default function PlayerLogin() {
 
   if (playerName) {
     return (
-      <div style={{ marginBottom: "0.9rem" }}>
+      <div className="pl-user" style={{ marginBottom: "0.9rem" }}>
         <div style={{ color: "var(--ticket)", fontWeight: 700, fontSize: "var(--step-0)" }}>{playerName}{playerRole === "teacher" ? " (Teacher)" : ""}</div>
         <button
           type="button"
@@ -59,7 +60,13 @@ export default function PlayerLogin() {
   }
 
   return (
+    <div className="pl">
+    <button type="button" className="btn btn-primary pl-toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+      Sign in
+    </button>
     <form
+      className="pl-form"
+      data-open={open}
       style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.9rem" }}
       onSubmit={(event) => {
         event.preventDefault();
@@ -126,5 +133,6 @@ export default function PlayerLogin() {
       </form.Subscribe>
       {error && <div style={errorStyle} role="alert">{error}</div>}
     </form>
+    </div>
   );
 }

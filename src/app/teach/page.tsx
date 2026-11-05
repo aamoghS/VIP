@@ -19,9 +19,10 @@ import { useProgress } from "@/context/ProgressContext";
 import { MISSIONS } from "@/app/build/missions";
 import { velocity } from "@/lib/sprint/state";
 import { storyTitle } from "@/lib/sprint/mission";
+import { OBJECTIVE_LABEL } from "@/lib/sprint/objectives";
 import type { Phase, TeamId } from "@/lib/sprint/types";
 import {
-  BAD, OK, Badge, Btn, ErrorLine, GROUND, HAIRLINE, INK, INK2, MONO, Panel, ProgressBar, SPACE, STEP, SubmitRow, SURFACE,
+  BAD, OK, Btn, ErrorLine, GROUND, HAIRLINE, INK, INK2, MONO, Panel, ProgressBar, ScrollFade, SPACE, STEP, SubmitRow, SURFACE,
   TextField, TICKET, cardTitle, heading, hint, pts, requiredText, sprintCss,
 } from "@/app/build/ui";
 import { SortableTable, tableFeaturesSorted } from "./DataTable";
@@ -37,13 +38,6 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: "review", label: "Review" },
   { key: "retro", label: "Retro" },
 ];
-
-const OBJECTIVES: Record<string, string> = {
-  "1": "1 Trace a loop + if",
-  "2": "2 Fix boundary errors",
-  "3": "3 Explain why",
-  "4": "4 Agile teamwork",
-};
 
 const BUDGET_MS = 45 * 60 * 1000;
 const WARN_MS = 5 * 60 * 1000;
@@ -63,7 +57,7 @@ ${sprintCss}
 .team-story{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid color-mix(in srgb,var(--ink) 30%,transparent);padding:8px 12px;min-height:44px}
 @media (max-width:640px){
 .mission-grid{grid-template-columns:minmax(0,1fr)}
-.phase-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.phase-row{flex-wrap:nowrap;width:max-content;padding-bottom:4px}
 .phase-row li{flex:0 0 auto;white-space:nowrap}
 }
 `;
@@ -198,7 +192,7 @@ function Dashboard({ code }: { code: string }) {
   const data = query.data;
   const livePhase = data?.state.phase;
   useEffect(() => {
-    const strip = phaseRow.current;
+    const strip = phaseRow.current?.parentElement;
     const item = strip?.querySelector<HTMLElement>('[aria-current="step"]');
     if (strip && item) strip.scrollLeft = item.offsetLeft - (strip.clientWidth - item.offsetWidth) / 2;
   }, [livePhase]);
@@ -255,7 +249,8 @@ function Dashboard({ code }: { code: string }) {
   const controls = (
     <Panel key="controls">
       <h2 id="phase-h" style={heading}>Phase and controls</h2>
-      <ol aria-labelledby="phase-h" className="phase-row" data-bleed ref={phaseRow} style={{ listStyle: "none", padding: 0, margin: `${SPACE[3]} 0` }}>
+      <ScrollFade style={{ margin: `${SPACE[3]} 0` }}>
+      <ol aria-labelledby="phase-h" className="phase-row" data-bleed ref={phaseRow} style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {PHASES.map((p, i) => {
           const current = i === phaseIndex;
           const done = i < phaseIndex;
@@ -277,6 +272,7 @@ function Dashboard({ code }: { code: string }) {
           );
         })}
       </ol>
+      </ScrollFade>
       <div className="timer">
         <Clock size={20} aria-hidden="true" style={{ flexShrink: 0, marginTop: 3 }} />
         <div className="timer-text">
@@ -307,7 +303,7 @@ function Dashboard({ code }: { code: string }) {
               return (
                 <li key={m.id} style={{ display: "flex" }}>
                   <Ticket tone="plain" className={selected ? "you-bar" : undefined} style={{ width: "100%" }}>
-                    <div style={{ ...cardTitle, display: "flex", gap: SPACE[2], alignItems: "center", flexWrap: "wrap" }}>{m.title}{selected ? <Badge>Selected</Badge> : null}</div>
+                    <div style={{ ...cardTitle, display: "flex", gap: SPACE[2], alignItems: "center", flexWrap: "wrap" }}>{m.title}</div>
                     <div>{m.topic}</div>
                     <div style={{ margin: `${SPACE[1]} 0 ${SPACE[3]}`, fontSize: STEP.s1, color: INK }}>Team A: {m.groupA.questions.length} stories. Team B: {m.groupB.questions.length} stories.</div>
                     <div style={{ display: "flex", gap: SPACE[3], flexWrap: "wrap", alignItems: "center" }}>
@@ -611,7 +607,7 @@ function ResultsSection({ data, code }: { data: DashboardData; code: string }) {
         <>
           <div style={{ display: "grid", gap: SPACE[5], gridTemplateColumns: "repeat(auto-fit, minmax(20rem, 1fr))", marginTop: SPACE[4] }}>
             <Bars title="Correct rate by topic" rates={agg.byTopic.map((r) => ({ ...r, label: r.key }))} />
-            <Bars title="Correct rate by objective" rates={agg.byObjective.map((r) => ({ ...r, label: OBJECTIVES[r.key] ?? `Objective ${r.key}` }))} />
+            <Bars title="Correct rate by objective" rates={agg.byObjective.map((r) => ({ ...r, label: OBJECTIVE_LABEL[Number(r.key)] ? `${r.key} ${OBJECTIVE_LABEL[Number(r.key)]}` : `Objective ${r.key}` }))} />
           </div>
 
           <h3 style={{ ...cardTitle, margin: `${SPACE[6]} 0 ${SPACE[2]}` }}>Stories</h3>

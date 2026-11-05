@@ -178,5 +178,5 @@ button.ticket:disabled {
 .note { font-family: var(--font-body), sans-serif; overflow-wrap: anywhere; max-width: 100%; }
 @media (max-width: 600px) { .stub { padding-left: 2px; padding-right: 2px; } }
 
-.note { font-size: 11px; overflow-wrap: normal; word-break: normal; hyphens: none; }
+.note { font-size: 12px; overflow-wrap: normal; word-break: normal; hyphens: none; }
 @media (min-width: 601px) { .note { font-size: 13px; } }

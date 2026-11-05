@@ -186,7 +186,7 @@ function Toolbox() {
             setEvaluated(false);
             setSelectedAnswer(null);
             setIsCorrect(false);
-          }, 2500);
+          }, 1000);
         }
       }
     },
@@ -337,7 +337,7 @@ function Toolbox() {
                       {(f) => (
                         <div>
                           <label htmlFor="why" style={{ display: 'block', fontWeight: 700, marginBottom: 'var(--space-2)' }}>
-                            Why does that happen?
+                            Why does that happen? (optional)
                           </label>
                           <textarea
                             id="why"
@@ -365,7 +365,7 @@ function Toolbox() {
                 )}
                 {whySaved && <p className="meta" style={{ marginTop: 'var(--space-3)' }}>Reason saved.</p>}
 
-                {finished && whySaved && (
+                {finished && (
                   <button type="button" className="btn btn-primary" onClick={handleNextQuestion} style={{ marginTop: 'var(--space-5)' }}>
                     Next question <ArrowRight size={18} aria-hidden="true" />
                   </button>

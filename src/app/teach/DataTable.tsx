@@ -60,7 +60,9 @@ export function SortableTable<TData extends RowData>({
                         type="button"
                         onClick={column.getToggleSortingHandler()}
                         style={{
-                          display: "inline",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          minHeight: 40,
                           padding: 0,
                           margin: 0,
                           lineHeight: "inherit",

@@ -6,19 +6,13 @@ import { useSearchParams } from "next/navigation";
 import { Printer, ArrowRight, Scissors } from "lucide-react";
 import { MISSIONS } from "@/app/build/missions";
 import { getMission, storyTitle, teamOf, userStoryText } from "@/lib/sprint/mission";
+import { OBJECTIVE_LABEL } from "@/lib/sprint/objectives";
 import { ROLES, ROLE_DUTIES } from "@/lib/sprint/roles";
 import { traceLayout } from "@/lib/sprint/trace";
 import type { TeamId } from "@/lib/sprint/types";
 import { PageHeader } from "@/components/PageHeader";
 import { RichText } from "@/components/RichText";
 import { Btn, MONO, ScrollFade, SPACE, STEP, cardTitle, heading, hint, pageTitle, pts } from "@/app/build/ui";
-
-const OBJECTIVE_LABEL: Record<number, string> = {
-  1: "Trace a loop + if",
-  2: "Fix boundary errors",
-  3: "Explain why",
-  4: "Agile teamwork",
-};
 
 const TEAMS: TeamId[] = ["A", "B"];
 const printCss = `

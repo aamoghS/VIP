@@ -71,10 +71,10 @@ export default function Navigation() {
         {/* /build and /teach have their own sign-in gate and header. */}
         {pathname.startsWith("/build") || pathname.startsWith("/teach") ? null : <PlayerLogin />}
         <div className="nav-level">LV {currentLevel}</div>
-        <div style={{ fontSize: 'var(--step--1)', color: '#d5e0e8', margin: '0.2rem 0 0.6rem' }}>
+        <div className="nav-xp" style={{ fontSize: 'var(--step--1)', color: '#d5e0e8', margin: '0.2rem 0 0.6rem' }}>
           {xp} XP · {xpToNext} to next
         </div>
-        <div style={{ width: '100%', height: '8px', background: 'rgba(247,251,252,0.15)' }}>
+        <div className="nav-bar" style={{ width: '100%', height: '8px', background: 'rgba(247,251,252,0.15)' }}>
           <div
             style={{ width: `${levelProgress}%`, height: '100%', background: 'var(--ticket)', transition: 'width 0.6s ease-out' }}
           />

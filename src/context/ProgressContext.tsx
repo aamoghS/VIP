@@ -164,7 +164,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     setExplanations(saved.explanations || []);
   };
 
-  snapshotRef.current = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
+  useEffect(() => {
+    snapshotRef.current = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
+  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations]);
 
   const queryClient = useQueryClient();
 
@@ -185,6 +187,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     if (playerQuery.isPending) return;
     const player = playerQuery.data;
     if (player) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       applyProgress(player.progress);
       setPlayerName(player.name);
       setPlayerRole(player.role);
@@ -194,7 +197,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       setPlayerRole(null);
     }
     setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerQuery.isPending, playerQuery.data]);
 
   const saveMutation = useMutation({

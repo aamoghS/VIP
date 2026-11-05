@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useProgress } from "@/context/ProgressContext";
 import { velocity } from "@/lib/sprint/state";
+import { OBJECTIVE_LABEL } from "@/lib/sprint/objectives";
 import { Badge, Btn, ErrorLine, INK2, MONO, Panel, SPACE, STEP, cardTitle, heading, hint } from "./ui";
 import { RichText } from "@/components/RichText";
 import type { PhaseProps } from "./phaseProps";
@@ -22,6 +23,20 @@ export function Review({ code, team, state, mission, refresh }: PhaseProps) {
   const doneAll = teams.reduce((n, t) => n + t.done, 0);
   const correctAll = teams.reduce((n, t) => n + t.correct, 0);
   const totalAll = teams.reduce((n, t) => n + t.ts.stories.length, 0);
+
+  const strugglingObjectives = [
+    ...new Set(
+      (["A", "B"] as const).flatMap((t) =>
+        state.teams[t].stories.flatMap((s, i) => {
+          const story = mission?.teams[t].stories[i];
+          return story && s.status === "done" && s.correct === false ? [story.objective] : [];
+        }),
+      ),
+    ),
+  ]
+    .sort()
+    .map((o) => OBJECTIVE_LABEL[o]);
+  const strongRound = doneAll > 0 && correctAll / doneAll >= 0.5;
 
   // Award class XP once per room and round on this device.
   useEffect(() => {
@@ -45,7 +60,15 @@ export function Review({ code, team, state, mission, refresh }: PhaseProps) {
           {combined}<span style={{ fontFamily: "var(--font-body, inherit)", fontSize: STEP.s1up, marginLeft: 8 }}>{combined === 1 ? "point" : "points"}</span>
         </p>
         <p style={{ margin: `${SPACE[2]} 0 0`, fontWeight: 700 }}>Combined velocity: what Team A and Team B finished together.</p>
-        {mission ? <p style={{ margin: `${SPACE[2]} 0 0`, color: INK2 }}><RichText text={mission.successMessage} /></p> : null}
+        {mission ? (
+          <p style={{ margin: `${SPACE[2]} 0 0`, color: INK2 }}>
+            {strongRound ? (
+              <RichText text={mission.successMessage} />
+            ) : (
+              <>Rough round, and that is how teams learn. {strugglingObjectives.length ? `Revisit: ${strugglingObjectives.join(", ")}. ` : ""}Use the retro to plan what to try next sprint.</>
+            )}
+          </p>
+        ) : null}
       </Panel>
 
       <div style={{ display: "grid", gap: SPACE[5], gridTemplateColumns: "repeat(auto-fit, minmax(16rem, 1fr))" }}>

@@ -482,9 +482,4 @@ export const requiredText = (what: string) => ({ value }: { value: string }) => 
 /** "1 pt", "2 pts". */
 export const pts = (n: number) => `${n} ${n === 1 ? "pt" : "pts"}`;
 
-export const OBJECTIVE_LABEL: Record<number, string> = {
-  1: "Trace loop and if",
-  2: "Fix boundary error",
-  3: "Explain why",
-  4: "Agile",
-};
+export { OBJECTIVE_LABEL } from "@/lib/sprint/objectives";
