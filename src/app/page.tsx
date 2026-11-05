@@ -13,34 +13,54 @@ const MOVES = [
 export default function Home() {
   const { questionsSolved, explanations, teamMissionsCompleted } = useProgress();
   const next =
-    questionsSolved === 0 ? { href: "/toolbox", label: "Try a question" }
-    : explanations.length === 0 ? { href: "/toolbox", label: "Say why the answer works" }
-    : teamMissionsCompleted === 0 ? { href: "/sprint", label: "Build a scenario" }
-    : { href: "/metrics", label: "See what still fails" };
+    questionsSolved === 0 ? { href: "/practice", label: "Try a question" }
+    : explanations.length === 0 ? { href: "/practice", label: "Say why the answer works" }
+    : teamMissionsCompleted === 0 ? { href: "/build", label: "Build a scenario" }
+    : { href: "/score", label: "See what still fails" };
 
   return (
-    <div style={{ maxWidth: "960px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2.6rem", fontWeight: 800, letterSpacing: "-1px", lineHeight: 1.05, marginBottom: "0.75rem" }}>
+    <div className="page">
+      <h1 className="page-title" style={{ maxWidth: "20ch" }}>
         Change one line. Then prove you know what happens.
       </h1>
-      <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.6, maxWidth: "38rem", marginBottom: "1.5rem" }}>
+      <p className="lede" style={{ marginBottom: "var(--space-6)" }}>
         Critical thinking here means tracing the code, testing a change, and saying why the result follows.
       </p>
 
-      <section className="level-board" style={{ padding: "1.5rem", marginBottom: "1.25rem" }}>
-        <dl style={{ display: "grid", gap: "0.85rem", margin: 0 }}>
-          {MOVES.map((move) => (
-            <div key={move.label}>
-              <dt style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>{move.label}</dt>
-              <dd style={{ margin: "0.2rem 0 0", color: "var(--text-primary)", lineHeight: 1.5 }}>{move.text}</dd>
-            </div>
+      <section className="level-board" style={{ padding: "var(--space-5)", marginBottom: "var(--space-6)" }} aria-labelledby="steps-title">
+        <h2 id="steps-title" className="meta" style={{ fontWeight: 700, marginBottom: "var(--space-3)", letterSpacing: 0 }}>
+          Three steps for every question
+        </h2>
+        <ol style={{ listStyle: "none", display: "grid", margin: 0, padding: 0 }}>
+          {MOVES.map((move, i) => (
+            <li
+              key={move.label}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2rem 1fr",
+                gap: "var(--space-3)",
+                padding: "var(--space-3) 0",
+                borderTop: i === 0 ? "none" : "1px solid rgba(26, 35, 50, 0.2)",
+              }}
+            >
+              <span className="mono" style={{ fontWeight: 700 }}>{i + 1}</span>
+              <span>
+                <strong style={{ fontSize: "var(--step-1)" }}>{move.label}.</strong>{" "}
+                <span style={{ color: "var(--ink-2)" }}>{move.text}</span>
+              </span>
+            </li>
           ))}
-        </dl>
+        </ol>
       </section>
 
-      <Link href={next.href} className="play-btn">
-        {next.label} <ArrowRight size={18} />
+      <Link href={next.href} className="btn btn-primary">
+        {next.label} <ArrowRight size={18} aria-hidden="true" />
       </Link>
+
+      <div style={{ marginTop: "var(--space-6)", display: "flex", flexWrap: "wrap", gap: "var(--space-3)" }}>
+        <Link href="/build" className="btn">Join your class</Link>
+        <Link href="/teach" className="btn">Run a class sprint</Link>
+      </div>
     </div>
   );
 }

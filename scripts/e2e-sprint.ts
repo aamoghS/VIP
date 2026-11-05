@@ -3,7 +3,7 @@
 // Creates accounts named e2e_<run>_* (printed at the start) so they can be cleaned up afterwards.
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
-import { MISSIONS } from "../src/app/sprint/missions";
+import { MISSIONS } from "../src/app/build/missions";
 import { questionsFor } from "../src/lib/sprint/mission";
 import { traceLayout } from "../src/lib/sprint/trace";
 import type { AppRouter } from "../src/server/api/root";

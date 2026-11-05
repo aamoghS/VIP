@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type UnlockedItem = {
   id: string;
@@ -50,6 +51,8 @@ type ProgressContextType = {
   xpToNext: number;
   levelProgress: number;
 };
+
+type AuthPlayer = { name: string; role: PlayerRole; progress: SavedProgress };
 
 const STORAGE_KEY = "vip_progress";
 
@@ -163,29 +166,48 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   snapshotRef.current = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
 
+  const queryClient = useQueryClient();
+
+  const playerQuery = useQuery({
+    queryKey: ["auth", "player"],
+    queryFn: async (): Promise<AuthPlayer | null> => {
+      const res = await fetch("/api/auth");
+      if (!res.ok) throw new Error("Could not load player");
+      const data = await res.json();
+      return data.player ?? null;
+    },
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  // Apply the server (or localStorage) state once the player query settles.
   useEffect(() => {
-    let cancel = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/auth");
-        const data = await res.json();
-        if (cancel) return;
-        if (data.player) {
-          applyProgress(data.player.progress);
-          setPlayerName(data.player.name);
-          setPlayerRole(data.player.role);
-        } else {
-          applyProgress(readProgress() ?? defaultProgress());
-          setPlayerName(null);
-        }
-      } catch {
-        if (!cancel) applyProgress(readProgress() ?? defaultProgress());
-      } finally {
-        if (!cancel) setHydrated(true);
-      }
-    })();
-    return () => { cancel = true; };
-  }, []);
+    if (playerQuery.isPending) return;
+    const player = playerQuery.data;
+    if (player) {
+      applyProgress(player.progress);
+      setPlayerName(player.name);
+      setPlayerRole(player.role);
+    } else {
+      applyProgress(readProgress() ?? defaultProgress());
+      setPlayerName(null);
+      setPlayerRole(null);
+    }
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerQuery.isPending, playerQuery.data]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (snapshot: SavedProgress) => {
+      const res = await fetch("/api/auth", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(snapshot),
+      });
+      if (!res.ok) throw new Error("Could not save progress");
+    },
+  });
+  const saveProgress = saveMutation.mutate;
 
   useEffect(() => {
     if (!hydrated) return;
@@ -194,15 +216,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       writeProgress(snapshot);
       return;
     }
-    const timer = setTimeout(() => {
-      void fetch("/api/auth", {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(snapshot),
-      });
-    }, 400);
+    const timer = setTimeout(() => saveProgress(snapshot), 400);
     return () => clearTimeout(timer);
-  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations, hydrated, playerName]);
+  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations, hydrated, playerName, saveProgress]);
 
   const addXp = (amount: number) => setXp(prev => prev + amount);
 
@@ -243,38 +259,43 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   const resetProgress = () => applyProgress(defaultProgress());
 
-  const signIn = async (name: string, password: string) => {
-    const res = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ mode: "login", name, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) return data.error || "Could not sign in.";
-    applyProgress(data.player.progress);
-    setPlayerName(data.player.name);
-    setPlayerRole(data.player.role);
+  const authMutation = useMutation({
+    mutationFn: async (body: Record<string, unknown>): Promise<{ error?: string; player?: AuthPlayer }> => {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      return res.ok ? { player: data.player } : { error: data.error };
+    },
+  });
+
+  const submitAuth = async (body: Record<string, unknown>, fallback: string) => {
+    const result = await authMutation.mutateAsync(body);
+    if (!result.player) return result.error || fallback;
+    queryClient.setQueryData(["auth", "player"], result.player);
+    await queryClient.invalidateQueries({ queryKey: ["auth", "player"] });
     return null;
   };
 
-  const signUp = async (name: string, password: string, role: PlayerRole = "student") => {
-    const res = await fetch("/api/auth", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ mode: "create", name, password, role, progress: snapshotRef.current }),
-    });
-    const data = await res.json();
-    if (!res.ok) return data.error || "Could not create that player.";
-    applyProgress(data.player.progress);
-    setPlayerName(data.player.name);
-    setPlayerRole(data.player.role);
-    return null;
-  };
+  const signIn = (name: string, password: string) =>
+    submitAuth({ mode: "login", name, password }, "Could not sign in.");
+
+  const signUp = (name: string, password: string, role: PlayerRole = "student") =>
+    submitAuth({ mode: "create", name, password, role, progress: snapshotRef.current }, "Could not create that player.");
+
+  const signOutMutation = useMutation({
+    mutationFn: async () => {
+      await fetch("/api/auth", { method: "DELETE" });
+    },
+  });
 
   const signOut = async () => {
-    await fetch("/api/auth", { method: "DELETE" });
+    await signOutMutation.mutateAsync();
     const fresh = defaultProgress();
     writeProgress(fresh);
+    queryClient.setQueryData(["auth", "player"], null);
     applyProgress(fresh);
     setPlayerName(null);
     setPlayerRole(null);

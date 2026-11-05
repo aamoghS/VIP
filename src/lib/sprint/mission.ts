@@ -1,5 +1,5 @@
-import { MISSIONS } from "@/app/sprint/missions";
-import type { QuizQuestion, SprintMission } from "@/app/sprint/types";
+import { MISSIONS } from "@/app/build/missions";
+import type { QuizQuestion, SprintMission } from "@/app/build/types";
 import { traceLayout } from "./trace";
 import type { PublicMission, PublicStory, TeamId } from "./types";
 

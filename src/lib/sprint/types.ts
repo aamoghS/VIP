@@ -1,4 +1,4 @@
-import type { ExitTicket, Objective, Points } from "@/app/sprint/types";
+import type { ExitTicket, Objective, Points } from "@/app/build/types";
 
 export type TeamId = "A" | "B";
 export type Phase = "lobby" | "planning" | "teamA" | "standup" | "teamB" | "review" | "retro";

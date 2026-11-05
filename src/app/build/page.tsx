@@ -3,9 +3,10 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { SignInGate, SignedInAs } from "@/components/SignInGate";
+import { AccountHeader } from "@/components/SignInGate";
+import { SignInGate } from "@/components/SignInGate";
 import { api } from "@/trpc/react";
-import { Btn, ErrorLine, HUD, Panel, hint } from "./ui";
+import { Btn, ErrorLine, MONO, Panel, SPACE, heading, hint, sprintCss } from "./ui";
 import { JoinForm } from "./JoinForm";
 import { Lobby } from "./Lobby";
 import { Planning } from "./Planning";
@@ -34,20 +35,21 @@ function save(code: string | null) {
   }
 }
 
-const focusCss = `
-.sprint-root button:focus-visible,.sprint-root input:focus-visible,.sprint-root textarea:focus-visible,.sprint-root pre:focus-visible,.sprint-root a:focus-visible{outline:3px solid var(--ink);outline-offset:2px;box-shadow:0 0 0 6px var(--ticket)}
-.sprint-root textarea,.sprint-root input[type=text]{box-sizing:border-box}
-`;
-
 function SprintApp() {
   const params = useSearchParams();
   const [code, setCode] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setCode(load());
+    // A ?code= link opens that room directly. The room view shows the join form
+    // only if this account is not a member yet, so a student who already joined
+    // (on another device, or before storage was cleared) lands back on their team.
+    const fromLink = (params.get("code") ?? "").trim().toUpperCase();
+    const next = fromLink.length === 6 ? fromLink : load();
+    if (next) save(next);
+    setCode(next);
     setReady(true);
-  }, []);
+  }, [params]);
 
   const enter = useCallback((next: string) => {
     save(next);
@@ -59,8 +61,8 @@ function SprintApp() {
   }, []);
 
   return (
-    <div className="sprint-root" style={{ maxWidth: 1000, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
-      <style>{focusCss}</style>
+    <div className="sprint-root page">
+      <style>{sprintCss}</style>
       <SignInGate defaultRole="student">
         {!ready ? null : code ? (
           <Room code={code} onLeave={leave} />
@@ -79,19 +81,20 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   const data = query.data;
   const leaveBtn = (
-    <Btn variant="ghost" onClick={onLeave} style={{ fontSize: "1.1rem", minHeight: "2.5rem" }}>
+    <Btn variant="secondary" onClick={onLeave}>
       <LogOut size={16} aria-hidden /> Leave room
     </Btn>
   );
+  const leaveItem = [{ label: "Leave room", onClick: onLeave, icon: <LogOut size={16} aria-hidden /> }];
 
   if (!data) {
     return (
       <Panel>
         {query.error ? (
           <>
-            <h1 style={{ fontFamily: HUD, fontSize: "1.9rem", fontWeight: 400, margin: 0 }}>Cannot reach room {code}</h1>
+            <h1 style={heading}>Cannot reach room {code}</h1>
             <ErrorLine message={query.error.message} />
-            <div style={{ marginTop: "1rem" }}>{leaveBtn}</div>
+            <div style={{ marginTop: SPACE[4] }}>{leaveBtn}</div>
           </>
         ) : (
           <p style={hint} role="status">Loading room {code}...</p>
@@ -105,7 +108,7 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
     return <JoinForm initialCode={code} onJoined={refresh} />;
   }
   const team = me.team;
-  const common = { code, team, state, mission, members, me, refresh };
+  const common = { code, team, state, mission, members, me, refresh, myReflection: data.myReflection };
   let view;
   switch (state.phase) {
     case "lobby":
@@ -131,18 +134,15 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   return (
     <>
-      <header style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-        <div>
-          <h1 style={{ fontFamily: HUD, fontSize: "2.2rem", fontWeight: 400, margin: 0 }}>
-            {data.className}
-          </h1>
-          <p style={{ ...hint, margin: 0 }}>
-            Room {code} - Team {team}: {state.teams[team].name || "unnamed"} - Round {state.round}
-          </p>
-        </div>
-        {leaveBtn}
-      </header>
-      <div style={{ marginBottom: "1rem" }}><SignedInAs /></div>
+      <AccountHeader
+        title={data.className}
+        meta={
+          <>
+            Room <span style={{ fontFamily: MONO }}>{code}</span> · Team {team}: {state.teams[team].name || "unnamed"} · Round {state.round}
+          </>
+        }
+        extra={leaveItem}
+      />
       {view}
     </>
   );
@@ -150,7 +150,7 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
 
 export default function SprintPage() {
   return (
-    <Suspense fallback={<div style={{ padding: "1.5rem" }}>Loading...</div>}>
+    <Suspense fallback={<p style={hint} role="status">Loading...</p>}>
       <SprintApp />
     </Suspense>
   );

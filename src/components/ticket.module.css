@@ -1,0 +1,182 @@
+.ticket {
+  --tk-ink: var(--ink);
+  --tk-page: var(--ground);
+  --tk-bg: var(--surface);
+  --tk-stub: 96px;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--tk-ink);
+  border-radius: 0;
+  background: var(--tk-bg);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.accent {
+  --tk-bg: var(--ticket);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.plain {
+  --tk-bg: var(--surface);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.dashed {
+  --tk-bg: var(--ground);
+  border: 2px dashed var(--tk-ink);
+  box-shadow: none;
+}
+
+.sm {
+  --tk-stub: 40px;
+}
+
+button.ticket {
+  cursor: pointer;
+}
+
+button.ticket:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.stub {
+  position: relative;
+  flex: 0 0 var(--tk-stub);
+  width: var(--tk-stub);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 4px;
+  border-right: 2px dashed var(--tk-ink);
+  font-family: var(--font-mono), var(--font-mono-fallback);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  transform-origin: 50% 100%;
+  transition: transform 250ms ease, opacity 250ms ease;
+}
+
+.sm .stub {
+  font-size: var(--step-0);
+  padding: 4px 2px;
+}
+
+/* Semicircle notches at the perforation, top and bottom. */
+.stub::before,
+.stub::after {
+  content: "";
+  position: absolute;
+  right: -11px;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--tk-page);
+  border: 2px solid var(--tk-ink);
+}
+
+.stub::before {
+  top: -13px;
+  clip-path: inset(50% 0 0 0);
+}
+
+.stub::after {
+  bottom: -13px;
+  clip-path: inset(0 0 50% 0);
+}
+
+.dashed .stub::before,
+.dashed .stub::after {
+  display: none;
+}
+
+.punch {
+  display: block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--tk-page);
+  border: 2px solid var(--tk-ink);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 16px;
+  transition: transform 250ms ease;
+}
+
+.sm .body {
+  padding: 8px 12px;
+}
+
+.tearing .stub {
+  transform: translateX(-8px) rotate(-4deg);
+}
+
+.tearing .body {
+  transform: translateX(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tearing .stub {
+    transform: none;
+    opacity: 0.4;
+  }
+  .tearing .body {
+    transform: none;
+  }
+}
+
+.label { display: block; }
+.note { display: block; font-size: 13px; font-weight: 400; line-height: 1.2; }
+.hasPunch { padding-top: 48px; }
+.hasPunch .punch { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); }
+
+/* received: a punched plain ticket gets a 4px yellow ring around the hole */
+.plain .punch { box-shadow: 0 0 0 4px var(--ticket); }
+
+.notch::before {
+  content: "";
+  position: absolute;
+  left: -11px;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--tk-page);
+  border: 2px solid var(--tk-ink);
+  clip-path: inset(0 0 0 50%);
+}
+
+@media (max-width: 600px) {
+  .ticket { --tk-stub: 64px; }
+  .sm { --tk-stub: 40px; }
+  .stub { font-size: 20px; }
+  .sm .stub { font-size: var(--step-0); }
+  .vertical { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+}
+
+.note { font-family: var(--font-body), sans-serif; overflow-wrap: anywhere; max-width: 100%; }
+@media (max-width: 600px) { .stub { padding-left: 2px; padding-right: 2px; } }
+
+.note { font-size: 11px; overflow-wrap: normal; word-break: normal; hyphens: none; }
+@media (min-width: 601px) { .note { font-size: 13px; } }

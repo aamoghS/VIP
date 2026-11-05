@@ -1,0 +1,26 @@
+.sub { color: var(--ink-2); font-size: var(--step-0); margin: var(--space-2) 0 0; }
+.nudge { margin: var(--space-3) 0 0; font-size: var(--step-0); }
+.nudge a { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.section { margin-top: var(--space-6); }
+.h2 { font-size: var(--step-2); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 var(--space-4); color: var(--ink); }
+.wall { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); list-style: none; margin: 0; padding: 0 4px 4px 0; }
+.trophy { display: flex; }
+.ticket { flex: 1; min-height: 120px; }
+.head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); font-size: var(--step-1); font-weight: 700; line-height: 1.2; }
+.state { font-size: var(--step--1); font-weight: 400; color: var(--ink); }
+.how { margin: var(--space-2) 0 0; font-size: var(--step-0); color: var(--ink-2); }
+.go { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--step-0); font-weight: 700; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.rows { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--ink); }
+.row { display: flex; align-items: center; gap: var(--space-3); min-height: 48px; padding: var(--space-2) 0; border-bottom: 1px solid rgba(26, 35, 50, 0.25); font-size: var(--step-0); color: var(--ink); }
+.name { flex: 0 0 9rem; display: flex; align-items: center; gap: var(--space-2); }
+.bar { flex: 1; height: 12px; background: var(--surface); border: 2px solid var(--ink); }
+.fill { display: block; height: 100%; background: var(--ticket); }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; width: 4ch; text-align: right; }
+.mile { flex: 1; }
+.mark { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--step--1); font-weight: 700; }
+.box { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 2px dashed var(--ink); background: transparent; color: var(--ink); }
+.boxDone { border: 2px solid var(--ink); background: var(--ticket); }
+.todo { color: var(--ink-2); font-weight: 400; }
+@media (max-width: 1000px) { .wall { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .wall { grid-template-columns: 1fr; } .name { flex-basis: 7rem; } }
+.earnedLine { margin: var(--space-1) 0 0; font-size: 13px; color: var(--ink); }

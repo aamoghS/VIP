@@ -116,6 +116,11 @@ async function view(room: Room, viewer: SessionPlayer) {
   const mission = getMission(room.missionId);
   const all = await membersOf(room.code);
   const mine = all.find((m) => m.playerId === viewer.id);
+  const [sent] = await getDb()
+    .select({ createdAt: reflections.createdAt })
+    .from(reflections)
+    .where(and(eq(reflections.roomCode, room.code), eq(reflections.round, room.state.round), eq(reflections.playerId, viewer.id)))
+    .limit(1);
   return {
     members: all.map(({ name, team, seat }) => ({ name, team: team as TeamId, seat })),
     me: mine ? { team: mine.team as TeamId, seat: mine.seat } : null,
@@ -125,6 +130,7 @@ async function view(room: Room, viewer: SessionPlayer) {
     state: room.state,
     mission: mission ? toPublicMission(mission) : null,
     updatedAt: room.updatedAt,
+    myReflection: sent ? { createdAt: sent.createdAt } : null,
   };
 }
 

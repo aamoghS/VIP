@@ -9,6 +9,7 @@ export type PhaseProps = {
   mission: PublicMission | null;
   members: Member[];
   me: { team: TeamId; seat: number };
+  myReflection?: { createdAt: Date | string } | null;
   refresh: () => void;
 };
 

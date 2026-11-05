@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wrench, Zap, Trophy, BarChart3, Home, GraduationCap } from "lucide-react";
@@ -13,24 +14,35 @@ export default function Navigation() {
 
   const links = [
     { href: '/', icon: Home, label: 'Brief' },
-    { href: '/toolbox', icon: Wrench, label: 'Practice' },
-    { href: '/sprint', icon: Zap, label: 'Build' },
-    { href: '/room', icon: Trophy, label: 'Locker' },
-    { href: '/metrics', icon: BarChart3, label: 'Score' },
-    { href: '/teacher', icon: GraduationCap, label: 'Teach' },
+    { href: '/practice', icon: Wrench, label: 'Practice' },
+    { href: '/build', icon: Zap, label: 'Build' },
+    { href: '/locker', icon: Trophy, label: 'Locker' },
+    { href: '/score', icon: BarChart3, label: 'Score' },
+    { href: '/teach', icon: GraduationCap, label: 'Teach' },
   ];
+
+  const tabs = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const strip = tabs.current?.querySelector<HTMLElement>(".nav-links");
+    const item = strip?.querySelector<HTMLElement>(".nav-item.active");
+    if (!strip || !item) return;
+    const s = strip.getBoundingClientRect();
+    const i = item.getBoundingClientRect();
+    strip.scrollLeft += i.left + i.width / 2 - (s.left + s.width / 2);
+  }, [pathname]);
 
   return (
     <nav className="glass-sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className="logo" style={{ marginBottom: "2.5rem" }}>
         <div>
           <h1 style={{ margin: 0 }}>codedash</h1>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--ticket)", marginTop: "0.1rem" }}>
+          <div style={{ fontSize: "var(--step--1)", fontWeight: 700, color: "var(--ticket)", marginTop: "0.1rem" }}>
             Critical thinking
           </div>
         </div>
       </div>
 
+      <div className="nav-tabs" ref={tabs}>
       <ul className="nav-links" style={{ display: "flex", flexDirection: "column", gap: "0.25rem", listStyle: "none", padding: 0 }}>
         {links.map((link) => {
           const isActive = pathname === link.href || (pathname !== '/' && link.href !== '/' && pathname.startsWith(link.href));
@@ -54,12 +66,13 @@ export default function Navigation() {
           );
         })}
       </ul>
+      </div>
 
       {pathname.startsWith("/print") ? null : <div className="nav-foot" style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid rgba(247,251,252,0.15)' }}>
-        {/* /sprint and /teacher have their own sign-in gate and header. */}
-        {pathname.startsWith("/sprint") || pathname.startsWith("/teacher") ? null : <PlayerLogin />}
+        {/* /build and /teach have their own sign-in gate and header. */}
+        {pathname.startsWith("/build") || pathname.startsWith("/teach") ? null : <PlayerLogin />}
         <div className="nav-level">LV {currentLevel}</div>
-        <div style={{ fontSize: '0.8rem', color: '#d5e0e8', margin: '0.2rem 0 0.6rem' }}>
+        <div style={{ fontSize: 'var(--step--1)', color: '#d5e0e8', margin: '0.2rem 0 0.6rem' }}>
           {xp} XP · {xpToNext} to next
         </div>
         <div style={{ width: '100%', height: '8px', background: 'rgba(247,251,252,0.15)' }}>

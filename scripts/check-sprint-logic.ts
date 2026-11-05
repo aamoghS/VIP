@@ -1,5 +1,5 @@
 // Pure logic checks, no DB: pnpm exec tsx scripts/check-sprint-logic.ts
-import { MISSIONS } from "../src/app/sprint/missions";
+import { MISSIONS } from "../src/app/build/missions";
 import { aggregate } from "../src/lib/sprint/aggregate";
 import { toPublicMission } from "../src/lib/sprint/mission";
 import { roleFor } from "../src/lib/sprint/roles";
