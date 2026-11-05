@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wrench, Zap, Trophy, BarChart3, Home, GraduationCap } from "lucide-react";
-import { motion } from "framer-motion";
 import { useProgress } from "@/context/ProgressContext";
 import PlayerLogin from "@/components/PlayerLogin";
 
@@ -76,11 +75,8 @@ export default function Navigation() {
           {xp} XP · {xpToNext} to next
         </div>
         <div style={{ width: '100%', height: '8px', background: 'rgba(247,251,252,0.15)' }}>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${levelProgress}%` }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            style={{ height: '100%', background: 'var(--ticket)' }}
+          <div
+            style={{ width: `${levelProgress}%`, height: '100%', background: 'var(--ticket)', transition: 'width 0.6s ease-out' }}
           />
         </div>
       </div>}

@@ -1,15 +1,15 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DndContext, useDraggable, useDroppable, DragOverlay, type DragEndEvent } from "@dnd-kit/core";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "@tanstack/react-form";
 import { useProgress } from "@/context/ProgressContext";
 import { Ticket } from "@/components/Ticket";
+import { weakestTopic, type TopicStat } from "@/lib/practice/targeting";
 import { PromptWithCode, OptionText } from "@/components/RichText";
-import { CheckCircle, Lock, XCircle, Loader2, ArrowRight, Target } from "lucide-react";
+import { CheckCircle, Lock, XCircle, Loader2, ArrowRight } from "lucide-react";
 
 type Question = {
   id: number;
@@ -17,6 +17,7 @@ type Question = {
   type: string;
   question: string;
   options: string[];
+  tier?: number;
 };
 
 type EvaluationResult = {
@@ -26,12 +27,39 @@ type EvaluationResult = {
   correctAnswer?: string;
 };
 
-async function fetchQuestion(topic: string | null): Promise<Question> {
-  const params = new URLSearchParams({ critical: "1" });
-  if (topic) params.set("topic", topic);
+const SEEN_KEY = "vip:seen";
+const SEEN_CAP = 40;
+
+function readSeen(): number[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((n): n is number => Number.isInteger(n)) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSeen(ids: number[]) {
+  try {
+    localStorage.setItem(SEEN_KEY, JSON.stringify(ids.slice(-SEEN_CAP)));
+  } catch {}
+}
+
+async function fetchQuestion(urlTopic: string | null, topicStats: Record<string, TopicStat>): Promise<Question> {
+  const topic = urlTopic ?? weakestTopic(topicStats);
+  const stat = topicStats[topic];
+  const seen = readSeen();
+  const params = new URLSearchParams({
+    topic,
+    attempted: String(stat?.attempted ?? 0),
+    correct: String(stat?.correct ?? 0),
+  });
+  if (seen.length) params.set("exclude", seen.slice(-50).join(","));
   const res = await fetch(`/api/questions?${params}`);
   if (!res.ok) throw new Error("Failed to fetch question");
-  return res.json();
+  const q: Question = await res.json();
+  writeSeen([...seen.filter((id) => id !== q.id), q.id]);
+  return q;
 }
 
 // Trophy icons as SVG components (no emojis in UI)
@@ -49,8 +77,6 @@ function renderTrophyIcon(iconKey: string, size: number = 24) {
   return Icon ? <Icon /> : null;
 }
 
-const topicColors ={ main: "var(--ink)", glow: "rgba(26, 35, 50, 0.2)", bg: "var(--ticket)" };
-
 export default function ToolboxPage() {
   return (
     <Suspense fallback={null}>
@@ -60,15 +86,16 @@ export default function ToolboxPage() {
 }
 
 function Toolbox() {
-  const queryClient = useQueryClient();
   const topic = useSearchParams().get("topic");
-  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer, saveExplanation } = useProgress();
+  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer, saveExplanation, topicStats, authReady } = useProgress();
   const [attempts, setAttempts] = useState(0);
   const [answered, setAnswered] = useState(0);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [evaluated, setEvaluated] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [round, setRound] = useState(0);
+  const statsRef = useRef(topicStats);
+  statsRef.current = topicStats;
   const [isCorrect, setIsCorrect] = useState(false);
   const [evalMessage, setEvalMessage] = useState("");
   const [reasoningText, setReasoningText] = useState("");
@@ -83,13 +110,12 @@ function Toolbox() {
     },
   });
 
-  const { data: question, isLoading, refetch } = useQuery({
-    queryKey: ["question", topic],
-    queryFn: () => fetchQuestion(topic),
+  const { data: question, isLoading } = useQuery({
+    queryKey: ["question", topic, round],
+    queryFn: () => fetchQuestion(topic, statsRef.current),
+    enabled: authReady,
     staleTime: Infinity,
   });
-
-  const colors = topicColors;
 
   const evaluateMutation = useMutation({
     mutationFn: async ({ questionId, answer }: { questionId: number; answer: string }): Promise<EvaluationResult> => {
@@ -161,7 +187,7 @@ function Toolbox() {
     setShowConfetti(false);
     whyForm.reset();
     setWhySaved(false);
-    refetch();
+    setRound((n) => n + 1);
   };
 
   const handleEvaluate = (answer: string) => {
@@ -170,79 +196,7 @@ function Toolbox() {
     evaluateMutation.mutate({ questionId: question.id, answer });
   };
 
-
-  const DraggableVar = ({ id, text }: { id: string; text: string }) => {
-    const displayText = text === "[name]" ? `"Student"` : text;
-
-    const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id, disabled: evaluated || evaluateMutation.isPending });
-    return (
-      <motion.button
-        ref={setNodeRef}
-        style={{ opacity: isDragging ? 0.2 : 1 }}
-        {...listeners}
-        {...attributes}
-        className="draggable-item"
-        disabled={evaluated || evaluateMutation.isPending}
-        whileHover={{ scale: 1.02, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {displayText}
-      </motion.button>
-    );
-  };
-
-  const DroppableArea = () => {
-    const { isOver, setNodeRef } = useDroppable({ id: "drop-zone" });
-
-    let borderColor = isOver ? colors.main : "var(--glass-border)";
-    if (evaluated) {
-      borderColor = isCorrect ? "var(--ok)" : "var(--bad)";
-    } else if (evaluateMutation.isPending && selectedAnswer) {
-      borderColor = colors.main;
-    }
-
-    return (
-      <div
-        ref={setNodeRef}
-        className="droppable-area"
-        style={{
-          borderColor,
-          background: isOver || (evaluated && isCorrect) ? colors.bg : "var(--surface)",
-          boxShadow: isOver ? `0 0 20px ${colors.glow}` : "none"
-        }}
-      >
-        {selectedAnswer ? (
-          <motion.span
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="draggable-item"
-            style={{
-              transform: "none",
-              cursor: "default",
-              border: `2px solid ${borderColor}`,
-              background: "var(--surface)"
-            }}
-          >
-            {selectedAnswer}
-          </motion.span>
-        ) : (
-          <span style={{ color: "var(--ink-2)", display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Target size={18} />
-            Drop your answer here
-          </span>
-        )}
-      </div>
-    );
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    setActiveId(null);
-    if (event.over && event.over.id === "drop-zone" && !evaluated && !evaluateMutation.isPending) {
-      handleEvaluate(String(event.active.id));
-    }
-  };
-
-  if (isLoading) {
+  if (!authReady || isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', gap: '1.5rem' }}>
         <motion.div
@@ -257,8 +211,6 @@ function Toolbox() {
   }
 
   if (!question) return <div className="page">Could not load a question. Reload the page to try again.</div>;
-
-  const isDragAndDrop = ["fill-in-blank", "categorization"].includes(question.type) || question.question.includes("store your name");
 
   const topicName = question.topic.charAt(0).toUpperCase() + question.topic.slice(1);
   const finished = evaluated && (isCorrect || attempts >= 2);
@@ -297,54 +249,12 @@ function Toolbox() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Ticket tone="plain" stub={`Q ${answered + 1}`} stubNote={topicName}>
+        <Ticket tone="plain" stub={`Q ${answered + 1}`} stubNote={question.tier ? `${topicName} · Level ${question.tier}` : topicName}>
         <div style={{ padding: 'var(--space-2)' }}>
           <div style={{ marginBottom: 'var(--space-5)', fontSize: 'var(--step-1)', lineHeight: 1.5, letterSpacing: 0, fontWeight: 700 }}>
             <PromptWithCode text={question.question} />
           </div>
 
-          {isDragAndDrop ? (
-            <DndContext
-              onDragStart={(e) => setActiveId(String(e.active.id))}
-              onDragEnd={handleDragEnd}
-              onDragCancel={() => setActiveId(null)}
-            >
-              <div style={{ marginBottom: 'var(--space-5)' }}>
-                <p className="meta" style={{ marginBottom: 'var(--space-3)' }}>Drag an option into the box.</p>
-                <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-                  {question.options.map((opt) => (
-                    <DraggableVar key={opt} id={opt} text={opt} />
-                  ))}
-                </div>
-              </div>
-
-              <div className="mono" style={{
-                borderTop: '1px solid rgba(26, 35, 50, 0.2)',
-                paddingTop: 'var(--space-5)',
-                display: 'flex',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: 'var(--space-4)',
-                fontSize: 'var(--step-1)',
-              }}>
-                <DroppableArea />
-                {question.topic === "variables" && !question.options.includes("[name]") && (
-                  <span>myName = "Sona";</span>
-                )}
-                {question.options.includes("[name]") && (
-                  <span>`Welcome, ${"{"}userName{"}"}!`</span>
-                )}
-              </div>
-
-              <DragOverlay dropAnimation={{ duration: 250, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
-                {activeId ? (
-                  <div className="draggable-item" style={{ cursor: 'grabbing', transform: 'scale(1.05)' }}>
-                    {activeId}
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-          ) : (
             <div role="group" aria-label="Answer options" style={{ display: 'grid', gap: 'var(--space-3)' }}>
               {question.options.map((opt, index) => {
                 const chosen = selectedAnswer === opt;
@@ -381,7 +291,6 @@ function Toolbox() {
                 );
               })}
             </div>
-          )}
 
           <div aria-live="polite">
             {evaluated && (

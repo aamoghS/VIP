@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { getDb } from "@/server/db";
-import { questions } from "@/server/db/schema";
+import { findQuestion } from "@/server/questions/pick";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing questionId or studentAnswer" }, { status: 400 });
     }
 
-    const [question] = await getDb()
-      .select({
-        id: questions.id,
-        currentAnswer: questions.currentAnswer,
-        reasoning: questions.reasoning,
-      })
-      .from(questions)
-      .where(eq(questions.id, Number(questionId)))
-      .limit(1);
+    const question = findQuestion(Number(questionId));
 
     if (!question) {
       return NextResponse.json({ error: "Question not found" }, { status: 404 });
@@ -39,7 +29,7 @@ export async function POST(request: Request) {
       message: isCorrect ? "Correct!" : "Incorrect, try again!",
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Database unavailable";
-    return NextResponse.json({ error: message }, { status: 503 });
+    const message = error instanceof Error ? error.message : "Invalid request";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

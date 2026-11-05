@@ -114,13 +114,15 @@ async function membersOf(roomCode: string) {
 
 async function view(room: Room, viewer: SessionPlayer) {
   const mission = getMission(room.missionId);
-  const all = await membersOf(room.code);
+  const [all, [sent]] = await Promise.all([
+    membersOf(room.code),
+    getDb()
+      .select({ createdAt: reflections.createdAt })
+      .from(reflections)
+      .where(and(eq(reflections.roomCode, room.code), eq(reflections.round, room.state.round), eq(reflections.playerId, viewer.id)))
+      .limit(1),
+  ]);
   const mine = all.find((m) => m.playerId === viewer.id);
-  const [sent] = await getDb()
-    .select({ createdAt: reflections.createdAt })
-    .from(reflections)
-    .where(and(eq(reflections.roomCode, room.code), eq(reflections.round, room.state.round), eq(reflections.playerId, viewer.id)))
-    .limit(1);
   return {
     members: all.map(({ name, team, seat }) => ({ name, team: team as TeamId, seat })),
     me: mine ? { team: mine.team as TeamId, seat: mine.seat } : null,
@@ -218,8 +220,8 @@ export const roomRouter = createTRPCRouter({
     const room = await loadRoom(input.code);
     assertOwner(room, ctx.player);
     const db = getDb();
-    const results = await db.select().from(storyResults).where(eq(storyResults.roomCode, room.code));
-    const notes = await db
+    const resultsQuery = db.select().from(storyResults).where(eq(storyResults.roomCode, room.code));
+    const notesQuery = db
       .select({
         id: reflections.id,
         playerName: players.name,
@@ -234,8 +236,9 @@ export const roomRouter = createTRPCRouter({
       .from(reflections)
       .innerJoin(players, eq(players.id, reflections.playerId))
       .where(eq(reflections.roomCode, room.code));
+    const [results, notes, roomView] = await Promise.all([resultsQuery, notesQuery, view(room, ctx.player)]);
     return {
-      ...(await view(room, ctx.player)),
+      ...roomView,
       results,
       reflections: notes,
       aggregates: {
