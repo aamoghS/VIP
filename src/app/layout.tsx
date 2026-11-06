@@ -14,7 +14,7 @@ const mono = JetBrains_Mono({ weight: ["400", "700"], subsets: ["latin"], variab
 const hud = VT323({ weight: "400", subsets: ["latin"], variable: "--font-hud" });
 
 export const metadata: Metadata = {
-  title: "codedash: Critical thinking",
+  title: { default: "codedash: Critical thinking", template: "%s · codedash" },
   description: "Trace a change in the code, then say why the result follows.",
 };
 
