@@ -2,12 +2,10 @@ import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypt
 import { cookies } from "next/headers";
 import { and, eq, gt, lte } from "drizzle-orm";
 import { getDb } from "@/server/db";
-import { players, sessions } from "@/server/db/schema";
+import { players, sessions, type Role } from "@/server/db/schema";
 
 export const SESSION_COOKIE = "vip_session";
 const COOKIE = SESSION_COOKIE;
-
-export type Role = "student" | "teacher";
 
 export type PlayerProgress = {
   xp: number;
@@ -91,7 +89,7 @@ export async function currentPlayer() {
     .limit(1);
   const row = found?.player;
   if (!row) return null;
-  return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
+  return { name: row.name, role: row.role, progress: readProgress(row.progress) };
 }
 
 export async function currentPlayerId() {
@@ -140,7 +138,7 @@ export async function signIn(name: string, password: string) {
     .limit(1);
   if (!row || !checkPassword(password, row.passwordHash)) return { error: "Wrong name or password." };
   await setSession(row.id);
-  return { name: row.name, role: row.role as Role, progress: readProgress(row.progress) };
+  return { name: row.name, role: row.role, progress: readProgress(row.progress) };
 }
 
 export async function signOut() {

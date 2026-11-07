@@ -4,7 +4,8 @@ import { useState, type ReactNode } from "react";
 import { useForm } from "@tanstack/react-form";
 import { LogIn, UserPlus } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { useProgress, type PlayerRole } from "@/context/ProgressContext";
+import { useProgress } from "@/context/ProgressContext";
+import type { Role } from "@/server/db/schema";
 import {
   Btn,
   ErrorLine,
@@ -21,16 +22,16 @@ import {
   requiredText,
 } from "@/app/build/ui";
 
-const ROLE_LABEL: Record<PlayerRole, string> = { student: "Student", teacher: "Teacher" };
+const ROLE_LABEL: Record<Role, string> = { student: "Student", teacher: "Teacher" };
 
 /** Shows children only for a signed-in account. Otherwise a sign-in / create-account card. */
-export function SignInGate({ defaultRole, children }: { defaultRole: PlayerRole; children: ReactNode }) {
+export function SignInGate({ defaultRole, children }: { defaultRole: Role; children: ReactNode }) {
   const { playerName, authReady, signIn, signUp } = useProgress();
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
   const form = useForm({
-    defaultValues: { name: "", password: "", role: defaultRole as PlayerRole },
+    defaultValues: { name: "", password: "", role: defaultRole },
     onSubmit: async ({ value }) => {
       setError("");
       const message = creating ? await signUp(value.name, value.password, value.role) : await signIn(value.name, value.password);
