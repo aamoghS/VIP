@@ -43,7 +43,6 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 });
 
 export const createTRPCRouter = t.router;
-export const publicProcedure = t.procedure;
 
 export const authedProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.player) throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in first." });

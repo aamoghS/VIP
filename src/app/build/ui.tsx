@@ -38,7 +38,7 @@ export const SPACE = {
 } as const;
 
 /** Top-level container: the only box that casts the offset shadow (with the primary button). */
-export const panel: CSSProperties = {
+const panel: CSSProperties = {
   background: SURFACE,
   border: `3px solid ${INK}`,
   boxShadow: `4px 4px 0 ${INK}`,
@@ -367,7 +367,7 @@ export type FieldLike = {
 
 const errorText = (e: unknown) => (typeof e === "string" ? e : e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "");
 
-export function fieldErrors(field: Pick<FieldLike, "state">): string[] {
+function fieldErrors(field: Pick<FieldLike, "state">): string[] {
   return field.state.meta.isTouched ? field.state.meta.errors.map(errorText).filter(Boolean) : [];
 }
 
