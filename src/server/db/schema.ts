@@ -1,12 +1,14 @@
 import { boolean, index, integer, jsonb, pgTable, serial, text, timestamp, unique } from "drizzle-orm/pg-core";
 import type { SprintState } from "@/lib/sprint/types";
 
+export type Role = "student" | "teacher";
+
 export const players = pgTable("players", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   nameKey: text("name_key").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  role: text("role").$type<"student" | "teacher">().notNull().default("student"),
+  role: text("role").$type<Role>().notNull().default("student"),
   progress: jsonb("progress").$type<Record<string, unknown>>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

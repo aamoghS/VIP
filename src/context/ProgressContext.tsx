@@ -2,17 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TopicStat } from "@/lib/practice/targeting";
+import type { Role } from "@/server/db/schema";
 
 type UnlockedItem = {
   id: string;
   name: string;
   icon: string;
-};
-
-// Per-topic accuracy tracking
-export type TopicStat = {
-  attempted: number;
-  correct: number;
 };
 
 export type TopicStats = Record<string, TopicStat>;
@@ -21,8 +17,6 @@ export type Explanation = {
   topic: string;
   text: string;
 };
-
-export type PlayerRole = "student" | "teacher";
 
 type ProgressContextType = {
   xp: number;
@@ -41,10 +35,10 @@ type ProgressContextType = {
   saveExplanation: (topic: string, text: string) => void;
   resetProgress: () => void;
   playerName: string | null;
-  playerRole: PlayerRole | null;
+  playerRole: Role | null;
   authReady: boolean;
   signIn: (name: string, password: string) => Promise<string | null>;
-  signUp: (name: string, password: string, role?: PlayerRole) => Promise<string | null>;
+  signUp: (name: string, password: string, role?: Role) => Promise<string | null>;
   signOut: () => Promise<void>;
   currentLevel: number;
   xpPerLevel: number;
@@ -52,7 +46,7 @@ type ProgressContextType = {
   levelProgress: number;
 };
 
-type AuthPlayer = { name: string; role: PlayerRole; progress: SavedProgress };
+type AuthPlayer = { name: string; role: Role; progress: SavedProgress };
 
 const STORAGE_KEY = "vip_progress";
 
@@ -144,7 +138,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [explanations, setExplanations] = useState<Explanation[]>([]);
   const [playerName, setPlayerName] = useState<string | null>(null);
-  const [playerRole, setPlayerRole] = useState<PlayerRole | null>(null);
+  const [playerRole, setPlayerRole] = useState<Role | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const snapshotRef = useRef<SavedProgress>(defaultProgress());
 
@@ -284,7 +278,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const signIn = (name: string, password: string) =>
     submitAuth({ mode: "login", name, password }, "Could not sign in.");
 
-  const signUp = (name: string, password: string, role: PlayerRole = "student") =>
+  const signUp = (name: string, password: string, role: Role = "student") =>
     submitAuth({ mode: "create", name, password, role, progress: snapshotRef.current }, "Could not create that player.");
 
   const signOutMutation = useMutation({
