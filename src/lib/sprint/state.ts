@@ -142,7 +142,7 @@ export const recordAnswer = (
   });
 
 /** Definition of Done items still missing for a story. */
-export function missingForDone(story: StoryState, shape: TraceShape): ("trace" | "answer" | "reason")[] {
+function missingForDone(story: StoryState, shape: TraceShape): ("trace" | "answer" | "reason")[] {
   const missing: ("trace" | "answer" | "reason")[] = [];
   const filled = story.trace.length > 0 && story.trace.every((r) => r.every((c) => c.trim() !== ""));
   if (shape && shape.cols > 0 && !filled) missing.push("trace");
