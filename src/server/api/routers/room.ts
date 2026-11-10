@@ -7,6 +7,7 @@ import { getMission, questionsFor, toPublicMission } from "@/lib/sprint/mission"
 import * as sprint from "@/lib/sprint/state";
 import { SprintError } from "@/lib/sprint/state";
 import { traceLayout } from "@/lib/sprint/trace";
+import { checkStoryTrace } from "@/lib/sprint/traceCheck";
 import type { SprintState, TeamId } from "@/lib/sprint/types";
 import { authedProcedure, createTRPCRouter, teacherProcedure, type SessionPlayer } from "@/server/api/trpc";
 import { getDb } from "@/server/db";
@@ -101,6 +102,13 @@ function missionOf(room: Room) {
 function traceShape(code?: string) {
   const layout = code ? traceLayout(code) : null;
   return layout && layout.variables.length ? { rows: layout.lines.length, cols: layout.variables.length } : null;
+}
+
+/** Trace check for a saved result, read from the stored mat so nothing extra is saved. */
+function storedTraceCheck(r: typeof storyResults.$inferSelect) {
+  const mission = getMission(r.missionId);
+  const question = mission && questionsFor(mission, r.team as TeamId)[r.storyIndex];
+  return question ? checkStoryTrace(question, r.trace) : null;
 }
 
 async function membersOf(roomCode: string) {
@@ -239,7 +247,7 @@ export const roomRouter = createTRPCRouter({
     const [results, notes, roomView] = await Promise.all([resultsQuery, notesQuery, view(room, ctx.player)]);
     return {
       ...roomView,
-      results,
+      results: results.map((r) => ({ ...r, traceCheck: storedTraceCheck(r) })),
       reflections: notes,
       aggregates: {
         round: aggregate(results.filter((r) => r.round === room.state.round)),
@@ -308,9 +316,10 @@ export const roomRouter = createTRPCRouter({
             { answer: input.answer, correct: input.answer === question.answer, reason: input.reason, trace: input.trace },
             traceShape(question.code),
           );
-          // The first check locks the answer, so report the stored result.
-          const correct = next.teams[input.team].stories[input.storyIndex].correct === true;
-          return { state: next, out: { correct, explanation: question.explanation, state: next } };
+          // The first check locks the answer and the mat, so report the stored result.
+          const stored = next.teams[input.team].stories[input.storyIndex];
+          const traceCheck = checkStoryTrace(question, stored.trace);
+          return { state: next, out: { correct: stored.correct === true, explanation: question.explanation, traceCheck, state: next } };
         },
         asMember(ctx.player, input.team),
       ),

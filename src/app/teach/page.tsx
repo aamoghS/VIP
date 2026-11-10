@@ -335,17 +335,20 @@ function Dashboard({ code }: { code: string }) {
       )}
 
       {state.phase === "planning" && (
-        <div style={{ display: "flex", gap: SPACE[3], flexWrap: "wrap", alignItems: "center" }}>
-          <Btn disabled={!bothPlanned || pending} onClick={() => startWork.mutate(input)}>
-            <Play size={18} aria-hidden="true" /> Start work
-          </Btn>
-          {!bothPlanned ? (
-            <Btn variant="secondary" disabled={pending} onClick={() => startWork.mutate({ ...input, force: true })}>
-              <FastForward size={18} aria-hidden="true" /> Start anyway
+        <>
+          <p style={{ marginTop: 0 }}>Tell each team to use one shared screen for the whole sprint: roles change who types, not which device, and mats typed on other devices are not sent.</p>
+          <div style={{ display: "flex", gap: SPACE[3], flexWrap: "wrap", alignItems: "center" }}>
+            <Btn disabled={!bothPlanned || pending} onClick={() => startWork.mutate(input)}>
+              <Play size={18} aria-hidden="true" /> Start work
             </Btn>
-          ) : null}
-          <span>{bothPlanned ? "Both teams are planned." : "Waiting for both teams to finish planning."}</span>
-        </div>
+            {!bothPlanned ? (
+              <Btn variant="secondary" disabled={pending} onClick={() => startWork.mutate({ ...input, force: true })}>
+                <FastForward size={18} aria-hidden="true" /> Start anyway
+              </Btn>
+            ) : null}
+            <span>{bothPlanned ? "Both teams are planned." : "Waiting for both teams to finish planning."}</span>
+          </div>
+        </>
       )}
 
       {(state.phase === "teamA" || state.phase === "standup" || state.phase === "teamB") && (
@@ -482,6 +485,8 @@ type ResultRow = {
   topic: string;
   objective: number;
   answer: string;
+  traceChecked: number | null;
+  traceMatched: number | null;
 };
 
 type ReflectionRow = {
@@ -521,6 +526,18 @@ const resultColumns = (withRound: boolean) =>
           {c.getValue()}
         </span>
       ),
+    }),
+    resultHelper.display({
+      id: "trace",
+      header: "Trace",
+      cell: (c) => {
+        const { traceChecked, traceMatched } = c.row.original;
+        return traceChecked === null ? (
+          <><span aria-hidden="true">-</span><span className="vh">no trace mat</span></>
+        ) : (
+          <span style={{ ...mono, whiteSpace: "nowrap" }}>{traceMatched}/{traceChecked} cells</span>
+        );
+      },
     }),
     resultHelper.accessor("reason", { header: "Reason", enableSorting: false, cell: (c) => <RichText text={c.getValue()} /> }),
   ]);
@@ -565,9 +582,21 @@ function ResultsSection({ data, code }: { data: DashboardData; code: string }) {
         topic: r.topic,
         objective: r.objective,
         answer: r.answer,
+        traceChecked: r.traceCheck?.checked ?? null,
+        traceMatched: r.traceCheck?.matched ?? null,
       }));
     return rows.length ? rows : EMPTY_RESULTS;
   }, [data.results, scope, state.round]);
+
+  const traceRate = useMemo(() => {
+    const objectiveOne = resultRows.filter((r) => r.objective === 1 && r.traceChecked !== null);
+    return {
+      key: "trace",
+      label: "Objective 1 trace-mat cells correct",
+      total: objectiveOne.reduce((sum, r) => sum + (r.traceChecked ?? 0), 0),
+      correct: objectiveOne.reduce((sum, r) => sum + (r.traceMatched ?? 0), 0),
+    };
+  }, [resultRows]);
 
   const reflectionRows = useMemo<ReflectionRow[]>(() => {
     const rows = data.reflections
@@ -608,6 +637,7 @@ function ResultsSection({ data, code }: { data: DashboardData; code: string }) {
           <div style={{ display: "grid", gap: SPACE[5], gridTemplateColumns: "repeat(auto-fit, minmax(20rem, 1fr))", marginTop: SPACE[4] }}>
             <Bars title="Correct rate by topic" rates={agg.byTopic.map((r) => ({ ...r, label: r.key }))} />
             <Bars title="Correct rate by objective" rates={agg.byObjective.map((r) => ({ ...r, label: OBJECTIVE_LABEL[Number(r.key)] ? `${r.key} ${OBJECTIVE_LABEL[Number(r.key)]}` : `Objective ${r.key}` }))} />
+            {traceRate.total > 0 ? <Bars title="Trace mat accuracy" rates={[traceRate]} /> : null}
           </div>
 
           <h3 style={{ ...cardTitle, margin: `${SPACE[6]} 0 ${SPACE[2]}` }}>Stories</h3>
@@ -623,8 +653,8 @@ function ResultsSection({ data, code }: { data: DashboardData; code: string }) {
           variant="secondary"
           disabled={sortedResults.length === 0}
           onClick={() =>
-            downloadCsv(`results-${code}.csv`, ["round", "team", "story", "topic", "objective", "points", "correct", "answer", "reason"],
-              sortedResults.map((r) => [r.round, r.team, r.story, r.topic, r.objective, r.points, r.result, r.answer, r.reason]))
+            downloadCsv(`results-${code}.csv`, ["round", "team", "story", "topic", "objective", "points", "correct", "trace_cells_matched", "trace_cells_checked", "answer", "reason"],
+              sortedResults.map((r) => [r.round, r.team, r.story, r.topic, r.objective, r.points, r.result, r.traceMatched, r.traceChecked, r.answer, r.reason]))
           }
         >
           <Download size={18} aria-hidden="true" /> Download results CSV

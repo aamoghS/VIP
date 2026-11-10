@@ -5,7 +5,8 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { MISSIONS } from "../src/app/build/missions";
 import { questionsFor } from "../src/lib/sprint/mission";
-import { traceLayout } from "../src/lib/sprint/trace";
+import { cellId, traceLayout } from "../src/lib/sprint/trace";
+import { checkStoryTrace } from "../src/lib/sprint/traceCheck";
 import type { AppRouter } from "../src/server/api/root";
 
 const base = process.argv[2] ?? "http://localhost:3200";
@@ -138,7 +139,7 @@ async function main() {
   const seatKeys = [`A:1:${a1.name}`, `A:2:${a2.name}`, `B:1:${b1.name}`, `B:2:${b2.name}`];
   check("members listed with seats", seatKeys.every((k) => planned.members.some((m) => `${m.team}:${m.seat}:${m.name}` === k)));
   check("me reflects own team and seat", planned.me?.team === "A" && planned.me.seat === 1 && (await b2.api.room.get.query({ code })).me?.seat === 2);
-  check("room.get mission has no answer or explanation", !/"answer"|"explanation"/.test(JSON.stringify(planned.mission)));
+  check("room.get mission has no answer, explanation or trace key", !/"answer"|"explanation"|"traceKey"/.test(JSON.stringify(planned.mission)));
 
   await rejects("startWork before planned rejected", teacher.api.room.startWork.mutate(t));
   const nA = mission.groupA.questions.length;
@@ -164,7 +165,10 @@ async function main() {
       const q = questions[i];
       const api = crew[team][i % 2].api;
       const layout = q.code ? traceLayout(q.code) : null;
-      const mat = layout && layout.variables.length ? layout.lines.map(() => layout.variables.map(() => "0")) : [];
+      // Team A fills every cell with "0"; Team B writes the trace key's values (and "0" in the cells it does not cover).
+      const mat = layout && layout.variables.length
+        ? layout.lines.map((_, r) => layout.variables.map((v) => (team === "B" ? q.traceKey?.[cellId(r + 1, v)] : undefined) ?? "0"))
+        : [];
       const answer = i === wrongIndex ? wrongAnswer(q) : q.answer;
       if (team === "A" && i === 0) {
         await rejects("complete before check rejected", api.room.completeStory.mutate({ code, team, storyIndex: 0 }));
@@ -182,6 +186,10 @@ async function main() {
       }
       const res = await api.room.checkAnswer.mutate({ code, team, storyIndex: i, answer, reason: "because I traced it carefully", trace: mat });
       check(`${team} story ${i} graded ${i === wrongIndex ? "wrong" : "correct"}`, res.correct === (i !== wrongIndex));
+      const expected = checkStoryTrace(q, mat);
+      if (!q.traceKey) check(`${team} story ${i} has no trace check`, res.traceCheck === null);
+      else if (team === "A") check(`${team} story ${i} all-zero mat has trace mismatches`, res.traceCheck !== null && res.traceCheck.checked === expected?.checked && res.traceCheck.mismatches.length > 0);
+      else check(`${team} story ${i} key mat matches every key cell`, res.traceCheck !== null && res.traceCheck.checked > 0 && res.traceCheck.matched === res.traceCheck.checked && res.traceCheck.mismatches.length === 0);
       await api.room.completeStory.mutate({ code, team, storyIndex: i });
     }
   }
@@ -212,6 +220,11 @@ async function main() {
   const dash = await teacher.api.room.dashboard.query(t);
   const all = [...questionsFor(mission, "A"), ...questionsFor(mission, "B")];
   check("dashboard has a result per story", dash.results.length === all.length);
+  check(
+    "dashboard results carry the trace check of the saved mat",
+    dash.results.filter((r) => r.traceCheck !== null).length === all.filter((q) => q.traceKey).length &&
+      dash.results.every((r) => r.traceCheck === null || (r.team === "A") === (r.traceCheck.mismatches.length > 0)),
+  );
   check("dashboard has 4 reflections (one per player per round)", dash.reflections.length === 4);
   check(
     "resubmitted reflection replaced",
