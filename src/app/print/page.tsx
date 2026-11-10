@@ -147,7 +147,7 @@ function Sheets({ id }: { id: string }) {
             </article>
           ))}
         </div>
-        <p style={{ marginTop: "1rem" }}>Roles rotate each story: pass your card to the next seat.</p>
+        <p style={{ marginTop: "1rem" }}>Roles rotate each story: pass your card to the next seat, and keep one team screen for the whole sprint because mats typed on other devices are not sent.</p>
       </section>
 
       {codeStories.map(({ team, q, i }) => {

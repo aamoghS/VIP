@@ -31,6 +31,10 @@ export type SprintState = {
 
 export type TraceLayout = { lines: string[]; variables: string[] };
 
+/** A key cell the student got wrong. `row` is the 1-based line number shown on the mat. */
+export type TraceMismatch = { row: number; variable: string; expected: string; got: string };
+export type TraceCheck = { checked: number; matched: number; mismatches: TraceMismatch[] };
+
 /** A question as students see it: no answer, no explanation. */
 export type PublicStory = {
   index: number;

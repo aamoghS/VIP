@@ -5,7 +5,8 @@ import { CheckCircle2, ChevronDown, Circle, ClipboardCheck, Flag, XCircle } from
 import { OptionText, PromptWithCode, RichText } from "@/components/RichText";
 import { api } from "@/trpc/react";
 import { ROLE_DUTIES, roleFor } from "@/lib/sprint/roles";
-import type { PublicStory, StoryState, TeamId } from "@/lib/sprint/types";
+import { cellId } from "@/lib/sprint/trace";
+import type { PublicStory, StoryState, TeamId, TraceCheck } from "@/lib/sprint/types";
 import type { Member } from "./phaseProps";
 import {
   BAD, Badge, Btn, ScrollFade, CodeBlock, ErrorLine, GROUND, HAIRLINE, INK, INK2, MONO, OBJECTIVE_LABEL, OK, Panel, SPACE, STEP, SURFACE, TICKET,
@@ -44,7 +45,7 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
     const saved = storyState.trace;
     return saved.length === blank.length && saved.every((r) => r.length === blank[0]?.length) && saved.length > 0 ? saved : blank;
   });
-  const [result, setResult] = useState<{ correct: boolean; explanation: string } | null>(null);
+  const [result, setResult] = useState<{ correct: boolean; explanation: string; traceCheck: TraceCheck | null } | null>(null);
   const [touched, setTouched] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -69,7 +70,7 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
   const check = api.room.checkAnswer.useMutation({
     onSuccess: (r) => {
       justChecked.current = true;
-      setResult({ correct: r.correct, explanation: r.explanation });
+      setResult({ correct: r.correct, explanation: r.explanation, traceCheck: r.traceCheck });
       onChanged();
     },
   });
@@ -90,6 +91,7 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
   }, []);
 
   const locked = storyState.answer !== null || result !== null;
+  const traceMisses = new Map((result?.traceCheck?.mismatches ?? []).map((m) => [cellId(m.row, m.variable), m]));
   const traceFilled = !mat || (trace.length > 0 && trace.every((r) => r.every((c) => c.trim() !== "")));
   const reasonOk = reason.trim().length >= MIN_REASON;
   const answerPicked = answer !== "";
@@ -128,7 +130,7 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
       <h2 ref={headingRef} tabIndex={-1} style={{ ...heading, margin: `${SPACE[3]} 0 ${SPACE[2]}` }}>{story.title}</h2>
       {story.userStory && story.userStory !== story.prompt ? <p style={{ lineHeight: 1.5, margin: `0 0 ${SPACE[4]}` }}><RichText text={story.userStory} /></p> : null}
 
-      <ul aria-label="Roles for this story (they change every story)" className="role-strip" style={{ listStyle: "none", padding: 0, margin: `0 0 ${SPACE[5]}`, display: "grid", gap: SPACE[2], gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
+      <ul aria-label="Roles for this story (they change every story)" className="role-strip" style={{ listStyle: "none", padding: 0, margin: `0 0 ${SPACE[2]}`, display: "grid", gap: SPACE[2], gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
         {Array.from({ length: Math.max(4, ...members.map((m) => m.seat)) }, (_, seat) => {
           const role = roleFor(seat, story.index);
           const who = members.find((m) => m.seat === seat + 1);
@@ -155,6 +157,7 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
           );
         })}
       </ul>
+      <p style={{ ...hint, margin: `0 0 ${SPACE[5]}` }}>Use one team screen for the whole sprint: roles change who types, not which device, and a mat typed on another device is not sent.</p>
 
       <div style={{ fontSize: STEP.s1up, lineHeight: 1.5, margin: `0 0 ${SPACE[3]}` }}><PromptWithCode text={story.prompt} /></div>
       {story.code && !mat ? <CodeBlock code={story.code} /> : null}
@@ -192,22 +195,30 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
                         <span className="mat-line">{line}</span>
                       </div>
                     </th>
-                    {mat.variables.map((v, c) => (
-                      <td key={v} data-var={v}>
-                        <input
-                          type="text"
-                          data-cell={`${r}-${c}`}
-                          aria-label={`line ${r + 1}, ${v}`}
-                          value={trace[r]?.[c] ?? ""}
-                          maxLength={40}
-                          readOnly={locked}
-                          autoComplete="off"
-                          onChange={(e) => setCell(r, c, e.target.value)}
-                          onKeyDown={(e) => onCellKey(e, r, c)}
-                          style={{ ...fieldStyle, minWidth: "5rem", minHeight: 48, fontFamily: MONO, fontSize: STEP.s1up, background: locked ? GROUND : SURFACE }}
-                        />
-                      </td>
-                    ))}
+                    {mat.variables.map((v, c) => {
+                      const miss = traceMisses.get(cellId(r + 1, v));
+                      return (
+                        <td key={v} data-var={v}>
+                          <input
+                            type="text"
+                            data-cell={`${r}-${c}`}
+                            aria-label={miss ? `line ${r + 1}, ${v}, does not match, expected ${miss.expected}` : `line ${r + 1}, ${v}`}
+                            value={trace[r]?.[c] ?? ""}
+                            maxLength={40}
+                            readOnly={locked}
+                            autoComplete="off"
+                            onChange={(e) => setCell(r, c, e.target.value)}
+                            onKeyDown={(e) => onCellKey(e, r, c)}
+                            style={{ ...fieldStyle, minWidth: "5rem", minHeight: 48, fontFamily: MONO, fontSize: STEP.s1up, background: locked ? GROUND : SURFACE }}
+                          />
+                          {miss ? (
+                            <div style={{ display: "flex", gap: SPACE[1], alignItems: "center", padding: `${SPACE[1]} ${SPACE[2]}`, fontSize: STEP.s1, fontWeight: 700 }}>
+                              <XCircle size={16} color={BAD} aria-hidden="true" style={{ flexShrink: 0 }} /> Expected: {miss.expected}
+                            </div>
+                          ) : null}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -295,6 +306,23 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
               {result.correct ? "Correct" : "Not quite"}
             </div>
             <p style={{ margin: `${SPACE[2]} 0 0`, lineHeight: 1.6 }}><RichText text={result.explanation} /></p>
+            {result.traceCheck ? (
+              <div style={{ marginTop: SPACE[4], paddingTop: SPACE[3], borderTop: HAIRLINE }}>
+                <div style={{ display: "flex", gap: SPACE[2], alignItems: "center", fontWeight: 700 }}>
+                  {result.traceCheck.mismatches.length === 0 ? <CheckCircle2 size={20} aria-hidden /> : <XCircle size={20} aria-hidden />}
+                  Trace mat: {result.traceCheck.matched} of {result.traceCheck.checked} key {result.traceCheck.checked === 1 ? "cell matches" : "cells match"}
+                </div>
+                {result.traceCheck.mismatches.length > 0 ? (
+                  <ul style={{ margin: `${SPACE[2]} 0 0`, paddingLeft: SPACE[5], lineHeight: 1.6 }}>
+                    {result.traceCheck.mismatches.map((m) => (
+                      <li key={cellId(m.row, m.variable)}>
+                        Line {m.row}, {m.variable}: you wrote <span style={{ fontFamily: MONO }}>{m.got}</span>, expected <span style={{ fontFamily: MONO }}>{m.expected}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
