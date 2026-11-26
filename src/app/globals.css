@@ -1186,7 +1186,6 @@ body.dark .btn-primary:hover {
 
   .nav-tabs::after {
     content: "";
-    display: block;
     position: absolute;
     top: 0;
     right: 0;
@@ -1201,7 +1200,7 @@ body.dark .btn-primary:hover {
     flex-wrap: nowrap;
     gap: 0 !important;
     margin: 0 !important;
-    padding: 0 32px 0 8px !important;
+    padding: 0 4px !important;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -1217,7 +1216,7 @@ body.dark .btn-primary:hover {
   .glass-sidebar .nav-item {
     height: 44px;
     min-height: 44px;
-    padding: 0 14px !important;
+    padding: 0 clamp(6px, 2vw, 14px) !important;
     border-radius: 0;
     border: 0;
     border-bottom: 4px solid transparent;
@@ -1232,6 +1231,17 @@ body.dark .btn-primary:hover {
     background: transparent;
     color: #fff;
     border-bottom-color: var(--ticket);
+  }
+}
+
+/* All six tabs fit from 360px up. Below that the row scrolls, so show the fade cue and room to scroll past it. */
+@media (max-width: 359px) {
+  .nav-tabs::after {
+    display: block;
+  }
+
+  .glass-sidebar .nav-links {
+    padding-right: 32px !important;
   }
 }
 

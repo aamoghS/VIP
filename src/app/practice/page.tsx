@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,17 +104,13 @@ export default function ToolboxPage() {
 
 function Toolbox() {
   const topic = useSearchParams().get("topic");
-  const { addXp, unlockItem, incrementQuestionsSolved, recordAnswer, saveExplanation, topicStats, authReady } = useProgress();
+  const { addXp, incrementQuestionsSolved, recordAnswer, saveExplanation, topicStats, authReady } = useProgress();
   const [attempts, setAttempts] = useState(0);
   const [answered, setAnswered] = useState(0);
 
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [evaluated, setEvaluated] = useState(false);
   const [round, setRound] = useState(0);
-  const statsRef = useRef(topicStats);
-  useEffect(() => {
-    statsRef.current = topicStats;
-  });
   const [isCorrect, setIsCorrect] = useState(false);
   const [evalMessage, setEvalMessage] = useState("");
   const [reasoningText, setReasoningText] = useState("");
@@ -131,17 +127,17 @@ function Toolbox() {
 
   const { data: question, isLoading } = useQuery({
     queryKey: ["question", topic, round],
-    queryFn: () => fetchQuestion(topic, statsRef.current),
+    queryFn: () => fetchQuestion(topic, topicStats),
     enabled: authReady,
     staleTime: Infinity,
   });
 
   const evaluateMutation = useMutation({
-    mutationFn: async ({ questionId, answer }: { questionId: number; answer: string }): Promise<EvaluationResult> => {
+    mutationFn: async ({ questionId, answer, attempt }: { questionId: number; answer: string; attempt: number }): Promise<EvaluationResult> => {
       const res = await fetch("/api/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId, studentAnswer: answer })
+        body: JSON.stringify({ questionId, studentAnswer: answer, attempt })
       });
       if (!res.ok) throw new Error("Failed to evaluate");
       return res.json();
@@ -160,18 +156,6 @@ function Toolbox() {
         setShowConfetti(true);
         addXp(100);
         incrementQuestionsSolved?.();
-
-        const itemMap: Record<string, { id: string; name: string; iconKey: string }> = {
-          variables: { id: "variables", name: "Variables Wrench", iconKey: "variables" },
-          logic: { id: "logic", name: "Logic Brain", iconKey: "logic" },
-          loops: { id: "loops", name: "Infinity Loop", iconKey: "loops" },
-          functions: { id: "functions", name: "Functions Flask", iconKey: "functions" },
-          debugging: { id: "debugging", name: "Debugging Bug", iconKey: "debugging" },
-          algorithms: { id: "algorithms", name: "Algorithms Map", iconKey: "algorithms" },
-        };
-
-        const item = itemMap[question?.topic || ""];
-        if (item) unlockItem({ ...item, icon: item.iconKey });
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
@@ -212,7 +196,7 @@ function Toolbox() {
   const handleEvaluate = (answer: string) => {
     if (!question) return;
     setSelectedAnswer(answer);
-    evaluateMutation.mutate({ questionId: question.id, answer });
+    evaluateMutation.mutate({ questionId: question.id, answer, attempt: attempts + 1 });
   };
 
   if (!authReady || isLoading) {
@@ -306,6 +290,9 @@ function Toolbox() {
             </div>
 
           <div aria-live="polite">
+            {evaluateMutation.isError && (
+              <p style={{ marginTop: 'var(--space-3)', color: 'var(--bad)' }}>Could not check that answer. Pick it again.</p>
+            )}
             {evaluated && (
               <div style={{ marginTop: 'var(--space-5)', paddingTop: 'var(--space-5)', borderTop: '1px solid rgba(26, 35, 50, 0.2)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: isCorrect ? 'var(--ok)' : 'var(--bad)' }}>

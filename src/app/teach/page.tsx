@@ -17,7 +17,7 @@ import { Ticket } from "@/components/Ticket";
 import { RichText } from "@/components/RichText";
 import { useProgress } from "@/context/ProgressContext";
 import { MISSIONS } from "@/app/build/missions";
-import { velocity } from "@/lib/sprint/state";
+import { emptyTeams, velocity } from "@/lib/sprint/state";
 import { storyTitle } from "@/lib/sprint/mission";
 import { OBJECTIVE_LABEL } from "@/lib/sprint/objectives";
 import type { Phase, TeamId } from "@/lib/sprint/types";
@@ -102,7 +102,8 @@ const mono: CSSProperties = { fontFamily: MONO };
 /* ---------- landing: create / reopen ---------- */
 
 function Landing({ onOpen }: { onOpen: (code: string) => void }) {
-  const rooms = api.room.mine.useQuery().data ?? [];
+  const mine = api.room.mine.useQuery();
+  const rooms = mine.data ?? [];
   const create = api.room.create.useMutation({
     onSuccess: (res) => onOpen(res.code),
   });
@@ -142,6 +143,7 @@ function Landing({ onOpen }: { onOpen: (code: string) => void }) {
           <ErrorLine message={create.error?.message} />
         </form>
       </Panel>
+      {mine.error ? <ErrorLine message={`Could not load your rooms. ${mine.error.message}`} /> : null}
 
       {rooms.length > 0 && (
         <Panel>
@@ -198,10 +200,19 @@ function Dashboard({ code }: { code: string }) {
   }, [livePhase]);
   if (query.error && !data) {
     return (
-      <Panel>
-        <ErrorLine message={query.error.message} />
-        <p>Room {code} could not be loaded. Rooms can only be opened by the teacher who made them.</p>
-      </Panel>
+      <>
+        <AccountHeader
+          title="Teacher dashboard"
+          extra={[{ label: "All rooms", onClick: () => router.push("/teach"), icon: <ArrowLeft size={16} aria-hidden="true" /> }]}
+        />
+        <Panel>
+          <ErrorLine message={query.error.message} />
+          <p>Room {code} could not be loaded. Rooms can only be opened by the teacher who made them.</p>
+          <Btn variant="secondary" onClick={() => router.push("/teach")}>
+            <ArrowLeft size={16} aria-hidden="true" /> All rooms
+          </Btn>
+        </Panel>
+      </>
     );
   }
   if (!data) return <p role="status" style={hint}>Loading room {code}...</p>;
@@ -212,6 +223,7 @@ function Dashboard({ code }: { code: string }) {
   const joinUrl = `${origin}${joinPath}`;
   const pending = setMission.isPending || startPlanning.isPending || startWork.isPending || startRetro.isPending || newRound.isPending;
   const bothPlanned = state.teams.A.planned && state.teams.B.planned;
+  const noMembers = emptyTeams(state);
   const controlError = setMission.error ?? startPlanning.error ?? startWork.error ?? startRetro.error ?? newRound.error;
 
   const elapsed = state.startedAt ? now - new Date(state.startedAt).getTime() : null;
@@ -338,15 +350,21 @@ function Dashboard({ code }: { code: string }) {
         <>
           <p style={{ marginTop: 0 }}>Tell each team to use one shared screen for the whole sprint: roles change who types, not which device, and mats typed on other devices are not sent.</p>
           <div style={{ display: "flex", gap: SPACE[3], flexWrap: "wrap", alignItems: "center" }}>
-            <Btn disabled={!bothPlanned || pending} onClick={() => startWork.mutate(input)}>
+            <Btn disabled={!bothPlanned || noMembers.length > 0 || pending} onClick={() => startWork.mutate(input)}>
               <Play size={18} aria-hidden="true" /> Start work
             </Btn>
             {!bothPlanned ? (
-              <Btn variant="secondary" disabled={pending} onClick={() => startWork.mutate({ ...input, force: true })}>
+              <Btn variant="secondary" disabled={noMembers.length > 0 || pending} onClick={() => startWork.mutate({ ...input, force: true })}>
                 <FastForward size={18} aria-hidden="true" /> Start anyway
               </Btn>
             ) : null}
-            <span>{bothPlanned ? "Both teams are planned." : "Waiting for both teams to finish planning."}</span>
+            <span>
+              {noMembers.length > 0
+                ? `Waiting for students to join ${noMembers.map((t) => `Team ${t}`).join(" and ")}. Work cannot start with an empty team.`
+                : bothPlanned
+                  ? "Both teams are planned."
+                  : "Waiting for both teams to finish planning."}
+            </span>
           </div>
         </>
       )}
@@ -421,7 +439,7 @@ function SubmitRowLike({ disabled, missing, onClick, children }: { disabled: boo
   return (
     <div style={{ display: "flex", gap: SPACE[3], alignItems: "center", flexWrap: "wrap" }}>
       <Btn disabled={disabled} onClick={onClick}>{children}</Btn>
-      
+      {missing.length > 0 ? <span role="status" style={{ fontWeight: 700, fontSize: STEP.s0, color: INK2 }}>Missing: {missing.join(", ")}</span> : null}
     </div>
   );
 }

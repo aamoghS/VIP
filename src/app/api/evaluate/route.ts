@@ -21,11 +21,15 @@ export async function POST(request: Request) {
     const isCorrect =
       String(studentAnswer).trim().toLowerCase() === question.currentAnswer.trim().toLowerCase();
 
+    // The client gives two tries. Keep the answer and the explanation back until the second wrong try or a right one.
+    const attempt = Number(body.attempt) || 1;
+    const reveal = isCorrect || attempt >= 2;
+
     return NextResponse.json({
       questionId,
       isCorrect,
-      correctAnswer: isCorrect ? undefined : question.currentAnswer,
-      reasoning: question.reasoning,
+      correctAnswer: reveal && !isCorrect ? question.currentAnswer : undefined,
+      reasoning: reveal ? question.reasoning : undefined,
       message: isCorrect ? "Correct!" : "Incorrect, try again!",
     });
   } catch (error) {

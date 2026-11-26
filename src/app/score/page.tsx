@@ -16,7 +16,7 @@ const TOPICS = [
 ];
 
 export default function ScorePage() {
-  const { xp, questionsSolved, teamMissionsCompleted, topicStats, resetProgress } = useProgress();
+  const { xp, questionsSolved, teamMissionsCompleted, topicStats, resetProgress, playerName } = useProgress();
   const [confirming, setConfirming] = useState(false);
 
   const totalAttempted = Object.values(topicStats).reduce((n, t) => n + t.attempted, 0);
@@ -37,7 +37,7 @@ export default function ScorePage() {
   return (
     <div className="page">
       <h1 className="page-title">Score</h1>
-      <p className={s.sub}>What still fails, saved on this device.</p>
+      <p className={s.sub}>What still fails, saved {playerName ? "to your account" : "on this device"}.</p>
 
       {totalAttempted === 0 ? (
         <div className={s.empty}>
@@ -76,7 +76,7 @@ export default function ScorePage() {
       <div className={s.reset}>
         {confirming ? (
           <>
-            <span>Erase all progress on this device?</span>
+            <span>{playerName ? `Reset ${playerName}'s account? This erases its XP, trophies and scores everywhere you sign in.` : "Erase all progress on this device?"}</span>
             <button className="btn" onClick={() => { resetProgress(); setConfirming(false); }}>Yes, reset</button>
             <button className="btn" onClick={() => setConfirming(false)}>Cancel</button>
           </>

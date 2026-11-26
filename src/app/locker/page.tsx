@@ -15,18 +15,23 @@ const TOPICS = [
   { id: "algorithms", label: "Algorithms", Icon: Map, how: "Solve step-by-step problems in practice." },
 ];
 
-export default function LockerPage() {
-  const { unlockedItems, questionsSolved, teamMissionsCompleted, topicStats, currentLevel } = useProgress();
+// A trophy is earned from the same numbers /score shows: enough right answers at a passing percentage.
+const PASS_PCT = 60;
+const TROPHY_MIN_CORRECT = 3;
 
-  const earnedCount = TOPICS.filter(t => unlockedItems.some(i => i.id === t.id)).length;
+export default function LockerPage() {
+  const { questionsSolved, teamMissionsCompleted, topicStats, currentLevel } = useProgress();
+
   const pctOf = (id: string) => {
     const st = topicStats[id];
     return st && st.attempted > 0 ? Math.round((st.correct / st.attempted) * 100) : 0;
   };
-  const weak = TOPICS.find(t => {
-    const st = topicStats[t.id];
-    return !st || st.attempted === 0 || st.correct / st.attempted < 0.6;
-  });
+  const isEarned = (id: string) => (topicStats[id]?.correct ?? 0) >= TROPHY_MIN_CORRECT && pctOf(id) >= PASS_PCT;
+  const earnedCount = TOPICS.filter(t => isEarned(t.id)).length;
+  // Same order as /score: lowest percentage first, topics with no answers only after every tried topic passes.
+  const weak =
+    TOPICS.filter(t => (topicStats[t.id]?.attempted ?? 0) > 0 && pctOf(t.id) < PASS_PCT).sort((a, b) => pctOf(a.id) - pctOf(b.id))[0] ??
+    TOPICS.find(t => !topicStats[t.id]?.attempted);
 
   const milestones = [
     { name: "Solve a first question", done: questionsSolved >= 1 },
@@ -40,7 +45,7 @@ export default function LockerPage() {
     <div className="page">
       <h1 className="page-title">Locker</h1>
       <p className={s.sub}>
-        <span className="mono">{earnedCount}</span> of <span className="mono">{TOPICS.length}</span> trophies earned. <span className="mono">{questionsSolved}</span> {questionsSolved === 1 ? "question" : "questions"} solved.
+        <span className="mono">{earnedCount}</span> of <span className="mono">{TOPICS.length}</span> trophies earned. <span className="mono">{questionsSolved}</span> {questionsSolved === 1 ? "question" : "questions"} solved. A trophy needs {TROPHY_MIN_CORRECT} correct answers at {PASS_PCT}% or better.
       </p>
       {weak && (
         <p className={s.nudge}>
@@ -52,7 +57,7 @@ export default function LockerPage() {
         <h2 id="wall" className={s.h2}>Trophy wall</h2>
         <ul className={s.wall}>
           {TOPICS.map(({ id, label, Icon, how }) => {
-            const earned = unlockedItems.some(i => i.id === id);
+            const earned = isEarned(id);
             return (
               <li key={id} className={s.trophy}>
                 <Ticket

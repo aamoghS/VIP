@@ -6,8 +6,8 @@ import { OptionText, PromptWithCode, RichText } from "@/components/RichText";
 import { api } from "@/trpc/react";
 import { ROLE_DUTIES, roleFor } from "@/lib/sprint/roles";
 import { cellId } from "@/lib/sprint/trace";
-import type { PublicStory, StoryState, TeamId, TraceCheck } from "@/lib/sprint/types";
-import type { Member } from "./phaseProps";
+import type { PublicStory, StoryState, TeamId } from "@/lib/sprint/types";
+import type { CheckedStory, Member } from "./phaseProps";
 import {
   BAD, Badge, Btn, ScrollFade, CodeBlock, ErrorLine, GROUND, HAIRLINE, INK, INK2, MONO, OBJECTIVE_LABEL, OK, Panel, SPACE, STEP, SURFACE, TICKET,
   cardTitle, choiceStyle, fieldStyle, heading, hint, labelStyle, pts, radioStyle,
@@ -18,6 +18,8 @@ type Props = {
   team: TeamId;
   story: PublicStory;
   storyState: StoryState;
+  /** Explanation and trace check from the room, set once the story has been checked (here or on another device). */
+  checked: CheckedStory | null;
   total: number;
   estimate?: number;
   members: Member[];
@@ -36,16 +38,15 @@ function emptyMat(story: PublicStory): string[][] {
   return t.lines.map(() => t.variables.map(() => ""));
 }
 
-export function StoryCard({ code, team, story, storyState, total, estimate, members, mySeat, onChanged }: Props) {
+export function StoryCard({ code, team, story, storyState, checked, total, estimate, members, mySeat, onChanged }: Props) {
   const mat = story.trace && story.trace.variables.length > 0 ? story.trace : null;
-  const [answer, setAnswer] = useState(storyState.answer ?? "");
-  const [reason, setReason] = useState(storyState.reason);
-  const [trace, setTrace] = useState<string[][]>(() => {
+  const [draftAnswer, setAnswer] = useState(storyState.answer ?? "");
+  const [draftReason, setReason] = useState(storyState.reason);
+  const [draftTrace, setTrace] = useState<string[][]>(() => {
     const blank = emptyMat(story);
     const saved = storyState.trace;
     return saved.length === blank.length && saved.every((r) => r.length === blank[0]?.length) && saved.length > 0 ? saved : blank;
   });
-  const [result, setResult] = useState<{ correct: boolean; explanation: string; traceCheck: TraceCheck | null } | null>(null);
   const [touched, setTouched] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -59,18 +60,9 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
     }
   }, []);
 
-  useEffect(() => {
-    if (result && justChecked.current) {
-      justChecked.current = false;
-      resultRef.current?.focus();
-      resultRef.current?.scrollIntoView({ block: "center" });
-    }
-  }, [result]);
-
   const check = api.room.checkAnswer.useMutation({
-    onSuccess: (r) => {
+    onSuccess: () => {
       justChecked.current = true;
-      setResult({ correct: r.correct, explanation: r.explanation, traceCheck: r.traceCheck });
       onChanged();
     },
   });
@@ -81,16 +73,26 @@ export function StoryCard({ code, team, story, storyState, total, estimate, memb
     },
   });
 
-  // After a reload the story may already be checked on the server: fetch the explanation again.
-  const refetched = useRef(false);
-  useEffect(() => {
-    if (storyState.answer === null || refetched.current) return;
-    refetched.current = true;
-    check.mutate({ code, team, storyIndex: story.index, answer: storyState.answer, reason: storyState.reason, trace: storyState.trace });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // The first check locks the story for the whole team, so once the room says it is checked the stored
+  // answer, reason and mat win over this device's draft, and the explanation comes with the room.
+  const checkedOnServer = storyState.answer !== null;
+  const answer = storyState.answer ?? draftAnswer;
+  const reason = checkedOnServer ? storyState.reason : draftReason;
+  const trace = checkedOnServer ? storyState.trace : draftTrace;
+  const result =
+    check.data ??
+    (checkedOnServer && checked ? { correct: storyState.correct === true, explanation: checked.explanation, traceCheck: checked.traceCheck } : null);
 
-  const locked = storyState.answer !== null || result !== null;
+  const hasResult = result !== null;
+  useEffect(() => {
+    if (hasResult && justChecked.current) {
+      justChecked.current = false;
+      resultRef.current?.focus();
+      resultRef.current?.scrollIntoView({ block: "center" });
+    }
+  }, [hasResult]);
+
+  const locked = checkedOnServer || hasResult;
   const traceMisses = new Map((result?.traceCheck?.mismatches ?? []).map((m) => [cellId(m.row, m.variable), m]));
   const traceFilled = !mat || (trace.length > 0 && trace.every((r) => r.every((c) => c.trim() !== "")));
   const reasonOk = reason.trim().length >= MIN_REASON;
