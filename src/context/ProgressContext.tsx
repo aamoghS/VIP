@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TopicStat } from "@/lib/practice/targeting";
 import type { Role } from "@/server/db/schema";
@@ -22,7 +22,6 @@ type ProgressContextType = {
   xp: number;
   addXp: (amount: number) => void;
   unlockedItems: UnlockedItem[];
-  unlockItem: (item: UnlockedItem) => void;
   sprintStage: number;
   advanceSprint: () => void;
   questionsSolved: number;
@@ -49,6 +48,8 @@ type ProgressContextType = {
 type AuthPlayer = { name: string; role: Role; progress: SavedProgress };
 
 const STORAGE_KEY = "vip_progress";
+// The room code build/page.tsx remembers between visits.
+export const SPRINT_ROOM_KEY = "sprint-room";
 
 type SavedProgress = {
   xp: number;
@@ -140,7 +141,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const [playerName, setPlayerName] = useState<string | null>(null);
   const [playerRole, setPlayerRole] = useState<Role | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const snapshotRef = useRef<SavedProgress>(defaultProgress());
 
   // Calculate level and XP progress
   const currentLevel = getLevelFromXp(xp);
@@ -157,10 +157,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     setTopicStats(saved.topicStats || {});
     setExplanations(saved.explanations || []);
   };
-
-  useEffect(() => {
-    snapshotRef.current = { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations };
-  }, [xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations]);
 
   const queryClient = useQueryClient();
 
@@ -218,13 +214,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   const addXp = (amount: number) => setXp(prev => prev + amount);
 
-  const unlockItem = (item: UnlockedItem) => {
-    setUnlockedItems(prev => {
-      if (prev.find(i => i.id === item.id)) return prev;
-      return [...prev, item];
-    });
-  };
-
   const advanceSprint = () => setSprintStage(prev => Math.min(prev + 1, 3));
 
   const incrementQuestionsSolved = () => setQuestionsSolved(prev => prev + 1);
@@ -257,19 +246,34 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   const authMutation = useMutation({
     mutationFn: async (body: Record<string, unknown>): Promise<{ error?: string; player?: AuthPlayer }> => {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      return res.ok ? { player: data.player } : { error: data.error };
+      try {
+        const res = await fetch("/api/auth", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        return res.ok ? { player: data.player } : { error: data.error };
+      } catch {
+        // Network failure or a non-JSON (HTML 500) reply: the caller shows its fallback message.
+        return {};
+      }
     },
   });
+
+  // Forget what the previous account saw: cached tRPC data (rooms) and the remembered sprint room.
+  // Keeps the auth query (set by the caller) and practice questions (public, and swapping one mid-answer is jarring).
+  const clearAccountData = () => {
+    queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "auth" && q.queryKey[0] !== "question" });
+    try {
+      localStorage.removeItem(SPRINT_ROOM_KEY);
+    } catch {}
+  };
 
   const submitAuth = async (body: Record<string, unknown>, fallback: string) => {
     const result = await authMutation.mutateAsync(body);
     if (!result.player) return result.error || fallback;
+    clearAccountData();
     queryClient.setQueryData(["auth", "player"], result.player);
     await queryClient.invalidateQueries({ queryKey: ["auth", "player"] });
     return null;
@@ -279,7 +283,10 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     submitAuth({ mode: "login", name, password }, "Could not sign in.");
 
   const signUp = (name: string, password: string, role: Role = "student") =>
-    submitAuth({ mode: "create", name, password, role, progress: snapshotRef.current }, "Could not create that player.");
+    submitAuth(
+      { mode: "create", name, password, role, progress: { xp, unlockedItems, sprintStage, questionsSolved, teamMissionsCompleted, topicStats, explanations } },
+      "Could not create that player.",
+    );
 
   const signOutMutation = useMutation({
     mutationFn: async () => {
@@ -291,6 +298,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     await signOutMutation.mutateAsync();
     const fresh = defaultProgress();
     writeProgress(fresh);
+    clearAccountData();
     queryClient.setQueryData(["auth", "player"], null);
     applyProgress(fresh);
     setPlayerName(null);
@@ -299,7 +307,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProgressContext.Provider value={{
-      xp, addXp, unlockedItems, unlockItem, sprintStage, advanceSprint,
+      xp, addXp, unlockedItems, sprintStage, advanceSprint,
       questionsSolved, incrementQuestionsSolved, teamMissionsCompleted, incrementTeamMissions,
       topicStats, recordAnswer, explanations, saveExplanation, resetProgress,
       playerName, playerRole, authReady: hydrated, signIn, signUp, signOut,

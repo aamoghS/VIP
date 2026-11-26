@@ -120,8 +120,9 @@ export async function signUp(name: string, password: string, progress: PlayerPro
       progress: readProgress(progress),
     });
   } catch (error) {
-    const code = (error as { code?: string }).code;
-    if (code === "23505") return { error: "That name is taken." };
+    // drizzle-orm wraps driver errors in DrizzleQueryError, so the Postgres code sits on `cause`.
+    const { code, cause } = error as { code?: string; cause?: { code?: string } };
+    if ((cause?.code ?? code) === "23505") return { error: "That name is taken." };
     throw error;
   }
   await setSession(id);

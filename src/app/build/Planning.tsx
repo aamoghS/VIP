@@ -10,32 +10,64 @@ import { POINT_SCALE } from "@/lib/sprint/state";
 import { Badge, Btn, ErrorLine, INK, pts, OBJECTIVE_LABEL, Panel, SPACE, STEP, SubmitRow, TextField, cardTitle, heading, hint, labelStyle, MONO, requiredText } from "./ui";
 import { other, type PhaseProps } from "./phaseProps";
 
-export function Planning({ code, team, state, mission, refresh }: PhaseProps) {
+type Plan = { goal: string; estimates: number[] };
+
+const planKey = (plan: Plan) => `${plan.goal.trim()}|${plan.estimates.join(",")}`;
+
+export function Planning(props: PhaseProps) {
+  const { code, team, state, refresh } = props;
   const mine = state.teams[team];
-  const stories = mission?.teams[team].stories ?? [];
-  const [saved, setSaved] = useState(false);
   const savePlan = api.room.savePlan.useMutation();
   const markPlanned = api.room.markPlanned.useMutation();
-  const pending = savePlan.isPending || markPlanned.isPending;
-  const error = savePlan.error?.message ?? markPlanned.error?.message;
-  const otherTeam = state.teams[other(team)];
+  // The form starts over from the team plan whenever it changes, so teammates see each other's plan.
+  // A save from this device is the exception: the form already shows it, so it keeps its key and focus.
+  const [own, setOwn] = useState<{ plan: string; formKey: string } | null>(null);
+  const teamPlan = planKey(mine);
+  const formKey = own?.plan === teamPlan ? own.formKey : teamPlan;
 
-  const persist = async (value: { goal: string; estimates: number[] }) => {
+  const persist = async (value: Plan) => {
     await savePlan.mutateAsync({ code, team, goal: value.goal, estimates: value.estimates });
-    setSaved(true);
+    setOwn({ plan: planKey(value), formKey });
     refresh();
   };
+  const submit = async (value: Plan) => {
+    try {
+      await persist(value);
+      await markPlanned.mutateAsync({ code, team });
+      refresh();
+    } catch {
+      /* shown through mutation error state */
+    }
+  };
+
+  return (
+    <PlanForm
+      key={formKey}
+      {...props}
+      persist={persist}
+      submit={submit}
+      pending={savePlan.isPending || markPlanned.isPending}
+      error={savePlan.error?.message ?? markPlanned.error?.message}
+    />
+  );
+}
+
+function PlanForm({
+  team,
+  state,
+  mission,
+  persist,
+  submit,
+  pending,
+  error,
+}: PhaseProps & { persist: (value: Plan) => Promise<void>; submit: (value: Plan) => Promise<void>; pending: boolean; error?: string }) {
+  const mine = state.teams[team];
+  const stories = mission?.teams[team].stories ?? [];
+  const otherTeam = state.teams[other(team)];
+
   const form = useForm({
     defaultValues: { goal: mine.goal, estimates: mine.estimates as number[] },
-    onSubmit: async ({ value }) => {
-      try {
-        await persist(value);
-        await markPlanned.mutateAsync({ code, team });
-        refresh();
-      } catch {
-        /* shown through mutation error state */
-      }
-    },
+    onSubmit: ({ value }) => submit(value),
   });
 
   if (!mission) return <Panel><p role="status">Waiting for the mission...</p></Panel>;
@@ -87,7 +119,6 @@ export function Planning({ code, team, state, mission, refresh }: PhaseProps) {
                           aria-pressed={on}
                           onClick={() => {
                             field.handleChange(field.state.value.map((v, j) => (j === i ? p : v)));
-                            setSaved(false);
                           }}
                           style={{ minHeight: 48, justifyContent: "center", textAlign: "center", fontFamily: MONO, fontSize: "1.5rem", fontWeight: 700, boxShadow: on ? `4px 4px 0 ${INK}` : "none" }}
                         >
@@ -106,7 +137,6 @@ export function Planning({ code, team, state, mission, refresh }: PhaseProps) {
       <Panel>
         <form.Field
           name="goal"
-          listeners={{ onChange: () => setSaved(false) }}
           validators={{ onChange: requiredText("a sprint goal"), onBlur: requiredText("a sprint goal") }}
         >
           {(field) => (
@@ -124,18 +154,20 @@ export function Planning({ code, team, state, mission, refresh }: PhaseProps) {
         <form.Subscribe selector={(s) => ({ goal: s.values.goal, values: s.values })}>
           {({ goal, values }) => {
             const missing = goal.trim() ? [] : ["a sprint goal"];
+            const changed = planKey(values) !== planKey(mine);
             return (
               <div style={{ marginTop: SPACE[4] }}>
                 <SubmitRow
-                  disabled={pending || missing.length > 0 || (mine.planned && saved)}
+                  disabled={pending || missing.length > 0 || (mine.planned && !changed)}
                   missing={missing}
+                  touched
                   extra={
                     <>
                       <Btn variant="secondary" onClick={() => void persist(values).catch(() => undefined)} disabled={pending || missing.length > 0}>
                         <Save size={18} aria-hidden /> Save plan
                       </Btn>
                       <span role="status" style={{ fontWeight: 700 }}>
-                        {mine.planned ? "Your team is planned. Waiting for the teacher to start work." : saved ? "Plan saved." : ""}
+                        {mine.planned ? "Your team is planned. Waiting for the teacher to start work." : mine.goal && !changed ? "Plan saved." : ""}
                       </span>
                     </>
                   }

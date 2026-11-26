@@ -25,6 +25,7 @@ export function JoinForm({ initialCode, onJoined }: { initialCode: string; onJoi
   });
   const form = useForm({
     defaultValues: { code: initialCode.toUpperCase().slice(0, 6), team: "A" as TeamId, name: "" },
+    listeners: { onChange: () => join.reset() },
     onSubmit: async ({ value }) => {
       const needsName = !room.data?.state.teams[value.team].name;
       await join.mutateAsync({ code: value.code.trim().toUpperCase(), team: value.team, name: needsName ? value.name.trim() : undefined }).catch(() => undefined);

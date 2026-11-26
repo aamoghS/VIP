@@ -61,6 +61,11 @@ function assertOwner(room: Room, player: SessionPlayer) {
 
 const asOwner = (player: SessionPlayer): Check => ({ room }) => assertOwner(room, player);
 
+/** Seats are for students: a teacher account runs the room from the dashboard. */
+const asStudent = (player: SessionPlayer): Check => () => {
+  if (player.role === "teacher") throw forbid("Teacher accounts cannot join a team. Sign in with a student account.");
+};
+
 async function membership(tx: Tx | ReturnType<typeof getDb>, roomCode: string, playerId: string) {
   const [row] = await tx
     .select()
@@ -120,6 +125,19 @@ async function membersOf(roomCode: string) {
     .orderBy(roomMembers.team, roomMembers.seat);
 }
 
+/**
+ * Explanation and trace check for the team's open story, once it has been checked. A teammate on another
+ * device gets them from here instead of re-checking. An unchecked story gives nothing away.
+ */
+function checkedStory(room: Room, team: TeamId) {
+  const mission = getMission(room.missionId);
+  const stories = room.state.teams[team].stories;
+  const storyIndex = stories.findIndex((s) => s.status === "doing");
+  const question = mission && storyIndex >= 0 ? questionsFor(mission, team)[storyIndex] : undefined;
+  if (!question || stories[storyIndex].answer === null) return null;
+  return { storyIndex, explanation: question.explanation, traceCheck: checkStoryTrace(question, stories[storyIndex].trace) };
+}
+
 async function view(room: Room, viewer: SessionPlayer) {
   const mission = getMission(room.missionId);
   const [all, [sent]] = await Promise.all([
@@ -134,6 +152,7 @@ async function view(room: Room, viewer: SessionPlayer) {
   return {
     members: all.map(({ name, team, seat }) => ({ name, team: team as TeamId, seat })),
     me: mine ? { team: mine.team as TeamId, seat: mine.seat } : null,
+    checked: mine ? checkedStory(room, mine.team as TeamId) : null,
     code: room.code,
     className: room.className,
     missionId: room.missionId,
@@ -285,7 +304,7 @@ export const roomRouter = createTRPCRouter({
         const has = new Set(all.map((m) => m.team));
         const next = sprint.syncTeams(state, { A: has.has("A"), B: has.has("B") }, { [input.team]: input.name });
         return { state: next, out: { state: next } };
-      }),
+      }, asStudent(ctx.player)),
     ),
 
   savePlan: authedProcedure

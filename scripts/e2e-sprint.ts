@@ -127,6 +127,7 @@ async function main() {
   await rejects("startPlanning without mission rejected", teacher.api.room.startPlanning.mutate(t));
   await teacher.api.room.setMission.mutate({ ...t, missionId: mission.id });
   await rejectsWith("non-member cannot savePlan", "FORBIDDEN", a1.api.room.savePlan.mutate({ code, team: "A", goal: "g", estimates: [] }));
+  await rejectsWith("teacher cannot join a team", "FORBIDDEN", teacher.api.room.join.mutate({ code, team: "A", name: "Teacher team" }));
   await a1.api.room.join.mutate({ code, team: "A", name: "Alpha" });
   await a2.api.room.join.mutate({ code, team: "A", name: "Ignored" });
   await b1.api.room.join.mutate({ code, team: "B", name: "Beta" });
@@ -178,8 +179,13 @@ async function main() {
           const holey = mat.map((r, ri) => (ri === 0 ? r.map(() => "") : r));
           await rejects("check with empty trace cell rejected", api.room.checkAnswer.mutate({ code, team, storyIndex: 0, answer, reason: "reason is long enough", trace: holey }));
         }
+        const mate = crew[team][1 - (i % 2)].api;
+        check("room.get has no explanation before the story is checked", (await mate.room.get.query({ code })).checked === null);
         const first = await api.room.checkAnswer.mutate({ code, team, storyIndex: 0, answer, reason: "because I traced it carefully", trace: mat });
         check("check returns grading and explanation", first.correct && first.explanation === q.explanation);
+        const seen = (await mate.room.get.query({ code })).checked;
+        check("a teammate's room.get carries the explanation of the checked story", seen?.storyIndex === 0 && seen.explanation === q.explanation);
+        check("the other team's room.get carries no explanation", (await b1.api.room.get.query({ code })).checked === null);
         const again = await api.room.checkAnswer.mutate({ code, team, storyIndex: 0, answer: wrongAnswer(q), reason: "copied the explanation afterwards", trace: mat });
         const locked = again.state.teams[team].stories[0];
         check("first check locks answer and reason", again.correct && locked.reason === "because I traced it carefully");
@@ -247,6 +253,21 @@ async function main() {
     const total = all.filter((q) => String(q.objective) === o.key).length;
     check(`objective ${o.key} total and correct`, o.total === total && o.correct === total - (o.key === wrongObjective ? 1 : 0));
   }
+
+  // A room with an empty team never starts work, forced or not, and a team that loses its last member loses its plan.
+  const lone = { code: (await teacher.api.room.create.mutate({ className: "E2E Lone Team" })).code };
+  await teacher.api.room.setMission.mutate({ ...lone, missionId: mission.id });
+  await outsider.api.room.join.mutate({ ...lone, team: "A", name: "Solo" });
+  await teacher.api.room.startPlanning.mutate(lone);
+  await outsider.api.room.savePlan.mutate({ ...lone, team: "A", goal: "Plan alone", estimates: Array(nA).fill(2) });
+  await outsider.api.room.markPlanned.mutate({ ...lone, team: "A" });
+  await rejectsWith("startWork rejected while Team B is empty", "BAD_REQUEST", teacher.api.room.startWork.mutate(lone));
+  await rejectsWith("forced startWork rejected while Team B is empty", "BAD_REQUEST", teacher.api.room.startWork.mutate({ ...lone, force: true }));
+  await outsider.api.room.join.mutate({ ...lone, team: "B" });
+  const moved = (await teacher.api.room.dashboard.query(lone)).state;
+  check("switching teams empties Team A: no name, not joined, not planned", !moved.teams.A.joined && moved.teams.A.name === "" && !moved.teams.A.planned && moved.teams.B.joined);
+  await rejectsWith("forced startWork rejected while Team A is empty", "BAD_REQUEST", teacher.api.room.startWork.mutate({ ...lone, force: true }));
+  check("the empty-team room is still planning", (await teacher.api.room.dashboard.query(lone)).state.phase === "planning");
 
   await rejectsWith("second teacher cannot start a new round", "FORBIDDEN", teacher2.api.room.newRound.mutate(t));
   await teacher.api.room.newRound.mutate(t);

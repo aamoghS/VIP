@@ -51,13 +51,15 @@ function requirePhase(s: SprintState, ...phases: Phase[]) {
   if (!phases.includes(s.phase)) fail(`Not allowed during ${s.phase}.`);
 }
 
-/** Keeps `joined` in line with real members. A team with nobody loses its name; a first name sticks. */
+/** Keeps `joined` in line with real members. A team with nobody loses its name and its planned flag; a first name sticks. */
 export const syncTeams = (state: SprintState, has: Record<TeamId, boolean>, names: Partial<Record<TeamId, string>> = {}): SprintState =>
   edit(state, (s) => {
     for (const t of ["A", "B"] as const) {
       s.teams[t].joined = has[t];
-      if (!has[t]) s.teams[t].name = "";
-      else if (!s.teams[t].name) s.teams[t].name = (names[t] ?? "").trim();
+      if (!has[t]) {
+        s.teams[t].name = "";
+        s.teams[t].planned = false;
+      } else if (!s.teams[t].name) s.teams[t].name = (names[t] ?? "").trim();
     }
   });
 
@@ -80,9 +82,11 @@ export const savePlan = (state: SprintState, team: TeamId, goal: string, estimat
     const t = s.teams[team];
     if (estimates.length !== t.stories.length) fail("Estimate every story.");
     if (estimates.some((e) => !POINT_SCALE.includes(e))) fail("Estimates must be 1, 2, 3, 5 or 8.");
-    t.goal = goal.trim();
+    const next = goal.trim();
+    // Saving the plan the team already has changes nothing, so a stale or repeated save keeps `planned`.
+    if (next !== t.goal || estimates.some((e, i) => e !== t.estimates[i])) t.planned = false;
+    t.goal = next;
     t.estimates = estimates;
-    t.planned = false;
   });
 
 export const markPlanned = (state: SprintState, team: TeamId): SprintState =>
@@ -92,10 +96,15 @@ export const markPlanned = (state: SprintState, team: TeamId): SprintState =>
     s.teams[team].planned = true;
   });
 
-/** planning -> teamA. Needs both teams planned unless forced. */
+/** Teams with nobody in them. Work cannot start while this is not empty. */
+export const emptyTeams = (state: SprintState): TeamId[] => (["A", "B"] as const).filter((t) => !state.teams[t].joined);
+
+/** planning -> teamA. Needs a member on both teams, and both teams planned unless forced. */
 export const startWork = (state: SprintState, force: boolean, now: string): SprintState =>
   edit(state, (s) => {
     requirePhase(s, "planning");
+    const empty = emptyTeams(s);
+    if (empty.length) fail(`${empty.map((t) => `Team ${t}`).join(" and ")} ${empty.length > 1 ? "have" : "has"} no members yet.`);
     if (!force && !(s.teams.A.planned && s.teams.B.planned)) fail("Both teams must finish planning.");
     s.startedAt ??= now;
     s.teams.A.stories[0].status = "doing";

@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import { AccountHeader } from "@/components/SignInGate";
 import { SignInGate } from "@/components/SignInGate";
 import { api } from "@/trpc/react";
+import { SPRINT_ROOM_KEY as KEY, useProgress } from "@/context/ProgressContext";
 import { Btn, ErrorLine, MONO, Panel, SPACE, heading, hint, sprintCss } from "./ui";
 import { JoinForm } from "./JoinForm";
 import { Lobby } from "./Lobby";
@@ -14,8 +15,6 @@ import { Work } from "./Work";
 import { Standup } from "./Standup";
 import { Review } from "./Review";
 import { Retro } from "./Retro";
-
-const KEY = "sprint-room";
 
 function load(): string | null {
   try {
@@ -66,7 +65,7 @@ function SprintApp() {
       <style>{sprintCss}</style>
       <SignInGate defaultRole="student">
         {!ready ? null : code ? (
-          <Room code={code} onLeave={leave} />
+          <Room code={code} onLeave={leave} onJoined={enter} />
         ) : (
           <JoinForm initialCode={params.get("code") ?? ""} onJoined={enter} />
         )}
@@ -75,7 +74,7 @@ function SprintApp() {
   );
 }
 
-function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
+function Room({ code, onLeave, onJoined }: { code: string; onLeave: () => void; onJoined: (code: string) => void }) {
   const utils = api.useUtils();
   const query = api.room.get.useQuery({ code }, { refetchInterval: 2000, retry: false });
   const refresh = useCallback(() => void utils.room.get.invalidate({ code }), [utils, code]);
@@ -106,10 +105,11 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
 
   const { state, mission, members, me } = data;
   if (!me) {
-    return <JoinForm initialCode={code} onJoined={refresh} />;
+    // A different code opens that room. The same code just reloads this one.
+    return <JoinForm initialCode={code} onJoined={(next) => (next === code ? refresh() : onJoined(next))} />;
   }
   const team = me.team;
-  const common = { code, team, state, mission, members, me, refresh, myReflection: data.myReflection };
+  const common = { code, team, state, mission, members, me, refresh, checked: data.checked, myReflection: data.myReflection };
   let view;
   switch (state.phase) {
     case "lobby":
@@ -150,9 +150,11 @@ function Room({ code, onLeave }: { code: string; onLeave: () => void }) {
 }
 
 export default function SprintPage() {
+  const { playerName } = useProgress();
   return (
     <Suspense fallback={<p style={hint} role="status">Loading...</p>}>
-      <SprintApp />
+      {/* A new account starts over: the room code held in SprintApp belongs to the previous one. */}
+      <SprintApp key={playerName ?? "guest"} />
     </Suspense>
   );
 }

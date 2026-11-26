@@ -14,7 +14,7 @@ const STATUS: Record<StoryState["status"], { word: string; Icon: typeof Lock }> 
   done: { word: "Done", Icon: CheckCircle2 },
 };
 
-export function Work({ code, team, state, mission, members, me, refresh }: PhaseProps) {
+export function Work({ code, team, state, mission, members, me, checked, refresh }: PhaseProps) {
   if (!mission) return <Panel><p role="status">Waiting for the mission...</p></Panel>;
   const turn = state.phase === "teamA" ? "A" : "B";
   const mine = state.teams[team];
@@ -115,6 +115,7 @@ export function Work({ code, team, state, mission, members, me, refresh }: Phase
           team={team}
           story={open}
           storyState={mine.stories[openIndex]}
+          checked={checked?.storyIndex === openIndex ? checked : null}
           total={stories.length}
           estimate={mine.estimates[openIndex]}
           members={members.filter((m) => m.team === team)}

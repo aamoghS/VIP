@@ -101,6 +101,7 @@ check(
 const now = "2026-01-01T00:00:00.000Z";
 const shape = { rows: 2, cols: 1 };
 let st = s.newSprintState(now);
+st = s.syncTeams(st, { A: true, B: true }, { A: "Alpha", B: "Beta" });
 check("cannot answer in lobby", throwsSprintError(() => s.recordAnswer(st, "A", 0, { answer: "x", correct: true, reason: "", trace: [] }, null)));
 st = s.startPlanning(st, { A: [1, 2], B: [3] }, now);
 check("cannot start work before planning done", throwsSprintError(() => s.startWork(st, false, now)));
@@ -108,6 +109,16 @@ check("cannot mark planned without goal", throwsSprintError(() => s.markPlanned(
 st = s.savePlan(st, "A", "Ship it", [2, 3]);
 st = s.markPlanned(st, "A");
 st = s.markPlanned(s.savePlan(st, "B", "Also ship", [5]), "B");
+check("saving the same plan again keeps planned", s.savePlan(st, "A", " Ship it ", [2, 3]).teams.A.planned);
+check("changing the goal or an estimate clears planned", !s.savePlan(st, "A", "Ship it now", [2, 3]).teams.A.planned && !s.savePlan(st, "A", "Ship it", [3, 3]).teams.A.planned);
+const emptyB = s.syncTeams(st, { A: true, B: false });
+check("an emptied team loses its name and planned flag", emptyB.teams.B.name === "" && !emptyB.teams.B.planned && emptyB.teams.A.planned);
+check("cannot start work while a team has no members", throwsSprintError(() => s.startWork(emptyB, false, now)));
+check("cannot force work while a team has no members", throwsSprintError(() => s.startWork(emptyB, true, now)));
+check("cannot start work with both teams empty", throwsSprintError(() => s.startWork(s.syncTeams(st, { A: false, B: false }), true, now)));
+const refilledB = s.syncTeams(emptyB, { A: true, B: true }, { B: "Gamma" });
+check("a refilled team must plan again", throwsSprintError(() => s.startWork(refilledB, false, now)));
+check("forced start works once both teams have members", s.startWork(refilledB, true, now).phase === "teamA");
 st = s.startWork(st, false, now);
 check("team A story 0 is doing", st.phase === "teamA" && st.teams.A.stories[0].status === "doing");
 check("team B locked during teamA", throwsSprintError(() => s.recordAnswer(st, "B", 0, { answer: "x", correct: true, reason: "", trace: [] }, null)));
